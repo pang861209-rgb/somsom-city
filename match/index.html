@@ -98,6 +98,31 @@
   @keyframes confFall { to { transform:translateY(760px) rotate(560deg); opacity:.15; } }
   .floater { position:fixed; font-weight:800; color:#b08a3a; text-shadow:0 0 4px #fff,0 0 4px #fff; pointer-events:none; animation:floatUp .9s ease-out forwards; z-index:9; font-size:17px; }
   @keyframes floatUp { to { transform:translateY(-46px); opacity:0; } }
+
+  /* 미리보기 카운트다운 */
+  #countdown { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; z-index:25; }
+  #countdown span { font-size:84px; font-weight:800; color:#5a4a3a; text-shadow:0 0 12px #fff,0 0 12px #fff,3px 3px 0 #fff; animation:cdPop 1s ease-out forwards; }
+  @keyframes cdPop { 0%{transform:scale(1.5);opacity:0} 20%{transform:scale(1);opacity:1} 80%{opacity:1} 100%{transform:scale(.85);opacity:0} }
+
+  /* 콤보 연출 */
+  #combo.pulse { animation:comboPulse .45s ease-out; }
+  @keyframes comboPulse { 0%{transform:scale(1)} 35%{transform:scale(1.35);background:#f6d98a;color:#a03a26} 100%{transform:scale(1)} }
+  #board.bshake { animation:bshk .3s; }
+  @keyframes bshk { 0%,100%{transform:translate(0,0)} 25%{transform:translate(-4px,2px)} 55%{transform:translate(4px,-2px)} 80%{transform:translate(-2px,1px)} }
+
+  /* 규칙 안내 모달 */
+  .infoBtn { position:absolute; top:4px; right:6px; z-index:2; border:none; background:none; box-shadow:none; font-size:15px; padding:4px; cursor:pointer; }
+  .infoBtn:active { transform:none; }
+  #ruleModal { position:fixed; inset:0; background:rgba(60,48,36,.45); display:flex; align-items:center; justify-content:center; z-index:40; padding:24px; }
+  #ruleBox { background:#fdfbf5; border:3px solid #222; border-radius:14px; box-shadow:4px 4px 0 #222; padding:20px 18px; max-width:320px; text-align:center; display:flex; flex-direction:column; gap:10px; align-items:center; }
+  #ruleBox img { height:80px; object-fit:contain; }
+  #ruleBox h2 { font-size:18px; color:#5a4a3a; }
+  #ruleBox .rtext { font-size:13px; color:#7a6a5a; line-height:1.6; }
+
+  /* 도감 스페셜 컷 */
+  .dexSpecial { margin-top:6px; border:2px solid #222; border-radius:10px; overflow:hidden; background:#fff; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .dexSpecial img { height:110px; object-fit:contain; }
+  .dexSpecial.locked { background:#f3ede2; color:#b0a48e; font-weight:700; font-size:12px; padding:14px; }
   .homeBtn{position:absolute;top:8px;left:8px;z-index:60;background:rgba(255,255,255,.88);border:2px solid #222;border-radius:8px;padding:4px 11px;font:700 13px "Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#222;text-decoration:none;box-shadow:2px 2px 0 #222;}
   .homeBtn:active{transform:translate(2px,2px);box-shadow:none;}
 </style>
@@ -107,7 +132,8 @@
   <a href="../" class="homeBtn" title="솜솜시티 홈">← 홈</a>
 
   <div id="title" class="screen">
-    <img id="titleBg" src="../assets/title_main.png" onerror="this.onerror=null;this.src='../assets/01_group_lineup.png';this.style.objectFit='contain';" alt="솜솜시티 친구들">
+    <img id="titleBg" src="../assets/title_bg_match.png" onerror="this.onerror=null;this.src='../assets/title_main.png';" alt="카드가 깔린 테이블">
+    <img class="titleChar" src="../assets/sd_boneul_t.png" alt="보늘" style="position:absolute;right:6px;bottom:92px;width:120px;height:auto;z-index:1;pointer-events:none;filter:drop-shadow(0 4px 5px rgba(90,74,58,.22));">
     <div id="titleTop">
       <h1 id="titleLogo">🃏 솜솜시티: 짝꿍을 찾아라!</h1>
       <div id="titleSub">뒤집힌 카드 속, 솜솜 친구들의 하루를 맞춰봐!</div>
@@ -178,6 +204,18 @@
   </div>
 
   <div id="zoom" class="hidden"><div class="zcard"><img id="zoomImg"></div></div>
+  <div id="countdown" class="hidden"></div>
+  <div id="ruleModal" class="hidden" onclick="ui.closeRule()">
+    <div id="ruleBox" onclick="event.stopPropagation()">
+      <img id="ruleImg" src="">
+      <h2 id="ruleName"></h2>
+      <div class="rtext" id="ruleText"></div>
+      <div style="display:flex;gap:8px;">
+        <button id="rulePlayBtn">이 친구로 시작!</button>
+        <button onclick="ui.closeRule()">닫기</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -211,6 +249,14 @@ const CHARS = {
                 match:'아이구, 그래~ 이거였지.', miss:'아이구야, 가물가물해~', clear:'늙은이 기억력이 아직 쓸만하네 그래~' },
 };
 const DIFF_LABEL = { easy:'쉬움', normal:'보통', hard:'어려움' };
+const RULE_DETAIL = {
+  boneul: '보늘이 가끔 졸면서 카드 한 장을 살짝 보여줘요 💤<br>놓치지 말고 위치를 기억해두세요!<br><b>6쌍 · 시간 보너스 있음</b>',
+  bookgeo: '시간 보너스가 없어요 — 천천히 해도 괜찮아요.<br>대신 시도 횟수가 적을수록 침착 보너스가 커져요.<br><b>6쌍 · 무결점 클리어 보너스 있음</b>',
+  kkito: '첫 번째 실수 1회는 무효! 콤보도 안 끊겨요.<br>"가스 불 확인하듯" 한 번 더 기회가 있어요.<br><b>8쌍 · 시간 보너스 있음</b>',
+  ramda: '매 판 ✨희귀템 컷 1쌍이 숨어 있어요.<br>그 쌍을 맞추면 점수 2배!<br><b>8쌍 · 뒤집으면 ✨ 표시가 보여요</b>',
+  migae: '실수를 2번 할 때마다 개미가 뒤집힌 카드<br>두 장의 자리를 몰래 바꿔요! 🐜<br><b>12쌍 · 흔들린 카드를 주목하세요</b>',
+  lachilchin: '미리보기 때 할머니가 기억나는 3쌍만 보여줘요.<br>나머지는 직접 찾아야 해요.<br><b>12쌍 · 연륜을 믿으세요, 그래~</b>',
+};
 const KEYS = Object.keys(CHARS);
 const cardImg = (key, i) => `../assets/card_${key}_${i}.png`;
 
@@ -249,12 +295,13 @@ function tone(freq, dur, type, gain, when, slide) {
   g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
   o.connect(g); g.connect(a.destination); o.start(t0); o.stop(t0 + dur + 0.02);
 }
-function sfx(name) {
+function sfx(name, pitch) {
   if (muted) return;
+  const p = pitch || 1;                                        // 콤보가 오를수록 음이 올라감
   try {
     if (name === 'flip') tone(500, 0.06, 'triangle', 0.05, 0, 700);
-    else if (name === 'match') { tone(880, 0.07, 'square', 0.045); tone(1318, 0.1, 'square', 0.045, 0.06); }
-    else if (name === 'combo') tone(660, 0.15, 'sine', 0.06, 0, 990);
+    else if (name === 'match') { tone(880 * p, 0.07, 'square', 0.045); tone(1318 * p, 0.1, 'square', 0.045, 0.06); }
+    else if (name === 'combo') tone(660 * p, 0.15, 'sine', 0.06, 0, 990 * p);
     else if (name === 'rare') [784, 988, 1318, 1568].forEach((f, i) => tone(f, 0.12, 'square', 0.05, i * 0.07));
     else if (name === 'miss') tone(200, 0.14, 'triangle', 0.07, 0, 110);
     else if (name === 'record') [523, 659, 784].forEach((f, i) => tone(f, 0.16, 'square', 0.05, i * 0.09));
@@ -325,8 +372,21 @@ function startGame(daily) {
   $('combo').textContent = '콤보 ×0';
   $('muteBtn').textContent = muted ? '🔇' : '🔊';
   ui.show('game');
+  const myG = g;                                                             // 카운트다운: 미리보기 끝나기 3초 전부터
+  for (let n = 3; n >= 1; n--) {
+    const at = c.preview - n * 1000;
+    if (at < 250) continue;
+    setTimeout(() => {
+      if (g !== myG || g.done) return;
+      const cd = $('countdown');
+      cd.innerHTML = `<span>${n}</span>`;
+      cd.classList.remove('hidden');
+      sfx('flip');
+    }, at);
+  }
   setTimeout(() => {                                                         // 미리보기 종료 → 시작
-    if (!g || g.done) return;
+    if (g !== myG || g.done) return;
+    $('countdown').classList.add('hidden');
     for (const c2 of g.deck) c2.el.classList.remove('open');
     g.lock = false; g.t0 = performance.now();
     say('시작!', 1.2);
@@ -394,14 +454,21 @@ function tapCard(idx) {
   if (a.id === b.id) {
     g.combo++; g.bestCombo = Math.max(g.bestCombo, g.combo);
     const rare = a.id === g.rareId;
-    const pts = 100 * g.combo * (rare ? 2 : 1);
+    const mult = Math.min(g.combo, 5);                                       // 콤보 배수 상한 ×5
+    const pts = 100 * mult * (rare ? 2 : 1);
     g.score += pts;
     a.solvedFlag = b.solvedFlag = true;
     a.el.classList.add('solved'); b.el.classList.add('solved');
     g.solved++;
     g.open = [];
-    sfx(rare ? 'rare' : (g.combo >= 2 ? 'combo' : 'match'));
-    floatAt(b.el, '+' + pts + (rare ? ' ✨2배!' : (g.combo >= 2 ? ' ×' + g.combo : '')));
+    sfx(rare ? 'rare' : (g.combo >= 2 ? 'combo' : 'match'), 1 + Math.min(g.combo, 8) * 0.07);
+    const cb = $('combo');                                                   // 콤보 펄스 + 고콤보 화면 흔들림
+    cb.classList.remove('pulse'); void cb.offsetWidth; cb.classList.add('pulse');
+    if (g.combo >= 4) {
+      const bd = $('board');
+      bd.classList.remove('bshake'); void bd.offsetWidth; bd.classList.add('bshake');
+    }
+    floatAt(b.el, '+' + pts + (rare ? ' ✨2배!' : (g.combo >= 2 ? ' ×' + mult : '')));
     if (addDex(curChar, a.id)) g.newDex++;
     showZoom(a.img);
     setPartnerFace('win'); say(rare ? '이건 진짜 희귀템이야!!' : c.match, 1.4);
@@ -506,7 +573,9 @@ function showResult(score, timeBonus, effBonus, perfect) {
   if (perfect > 0) parts.push('무결점 +' + perfect);
   $('resDetail').textContent = parts.join(' · ');
   const dexArr = dexData()[curChar] || [];
-  $('resDex').textContent = (g.newDex > 0 ? `📖 새 컷 ${g.newDex}장 수집! ` : '') + `도감 ${dexArr.length}/${c.pool}` + (dexArr.length === c.pool ? ' 완성! 🏅' : '');
+  const justCompleted = dexArr.length === c.pool && g.newDex > 0;
+  $('resDex').textContent = (g.newDex > 0 ? `📖 새 컷 ${g.newDex}장 수집! ` : '') + `도감 ${dexArr.length}/${c.pool}` +
+    (justCompleted ? ' 완성! 🎁 스페셜 컷 해금 — 도감에서 확인하세요!' : (dexArr.length === c.pool ? ' 완성! 🏅' : ''));
   $('resBest').textContent = c.name + ' 최고기록: ' + best + '점';
   lastResult = { key: curChar, diff: c.diff, score, isNewBest, daily: curDaily, detail: $('resDetail').textContent };
   $('nameRow').style.display = score >= 1 ? 'flex' : 'none';
@@ -538,6 +607,15 @@ const ui = {
     ui.show('setup'); buildSetup();
   },
   quit() { ui.toSetup(); },
+  showRule(k) {
+    const c = CHARS[k];
+    $('ruleImg').src = c.sd;
+    $('ruleName').textContent = `${c.name} — ${DIFF_LABEL[c.diff]} · ${c.pairs}쌍`;
+    $('ruleText').innerHTML = RULE_DETAIL[k];
+    $('rulePlayBtn').onclick = () => { ui.closeRule(); curChar = k; startGame(false); };
+    $('ruleModal').classList.remove('hidden');
+  },
+  closeRule() { $('ruleModal').classList.add('hidden'); },
   toggleMute() {
     muted = !muted;
     localStorage.setItem('somsom_muted', muted ? '1' : '0');
@@ -576,6 +654,10 @@ const ui = {
         grid.appendChild(cell);
       }
       box.appendChild(grid);
+      const sp = document.createElement('div');                             // 도감 완성 보상: 스페셜 컷
+      if (got.length === c.pool) { sp.className = 'dexSpecial'; sp.innerHTML = `<img src="../assets/special_${k}.png" alt="${c.name} 스페셜 컷">`; }
+      else { sp.className = 'dexSpecial locked'; sp.textContent = `🎁 ${c.pool}컷을 모두 모으면 ${c.name}의 스페셜 컷 해금!`; }
+      box.appendChild(sp);
     }
   },
 };
@@ -618,10 +700,11 @@ function buildSetup() {
     const got = (dex[k] || []).length;
     const d = document.createElement('div');
     d.className = 'charcard';
-    d.innerHTML = `<span class="badge ${c.diff}">${DIFF_LABEL[c.diff]}</span>` +
+    d.innerHTML = `<span class="badge ${c.diff}">${DIFF_LABEL[c.diff]}</span><button class="infoBtn">ⓘ</button>` +
       `<img src="${c.sd}" alt="${c.name}"><div class="nm">${c.name}</div><div class="desc">${c.desc}</div>` +
       `<div class="bs">BEST ${best} · 📖 ${got}/${c.pool}${got === c.pool ? ' 🏅' : ''}</div>`;
     d.onclick = () => { curChar = k; startGame(false); };
+    d.querySelector('.infoBtn').onclick = e => { e.stopPropagation(); ui.showRule(k); };
     cg.appendChild(d);
   }
 }
