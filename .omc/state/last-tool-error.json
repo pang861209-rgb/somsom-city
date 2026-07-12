@@ -1,7 +1,0 @@
-{
-  "tool_name": "mcp__Claude_Browser__navigate",
-  "tool_input_preview": "{\"tabId\":\"tab-1\",\"url\":\"https://pang861209-rgb.github.io/somsom-city/match/\"}",
-  "error": "navigation to https://pang861209-rgb.github.io was denied or failed",
-  "timestamp": "2026-07-12T06:01:26.587Z",
-  "retry_count": 2
-}
