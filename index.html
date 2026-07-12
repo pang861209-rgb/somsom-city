@@ -6,49 +6,77 @@
 <title>솜솜시티 — 미니게임 마을</title>
 <meta name="description" content="솜솜시티 친구들과 즐기는 미니게임 3종: 낙엽피하기 · 달리기 · 짝맞추기">
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html,body { height:100%; }
-  body { background:#f3ede2; font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; color:#5a4a3a;
-    display:flex; justify-content:center; }
-  #app { width:min(460px,100vw); height:100dvh; display:flex; flex-direction:column;
-    padding:16px 14px 16px; gap:12px; overflow:hidden; }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#4a3b2c;
+    display:flex;justify-content:center;
+    background:radial-gradient(120% 80% at 50% 0%,#faf4e8 0%,#f1e7d3 60%,#ecdfc6 100%);
+  }
+  #app{width:min(470px,100vw);height:100dvh;display:flex;flex-direction:column;
+    padding:18px 15px 16px;gap:14px;overflow:hidden;}
 
-  /* ── 컴팩트 헤더 (큰 그룹 그림 없음) ── */
-  header { flex:0 0 auto; text-align:center; }
-  .logo { font-size:30px; font-weight:900; letter-spacing:-1px; color:#5a4a3a; }
-  .logo .lf { font-size:24px; }
-  .tag { margin-top:3px; font-size:12.5px; font-weight:700; color:#9a8b7a; word-break:keep-all; }
+  /* ── header ── */
+  header{flex:0 0 auto;text-align:center;padding-top:2px;}
+  .logo{font-size:29px;font-weight:900;letter-spacing:-.5px;color:#3f3122;
+    display:inline-flex;align-items:center;gap:7px;}
+  .logo .lf{font-size:23px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.15));}
+  .tag{margin-top:4px;font-size:12.5px;font-weight:600;color:#a8977f;letter-spacing:.2px;word-break:keep-all;}
 
-  /* ── 게임 3종 선택 (스크롤 없이 화면 채움) ── */
-  .picker { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; gap:11px; }
-  .gcard { position:relative; flex:1 1 0; min-height:0; display:flex; align-items:stretch;
-    text-decoration:none; color:inherit; background:#fdfbf5; border:3px solid #222; border-radius:16px;
-    overflow:hidden; box-shadow:3px 3px 0 #222; transition:transform .05s; }
-  .gcard:active { transform:translate(3px,3px); box-shadow:none; }
+  /* ── picker ── */
+  .picker{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:14px;}
 
-  .thumb { position:relative; flex:0 0 40%; min-width:0; overflow:hidden; border-right:3px solid #222; }
-  .thumb .bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-  .thumb .ch { position:absolute; z-index:2; object-fit:contain; filter:drop-shadow(0 3px 4px rgba(90,74,58,.25)); }
-  .thumb .lf { position:absolute; z-index:1; object-fit:contain; opacity:.95; }
+  .card{
+    position:relative;flex:1 1 0;min-height:0;display:block;border-radius:24px;overflow:hidden;
+    text-decoration:none;isolation:isolate;
+    box-shadow:0 14px 28px -12px rgba(74,52,26,.5), 0 3px 8px -2px rgba(74,52,26,.22),
+               inset 0 0 0 1px rgba(255,255,255,.14);
+    transition:transform .16s cubic-bezier(.2,.7,.3,1), box-shadow .16s;
+    transform:translateZ(0);
+  }
+  .card:active{transform:scale(.975);
+    box-shadow:0 8px 16px -10px rgba(74,52,26,.5),0 2px 5px -2px rgba(74,52,26,.2),inset 0 0 0 1px rgba(255,255,255,.14);}
 
-  /* leaf thumb */
-  .leaf .thumb .ch { left:50%; bottom:-4px; transform:translateX(-50%); width:46%; }
-  .leaf .thumb .lf1 { top:10%; left:12%; width:22%; transform:rotate(-16deg); }
-  .leaf .thumb .lf2 { top:20%; right:10%; width:18%; transform:rotate(18deg); }
-  /* run thumb */
-  .run .thumb .ch { left:6%; bottom:6%; width:64%; }
-  /* match thumb */
-  .match .thumb .bg { object-fit:cover; }
-  .match .thumb .ch { right:2%; bottom:-2px; width:44%; }
+  .art{position:absolute;inset:0;z-index:0;}
+  .art .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  .art .ch{position:absolute;bottom:0;object-fit:contain;filter:drop-shadow(-3px 6px 7px rgba(40,25,10,.32));}
+  .art .deco{position:absolute;object-fit:contain;opacity:.9;filter:drop-shadow(0 2px 3px rgba(40,25,10,.2));}
 
-  .info { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; justify-content:center;
-    padding:10px 12px; gap:2px; }
-  .no { font-size:11px; font-weight:800; color:#b08a3a; letter-spacing:1.5px; }
-  .nm { font-size:23px; font-weight:900; color:#5a4a3a; line-height:1.1; }
-  .ds { font-size:12.5px; color:#7a6a5a; line-height:1.35; word-break:keep-all; margin-top:2px; }
-  .go { position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:26px; font-weight:900; color:#d8c9a8; }
+  /* per-card art placement */
+  .leaf .bg{object-position:center 30%;}
+  .leaf .ch{right:9%;width:31%;max-width:120px;}
+  .leaf .d1{top:14%;right:34%;width:13%;transform:rotate(-14deg);}
+  .leaf .d2{top:30%;right:15%;width:11%;transform:rotate(16deg);}
+  .run  .bg{object-position:center 62%;}
+  .run  .ch{right:4%;width:44%;max-width:180px;}
+  .match .bg{object-position:center 78%;}
+  .match .ch{right:6%;width:30%;max-width:120px;}
 
-  @media (max-height:640px){ .logo{font-size:25px;} .nm{font-size:20px;} .ds{display:none;} }
+  /* legibility scrim — heavier on the text (left) side */
+  .scrim{position:absolute;inset:0;z-index:1;
+    background:linear-gradient(100deg,
+      rgba(38,26,14,.82) 0%, rgba(38,26,14,.62) 30%, rgba(38,26,14,.28) 52%, rgba(38,26,14,0) 74%);}
+
+  .content{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;
+    justify-content:center;gap:7px;padding:16px 18px;max-width:66%;color:#fff7ea;}
+  .tagno{align-self:flex-start;display:inline-flex;align-items:center;gap:5px;
+    font-size:10.5px;font-weight:800;letter-spacing:1.5px;padding:3px 9px;border-radius:999px;
+    color:#fff;background:var(--acc);box-shadow:0 2px 6px -1px rgba(0,0,0,.35);}
+  .nm{font-size:25px;font-weight:900;line-height:1.05;letter-spacing:-.3px;
+    text-shadow:0 2px 8px rgba(20,12,4,.55);}
+  .nm .em{font-size:21px;}
+  .ds{font-size:12.5px;font-weight:500;line-height:1.4;color:#f4e9d6;
+    word-break:keep-all;text-shadow:0 1px 4px rgba(20,12,4,.5);opacity:.95;}
+  .play{margin-top:3px;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;
+    font-size:13px;font-weight:800;color:#3f3122;background:rgba(255,251,244,.94);
+    padding:7px 15px 7px 16px;border-radius:999px;box-shadow:0 3px 9px -2px rgba(0,0,0,.4);}
+  .play .arw{font-weight:900;color:var(--acc);}
+
+  @media (max-height:650px){
+    #app{gap:10px;padding-top:12px;}
+    .logo{font-size:24px;} .tag{display:none;}
+    .nm{font-size:21px;} .ds{display:none;} .content{gap:6px;}
+  }
 </style>
 </head>
 <body>
@@ -59,50 +87,51 @@
     <div class="tag">오늘은 어떤 놀이? 골라서 바로 시작!</div>
   </header>
 
-  <nav class="picker">
+  <div class="picker">
 
-    <a class="gcard leaf" href="leaf/">
-      <div class="thumb">
-        <img class="bg" src="assets/bg_alley.png" alt="">
-        <img class="lf lf1" src="assets/prop_ginkgo.png" alt="">
-        <img class="lf lf2" src="assets/prop_acorn.png" alt="">
+    <a class="card leaf" href="leaf/" style="--acc:#e0a12b;">
+      <div class="art">
+        <img class="bg" src="assets/title_bg_leaf.png" alt="">
         <img class="ch" src="assets/sd_kkito_t.png" alt="">
       </div>
-      <div class="info">
-        <span class="no">GAME 01</span>
-        <span class="nm">🍂 낙엽피하기</span>
+      <div class="scrim"></div>
+      <div class="content">
+        <span class="tagno">GAME 01</span>
+        <span class="nm"><span class="em">🍂</span> 낙엽피하기</span>
         <span class="ds">은행나무 골목, 떨어지는 은행을 요리조리 피해 버텨라!</span>
+        <span class="play">플레이 <span class="arw">▶</span></span>
       </div>
-      <span class="go">›</span>
     </a>
 
-    <a class="gcard run" href="run/">
-      <div class="thumb">
+    <a class="card run" href="run/" style="--acc:#dd7a34;">
+      <div class="art">
         <img class="bg" src="assets/bg_runner.png" alt="">
         <img class="ch" src="assets/run_kkito_t.png" alt="">
       </div>
-      <div class="info">
-        <span class="no">GAME 02</span>
-        <span class="nm">🏃 달리기</span>
+      <div class="scrim"></div>
+      <div class="content">
+        <span class="tagno">GAME 02</span>
+        <span class="nm"><span class="em">🏃</span> 달리기</span>
         <span class="ds">끼토의 마감 질주! 장애물을 뛰어넘어 멀리 달려보자.</span>
+        <span class="play">플레이 <span class="arw">▶</span></span>
       </div>
-      <span class="go">›</span>
     </a>
 
-    <a class="gcard match" href="match/">
-      <div class="thumb">
+    <a class="card match" href="match/" style="--acc:#6f9152;">
+      <div class="art">
         <img class="bg" src="assets/title_bg_match.png" alt="">
         <img class="ch" src="assets/sd_boneul_t.png" alt="">
       </div>
-      <div class="info">
-        <span class="no">GAME 03</span>
-        <span class="nm">🃏 짝맞추기</span>
+      <div class="scrim"></div>
+      <div class="content">
+        <span class="tagno">GAME 03</span>
+        <span class="nm"><span class="em">🃏</span> 짝맞추기</span>
         <span class="ds">뒤집힌 카드 속 솜솜 친구들의 짝꿍을 찾아라!</span>
+        <span class="play">플레이 <span class="arw">▶</span></span>
       </div>
-      <span class="go">›</span>
     </a>
 
-  </nav>
+  </div>
 
 </div>
 </body>
