@@ -56,6 +56,15 @@
   .rankrow .rscore { font-weight:800; color:#b08a3a; }
   .rankrow.me { background:#f6eed8; border-radius:8px; }
   .row { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center; }
+  /* 캐릭터 인트로 삽화 (가로) */
+  #intro { padding:0; overflow:hidden; justify-content:flex-end; cursor:pointer; }
+  #introImg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; }
+  #introBox { position:relative; z-index:1; margin:0 auto 18px; max-width:540px; width:calc(100% - 32px); background:rgba(253,251,245,.94); border:2.5px solid #222; border-radius:14px; box-shadow:3px 3px 0 #222; padding:12px 16px; text-align:left; animation:introUp .5s ease-out; }
+  #introBox .iname { font-weight:800; font-size:14px; color:#b08a3a; margin-bottom:4px; }
+  #introBox .itext { font-size:13px; color:#5a4a3a; line-height:1.55; }
+  #introBox .ihint { margin-top:6px; font-size:10px; color:#9a8b7a; text-align:right; animation:iblink 1.4s infinite; }
+  @keyframes introUp { from{transform:translateY(24px);opacity:0} to{transform:translateY(0);opacity:1} }
+  @keyframes iblink { 50%{opacity:.35} }
   .homeBtn{position:absolute;top:8px;left:8px;z-index:60;background:rgba(255,255,255,.88);border:2px solid #222;border-radius:8px;padding:4px 11px;font:700 13px "Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#222;text-decoration:none;box-shadow:2px 2px 0 #222;}
   .homeBtn:active{transform:translate(2px,2px);box-shadow:none;}
 </style>
@@ -84,6 +93,15 @@
     <div class="sub">함께 달릴 친구를 골라보세요 · 속도 · 점프 · 회피가 캐릭터마다 달라요</div>
     <div class="grid" id="charGrid"></div>
     <button onclick="ui.toTitle()" style="font-size:13px;padding:7px 16px;">← 뒤로</button>
+  </div>
+
+  <div id="intro" class="screen hidden" onclick="ui.beginFromIntro()">
+    <img id="introImg" src="" alt="">
+    <div id="introBox">
+      <div class="iname" id="introName"></div>
+      <div class="itext" id="introText"></div>
+      <div class="ihint">탭하면 바로 출발 ▶</div>
+    </div>
   </div>
 
   <div id="ranking" class="screen hidden">
@@ -397,14 +415,41 @@ function buildGrid(){
       +'<div class="info"><div class="top"><span class="nm">'+c.name+'</span><span class="badge" style="background:'+cd.col+'">'+cd.type+'</span></div>'
       +'<div class="abil">'+cd.abil+'</div>'+bars+'</div>'
       +'<div class="best">BEST '+best+'</div>';
-    d.onclick=()=>ui.play(k); g.appendChild(d);
+    d.onclick=()=>ui.showIntro(k); g.appendChild(d);
   }
 }
+// 인트로 삽화 + 내레이션 — 마감의 아침
+const INTRO={
+  kkito:      { title:'오전 8시 59분',        text:'마감은 9시. 끼토는 문을 박차고 나왔다.<br>"으아아 늦었다! 달려!!"' },
+  boneul:     { title:'"5분만 더..."가 세 번', text:'이제 진짜 늦었다. 토스트를 물고 출발.<br>보늘, 인생 최고 속도(본인 기준).' },
+  migae:      { title:'미개 특급 배송',        text:'배달은 정확하게, 발걸음은 씩씩하게.<br>"뽈뽈뽈—!" 오늘도 출발!' },
+  ramda:      { title:'람다의 계획적인 질주',  text:'"가는 길에 도토리도 줍고, 일석이조야!"<br>달리면서도 수집은 멈추지 않는다.' },
+  lachilchin: { title:'할머니도 뛸 땐 뛴다',   text:'"아이구, 늙은이도 급할 땐 급하지~"<br>치마 자락 휘날리며, 그래~' },
+  bookgeo:    { title:'북거씨의 꾸준함',       text:'북거씨는 뛰지 않는다. 하지만 멈추지도 않는다.<br>등딱지에 우편물을 싣고, 오늘도 꾸준히.' },
+};
+let introTimer=null, introPending=null;
 const ui={
-  show(id){ for(const s of ['title','select','ranking','result']) $(s).classList.toggle('hidden',s!==id); },
-  toTitle(){ cancelAnimationFrame(raf); S=null; stopBgm(); ui.show('title'); },
-  toSelect(){ cancelAnimationFrame(raf); S=null; stopBgm(); buildGrid(); ui.show('select'); },
-  play(key){ curKey=key; cancelAnimationFrame(raf); ui.show('none'); for(const s of ['title','select','ranking','result'])$(s).classList.add('hidden'); S=newState(key); startBgm(); S.last=performance.now(); raf=requestAnimationFrame(loop); },
+  show(id){ for(const s of ['title','select','intro','ranking','result']) $(s).classList.toggle('hidden',s!==id); },
+  showIntro(key){
+    clearTimeout(introTimer);
+    introPending=key;
+    const im=$('introImg');
+    im.onerror=()=>ui.beginFromIntro();                      // 삽화 없으면 바로 출발
+    im.src='../assets/intro_run_'+key+'.png';
+    $('introName').textContent=INTRO[key].title;
+    $('introText').innerHTML=INTRO[key].text;
+    ui.show('intro');
+    introTimer=setTimeout(()=>ui.beginFromIntro(),4200);
+  },
+  beginFromIntro(){
+    if(!introPending)return;
+    clearTimeout(introTimer);
+    const key=introPending; introPending=null;
+    ui.play(key);
+  },
+  toTitle(){ clearTimeout(introTimer); introPending=null; cancelAnimationFrame(raf); S=null; stopBgm(); ui.show('title'); },
+  toSelect(){ clearTimeout(introTimer); introPending=null; cancelAnimationFrame(raf); S=null; stopBgm(); buildGrid(); ui.show('select'); },
+  play(key){ curKey=key; cancelAnimationFrame(raf); ui.show('none'); for(const s of ['title','select','intro','ranking','result'])$(s).classList.add('hidden'); S=newState(key); startBgm(); S.last=performance.now(); raf=requestAnimationFrame(loop); },
   replay(){ ui.play(curKey); },
   async showRanking(me){
     ui.show('ranking'); const box=$('rankList'); box.innerHTML='<div class="sub" style="padding:18px;">불러오는 중...</div>';
