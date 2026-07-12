@@ -37,6 +37,16 @@
   .badge.hard { background:#f8ddd6; color:#a03a26; }
   #dailyBtn { background:#f6eed8; width:100%; }
 
+  /* ---------- 인트로 삽화 ---------- */
+  #intro { padding:0; position:relative; overflow:hidden; justify-content:flex-end; cursor:pointer; height:100vh; height:100dvh; }
+  #introImg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; }
+  #introBox { position:relative; z-index:1; margin:0 16px 26px; background:rgba(253,251,245,.94); border:2.5px solid #222; border-radius:14px; box-shadow:3px 3px 0 #222; padding:15px 18px; text-align:left; animation:introUp .5s ease-out; }
+  #introBox .iname { font-weight:800; font-size:15px; color:#b08a3a; margin-bottom:6px; }
+  #introBox .itext { font-size:14px; color:#5a4a3a; line-height:1.65; }
+  #introBox .ihint { margin-top:10px; font-size:11px; color:#9a8b7a; text-align:right; animation:iblink 1.4s infinite; }
+  @keyframes introUp { from{transform:translateY(24px);opacity:0} to{transform:translateY(0);opacity:1} }
+  @keyframes iblink { 50%{opacity:.35} }
+
   /* ---------- game ---------- */
   /* 보드가 남은 화면 높이를 전부 채움 — 하단 공백 없음 */
   #game { justify-content:flex-start; padding:10px 12px 12px; gap:8px; height:100vh; height:100dvh; min-height:0; }
@@ -152,6 +162,15 @@
     </div>
   </div>
 
+  <div id="intro" class="screen hidden" onclick="ui.beginFromIntro()">
+    <img id="introImg" src="" alt="">
+    <div id="introBox">
+      <div class="iname" id="introName"></div>
+      <div class="itext" id="introText"></div>
+      <div class="ihint">탭하면 바로 시작 ▶</div>
+    </div>
+  </div>
+
   <div id="game" class="screen hidden">
     <div id="hud">
       <span class="box">⏱ <span id="hTime">0.0</span></span>
@@ -249,6 +268,15 @@ const CHARS = {
                 match:'아이구, 그래~ 이거였지.', miss:'아이구야, 가물가물해~', clear:'늙은이 기억력이 아직 쓸만하네 그래~' },
 };
 const DIFF_LABEL = { easy:'쉬움', normal:'보통', hard:'어려움' };
+// 인트로 삽화 + 내레이션 — 세계관 한 컷
+const INTRO = {
+  kkito:      { title:'끼토의 아침',            text:'솜솜시티의 아침. 끼토는 오늘도 문 앞에서 세 번을 되돌아왔다.<br>"가스 불... 잠갔지? 좋아, 이번엔 진짜 가보자!"' },
+  boneul:     { title:'보늘의 오후',            text:'느긋한 오후, 창가의 소파. 보늘은 눕는 김에 생각했다.<br>"기억력 게임...? 귀찮은데. 이기면 피자 시켜야지."' },
+  migae:      { title:'미개의 행진',            text:'낙엽 사이, 작지만 씩씩한 행렬.<br>오늘도 솜솜시티에서 제일 부지런한 건 미개다. "뽈뽈뽈—!"' },
+  ramda:      { title:'람다의 보물창고',        text:'선반 가득 반짝이는 도토리들. 람다는 장부를 펼치며 씩 웃었다.<br>"내 보물이 어디 있는지, 난 전부 기억하거든!"' },
+  lachilchin: { title:'라칠친 할머니의 거실',   text:'따뜻한 거실, 달그락거리는 뜨개바늘 소리.<br>"아이구, 요즘 자꾸 깜빡한다니까~ 그래도 한번 해볼까, 그래~"' },
+  bookgeo:    { title:'북거씨의 서재',          text:'비 내리는 오후의 서재. 북거씨는 서두르지 않는다.<br>"천천히 봐야, 오래 기억하죠."' },
+};
 const RULE_DETAIL = {
   boneul: '보늘이 가끔 졸면서 카드 한 장을 살짝 보여줘요 💤<br>놓치지 말고 위치를 기억해두세요!<br><b>6쌍 · 시간 보너스 있음</b>',
   bookgeo: '시간 보너스가 없어요 — 천천히 해도 괜찮아요.<br>대신 시도 횟수가 적을수록 침착 보너스가 커져요.<br><b>6쌍 · 무결점 클리어 보너스 있음</b>',
@@ -311,6 +339,7 @@ function sfx(name, pitch) {
 
 // ---------- state ----------
 let g = null, curChar = null, curDaily = false, lastResult = null, timerRaf = null, sleepTimer = null;
+let introTimer = null, introPending = null;
 
 function buildDeck(key, rng) {
   const c = CHARS[key];
@@ -601,10 +630,31 @@ function showResult(score, timeBonus, effBonus, perfect) {
 // ---------- UI ----------
 let curRankTab = 'all', rankCache = null;
 const ui = {
-  show(id) { for (const sc of ['title','setup','game','result','ranking','dex']) $(sc).classList.toggle('hidden', sc !== id); },
+  show(id) { for (const sc of ['title','setup','intro','game','result','ranking','dex']) $(sc).classList.toggle('hidden', sc !== id); },
   toSetup() {
     if (g) { g.done = true; cancelAnimationFrame(timerRaf); clearInterval(sleepTimer); g = null; }
+    clearTimeout(introTimer); introPending = null;
     ui.show('setup'); buildSetup();
+  },
+  showIntro(k, daily) {
+    clearTimeout(introTimer);
+    introPending = { k, daily: !!daily };
+    const im = $('introImg');
+    im.onerror = () => ui.beginFromIntro();                                  // 삽화 없으면 바로 게임으로
+    im.src = `../assets/intro_${k}.png`;
+    $('introName').textContent = (daily ? '📅 오늘의 도전 · ' : '') + INTRO[k].title;
+    $('introText').innerHTML = INTRO[k].text;
+    ui.show('intro');
+    sfx('flip');
+    introTimer = setTimeout(() => ui.beginFromIntro(), 4200);                // 4.2초 후 자동 시작
+  },
+  beginFromIntro() {
+    if (!introPending) return;
+    clearTimeout(introTimer);
+    const { k, daily } = introPending;
+    introPending = null;
+    curChar = k;
+    startGame(daily);
   },
   quit() { ui.toSetup(); },
   showRule(k) {
@@ -612,7 +662,7 @@ const ui = {
     $('ruleImg').src = c.sd;
     $('ruleName').textContent = `${c.name} — ${DIFF_LABEL[c.diff]} · ${c.pairs}쌍`;
     $('ruleText').innerHTML = RULE_DETAIL[k];
-    $('rulePlayBtn').onclick = () => { ui.closeRule(); curChar = k; startGame(false); };
+    $('rulePlayBtn').onclick = () => { ui.closeRule(); ui.showIntro(k, false); };
     $('ruleModal').classList.remove('hidden');
   },
   closeRule() { $('ruleModal').classList.add('hidden'); },
@@ -621,8 +671,8 @@ const ui = {
     localStorage.setItem('somsom_muted', muted ? '1' : '0');
     $('muteBtn').textContent = muted ? '🔇' : '🔊';
   },
-  retry() { startGame(curDaily); },
-  startDaily() { curChar = DAILY_CHAR; startGame(true); },
+  retry() { startGame(curDaily); },                                          // 재도전은 인트로 생략
+  startDaily() { ui.showIntro(DAILY_CHAR, true); },
   rankTab(tab) {
     curRankTab = tab;
     $('tabAll').classList.toggle('sel', tab === 'all');
@@ -703,7 +753,7 @@ function buildSetup() {
     d.innerHTML = `<span class="badge ${c.diff}">${DIFF_LABEL[c.diff]}</span><button class="infoBtn">ⓘ</button>` +
       `<img src="${c.sd}" alt="${c.name}"><div class="nm">${c.name}</div><div class="desc">${c.desc}</div>` +
       `<div class="bs">BEST ${best} · 📖 ${got}/${c.pool}${got === c.pool ? ' 🏅' : ''}</div>`;
-    d.onclick = () => { curChar = k; startGame(false); };
+    d.onclick = () => ui.showIntro(k, false);
     d.querySelector('.infoBtn').onclick = e => { e.stopPropagation(); ui.showRule(k); };
     cg.appendChild(d);
   }

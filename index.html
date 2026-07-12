@@ -7,103 +7,102 @@
 <meta name="description" content="솜솜시티 친구들과 즐기는 미니게임 3종: 낙엽피하기 · 달리기 · 짝맞추기">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; }
   body { background:#f3ede2; font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; color:#5a4a3a;
-    display:flex; justify-content:center; min-height:100vh; }
-  #app { width:min(480px,100vw); position:relative; padding:22px 18px 30px; }
+    display:flex; justify-content:center; }
+  #app { width:min(460px,100vw); height:100dvh; display:flex; flex-direction:column;
+    padding:16px 14px 16px; gap:12px; overflow:hidden; }
 
-  /* ── 히어로: 캐릭터 라인업 ── */
-  .hero { position:relative; border:3px solid #222; border-radius:18px; overflow:hidden;
-    background:#fdfbf5; box-shadow:3px 3px 0 #222; }
-  .hero img { display:block; width:100%; height:auto; }
-  .hero .veil { position:absolute; inset:0; background:linear-gradient(180deg,rgba(253,251,245,0) 55%,rgba(253,251,245,.92) 100%); }
-  .hero .cap { position:absolute; left:0; right:0; bottom:12px; text-align:center; }
-  .logo { font-size:34px; font-weight:900; color:#5a4a3a; letter-spacing:-1px;
-    text-shadow:-2px -2px 0 #fdfbf5,2px -2px 0 #fdfbf5,-2px 2px 0 #fdfbf5,2px 2px 0 #fdfbf5,0 4px 0 #fdfbf5; }
-  .logo .leaf { font-size:28px; }
-  .tag { margin-top:4px; font-size:13px; font-weight:700; color:#7a6a5a;
-    text-shadow:-1px -1px 0 #fdfbf5,1px -1px 0 #fdfbf5,-1px 1px 0 #fdfbf5,1px 1px 0 #fdfbf5; }
+  /* ── 컴팩트 헤더 (큰 그룹 그림 없음) ── */
+  header { flex:0 0 auto; text-align:center; }
+  .logo { font-size:30px; font-weight:900; letter-spacing:-1px; color:#5a4a3a; }
+  .logo .lf { font-size:24px; }
+  .tag { margin-top:3px; font-size:12.5px; font-weight:700; color:#9a8b7a; word-break:keep-all; }
 
-  .pick { text-align:center; font-size:14px; font-weight:800; color:#9a8b7a; margin:20px 0 12px; letter-spacing:2px; }
+  /* ── 게임 3종 선택 (스크롤 없이 화면 채움) ── */
+  .picker { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; gap:11px; }
+  .gcard { position:relative; flex:1 1 0; min-height:0; display:flex; align-items:stretch;
+    text-decoration:none; color:inherit; background:#fdfbf5; border:3px solid #222; border-radius:16px;
+    overflow:hidden; box-shadow:3px 3px 0 #222; transition:transform .05s; }
+  .gcard:active { transform:translate(3px,3px); box-shadow:none; }
 
-  /* ── 게임 카드 ── */
-  .cards { display:flex; flex-direction:column; gap:14px; }
-  .card { display:flex; align-items:center; gap:14px; text-decoration:none; color:inherit;
-    background:#fdfbf5; border:3px solid #222; border-radius:16px; padding:12px 14px;
-    box-shadow:3px 3px 0 #222; transition:transform .05s; }
-  .card:active { transform:translate(3px,3px); box-shadow:none; }
-  .thumb { flex:0 0 92px; width:92px; height:92px; border:2px solid #222; border-radius:12px;
-    overflow:hidden; background:#f3ede2; display:flex; align-items:center; justify-content:center; }
-  .thumb img { width:100%; height:100%; object-fit:cover; }
-  .thumb.contain img { object-fit:contain; padding:6px; }
-  .thumb.scene { position:relative; }
-  .thumb.scene .bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-  .thumb.scene .ch { position:absolute; left:50%; bottom:-2px; width:52px; height:52px; transform:translateX(-50%); object-fit:contain; z-index:2; }
-  .thumb.scene .lf { position:absolute; width:20px; height:20px; object-fit:contain; z-index:1; }
-  .thumb.scene .lf1 { top:6px; left:8px; transform:rotate(-18deg); }
-  .thumb.scene .lf2 { top:14px; right:8px; width:16px; height:16px; transform:rotate(20deg); }
-  .meta { flex:1; min-width:0; }
-  .meta .no { font-size:11px; font-weight:800; color:#b08a3a; letter-spacing:1px; }
-  .meta .nm { font-size:20px; font-weight:900; color:#5a4a3a; margin:1px 0 3px; }
-  .meta .ds { font-size:12.5px; color:#7a6a5a; line-height:1.35; word-break:keep-all; }
-  .go { flex:0 0 auto; font-size:24px; color:#b08a3a; font-weight:900; }
+  .thumb { position:relative; flex:0 0 40%; min-width:0; overflow:hidden; border-right:3px solid #222; }
+  .thumb .bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .thumb .ch { position:absolute; z-index:2; object-fit:contain; filter:drop-shadow(0 3px 4px rgba(90,74,58,.25)); }
+  .thumb .lf { position:absolute; z-index:1; object-fit:contain; opacity:.95; }
 
-  .foot { text-align:center; margin-top:22px; font-size:11px; color:#b3a695; line-height:1.6; }
+  /* leaf thumb */
+  .leaf .thumb .ch { left:50%; bottom:-4px; transform:translateX(-50%); width:46%; }
+  .leaf .thumb .lf1 { top:10%; left:12%; width:22%; transform:rotate(-16deg); }
+  .leaf .thumb .lf2 { top:20%; right:10%; width:18%; transform:rotate(18deg); }
+  /* run thumb */
+  .run .thumb .ch { left:6%; bottom:6%; width:64%; }
+  /* match thumb */
+  .match .thumb .bg { object-fit:cover; }
+  .match .thumb .ch { right:2%; bottom:-2px; width:44%; }
+
+  .info { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; justify-content:center;
+    padding:10px 12px; gap:2px; }
+  .no { font-size:11px; font-weight:800; color:#b08a3a; letter-spacing:1.5px; }
+  .nm { font-size:23px; font-weight:900; color:#5a4a3a; line-height:1.1; }
+  .ds { font-size:12.5px; color:#7a6a5a; line-height:1.35; word-break:keep-all; margin-top:2px; }
+  .go { position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:26px; font-weight:900; color:#d8c9a8; }
+
+  @media (max-height:640px){ .logo{font-size:25px;} .nm{font-size:20px;} .ds{display:none;} }
 </style>
 </head>
 <body>
 <div id="app">
 
-  <div class="hero">
-    <img src="assets/title_main.png"
-         onerror="this.onerror=null;this.src='assets/01_group_lineup.png';"
-         alt="솜솜시티 친구들">
-    <div class="veil"></div>
-    <div class="cap">
-      <div class="logo"><span class="leaf">🍂</span> 솜솜시티</div>
-      <div class="tag">솜솜시티 친구들과 노는 미니게임 마을</div>
-    </div>
-  </div>
+  <header>
+    <div class="logo"><span class="lf">🍂</span> 솜솜시티</div>
+    <div class="tag">오늘은 어떤 놀이? 골라서 바로 시작!</div>
+  </header>
 
-  <div class="pick">· 오늘은 어떤 놀이? ·</div>
+  <nav class="picker">
 
-  <div class="cards">
-    <a class="card" href="leaf/">
-      <div class="thumb scene">
+    <a class="gcard leaf" href="leaf/">
+      <div class="thumb">
         <img class="bg" src="assets/bg_alley.png" alt="">
         <img class="lf lf1" src="assets/prop_ginkgo.png" alt="">
         <img class="lf lf2" src="assets/prop_acorn.png" alt="">
         <img class="ch" src="assets/sd_kkito_t.png" alt="">
       </div>
-      <div class="meta">
-        <div class="no">GAME 01</div>
-        <div class="nm">🍂 낙엽피하기</div>
-        <div class="ds">가을 은행나무 골목, 떨어지는 은행을 요리조리 피해 오래 버텨라!</div>
+      <div class="info">
+        <span class="no">GAME 01</span>
+        <span class="nm">🍂 낙엽피하기</span>
+        <span class="ds">은행나무 골목, 떨어지는 은행을 요리조리 피해 버텨라!</span>
       </div>
-      <div class="go">›</div>
+      <span class="go">›</span>
     </a>
 
-    <a class="card" href="run/">
-      <div class="thumb"><img src="assets/bg_runner.png" alt=""></div>
-      <div class="meta">
-        <div class="no">GAME 02</div>
-        <div class="nm">🏃 달리기</div>
-        <div class="ds">끼토의 마감 질주! 장애물을 뛰어넘으며 멀리멀리 달려보자.</div>
+    <a class="gcard run" href="run/">
+      <div class="thumb">
+        <img class="bg" src="assets/bg_runner.png" alt="">
+        <img class="ch" src="assets/run_kkito_t.png" alt="">
       </div>
-      <div class="go">›</div>
+      <div class="info">
+        <span class="no">GAME 02</span>
+        <span class="nm">🏃 달리기</span>
+        <span class="ds">끼토의 마감 질주! 장애물을 뛰어넘어 멀리 달려보자.</span>
+      </div>
+      <span class="go">›</span>
     </a>
 
-    <a class="card" href="match/">
-      <div class="thumb contain"><img src="assets/card_back.png" alt=""></div>
-      <div class="meta">
-        <div class="no">GAME 03</div>
-        <div class="nm">🃏 짝맞추기</div>
-        <div class="ds">뒤집힌 카드 속 솜솜시티 친구들의 짝꿍을 찾아라!</div>
+    <a class="gcard match" href="match/">
+      <div class="thumb">
+        <img class="bg" src="assets/title_bg_match.png" alt="">
+        <img class="ch" src="assets/sd_boneul_t.png" alt="">
       </div>
-      <div class="go">›</div>
+      <div class="info">
+        <span class="no">GAME 03</span>
+        <span class="nm">🃏 짝맞추기</span>
+        <span class="ds">뒤집힌 카드 속 솜솜 친구들의 짝꿍을 찾아라!</span>
+      </div>
+      <span class="go">›</span>
     </a>
-  </div>
 
-  <div class="foot">© 솜솜시티 · SomSom City<br>끼토 · 보늘 · 미개 · 람다 · 라칠친 할머니 · 북거씨</div>
+  </nav>
 
 </div>
 </body>
