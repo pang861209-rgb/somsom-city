@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>솜솜시티: 짝꿍을 찾아라!</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { background:#f3ede2; font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; display:flex; justify-content:center; min-height:100vh; }
+  #app { width:min(420px,100vw); position:relative; min-height:100vh; }
+  .screen { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; background:#fdfbf5; padding:20px; text-align:center; }
+  .hidden { display:none !important; }
+  h1 { font-size:26px; color:#5a4a3a; }
+  .sub { color:#9a8b7a; font-size:13px; }
+  button { border:2px solid #222; background:#fff; border-radius:10px; padding:10px 22px; font-size:16px; font-weight:700; cursor:pointer; box-shadow:2px 2px 0 #222; font-family:inherit; }
+  button:active { transform:translate(2px,2px); box-shadow:none; }
+
+  #title { overflow:hidden; justify-content:space-between; padding:34px 18px 26px; position:relative; }
+  #titleBg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; }
+  #titleTop, #startBtn { position:relative; z-index:1; }
+  #titleLogo { font-size:30px; color:#5a4a3a;
+    text-shadow:-2px -2px 0 #fdfbf5, 2px -2px 0 #fdfbf5, -2px 2px 0 #fdfbf5, 2px 2px 0 #fdfbf5, 0 3px 0 #fdfbf5; }
+  #titleSub { font-size:13px; color:#7a6a5a; margin-top:8px;
+    text-shadow:-1px -1px 0 #fdfbf5, 1px -1px 0 #fdfbf5, -1px 1px 0 #fdfbf5, 1px 1px 0 #fdfbf5; }
+  #startBtn { font-size:19px; padding:13px 44px; background:#f6eed8; }
+
+  .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; width:100%; }
+  .charcard { position:relative; border:2px solid #222; border-radius:10px; background:#fff; padding:8px 4px 6px; cursor:pointer; box-shadow:2px 2px 0 #222; }
+  .charcard:active { transform:translate(2px,2px); box-shadow:none; }
+  .charcard img { width:100%; height:74px; object-fit:contain; }
+  .charcard .nm { font-weight:800; font-size:13px; color:#5a4a3a; }
+  .charcard .desc { font-size:10px; color:#9a8b7a; min-height:24px; margin-top:2px; }
+  .charcard .bs { font-size:10px; color:#b08a3a; font-weight:700; }
+  .badge { position:absolute; top:6px; left:6px; font-size:10px; font-weight:800; border-radius:6px; padding:2px 6px; border:1.5px solid #222; }
+  .badge.easy { background:#e3efd8; color:#3a6a2a; }
+  .badge.normal { background:#fdf3cf; color:#8a6a1a; }
+  .badge.hard { background:#f8ddd6; color:#a03a26; }
+
+  /* ---------- game ---------- */
+  #game { justify-content:flex-start; padding:12px 12px 18px; gap:10px; }
+  #hud { width:100%; display:flex; align-items:center; gap:8px; font-weight:800; color:#5a4a3a; font-size:14px; }
+  #hud .box { background:#f3ede2; border-radius:8px; padding:5px 9px; }
+  #combo { color:#b08a3a; }
+  #partner { margin-left:auto; display:flex; align-items:center; gap:6px; }
+  #partnerImg { width:42px; height:42px; object-fit:contain; }
+  #partnerSay { font-size:11px; color:#7a6a5a; font-weight:700; max-width:130px; background:#fff; border:1.5px solid #222; border-radius:8px; padding:3px 7px; opacity:0; transition:opacity .25s; }
+  #partnerSay.on { opacity:1; }
+  #board { display:grid; gap:7px; width:100%; }
+  .mcard { position:relative; aspect-ratio:3/3.6; cursor:pointer; perspective:600px; }
+  .mcard .inner { position:absolute; inset:0; transition:transform .35s; transform-style:preserve-3d; }
+  .mcard.open .inner { transform:rotateY(180deg); }
+  .mcard .face { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border:2px solid #222; border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  .mcard .back { background:#f6eed8; font-size:26px; background-size:cover; background-position:center; }
+  .mcard .back::after { content:'🍂'; }
+  #board.imgback .back::after { content:''; }
+  .mcard .front { background:#fff; transform:rotateY(180deg); padding:3px; }
+  .mcard .front img { width:100%; height:100%; object-fit:contain; }
+  .mcard.solved { animation:pop .4s; }
+  .mcard.solved .face { border-color:#7fa05b; box-shadow:0 0 0 2px rgba(127,160,91,.35); }
+  .mcard.wrong .face { border-color:#d2452a; }
+  @keyframes pop { 0%{transform:scale(1)} 40%{transform:scale(1.12)} 100%{transform:scale(1)} }
+  .mcard.shake { animation:shk .3s; }
+  @keyframes shk { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+
+  #resultImg { height:130px; object-fit:contain; }
+  .quote { font-size:14px; color:#5a4a3a; background:#f3ede2; border-radius:8px; padding:8px 12px; }
+  #result { overflow:hidden; position:relative; }
+  #nameRow input { border:2px solid #222; border-radius:10px; padding:9px 12px; font-size:15px; width:130px; background:#fff; font-family:inherit; }
+  .rankrow { display:flex; align-items:center; gap:10px; padding:7px 10px; border-bottom:1px dashed #d8cdb8; font-size:14px; color:#5a4a3a; text-align:left; }
+  .rankrow img { width:34px; height:34px; object-fit:contain; mix-blend-mode:multiply; }
+  .rankrow .rname { font-weight:800; flex:1; }
+  .rankrow .rscore { font-weight:800; color:#b08a3a; }
+  .rankrow.me { background:#f6eed8; border-radius:8px; }
+  .dbadge { font-size:11px; background:#f3ede2; border-radius:6px; padding:2px 6px; color:#7a6a5a; font-weight:700; }
+  .confetti { position:absolute; top:-14px; width:10px; height:14px; border-radius:3px; animation:confFall 2.8s ease-in forwards; pointer-events:none; }
+  @keyframes confFall { to { transform:translateY(760px) rotate(560deg); opacity:.15; } }
+  .floater { position:fixed; font-weight:800; color:#b08a3a; text-shadow:0 0 4px #fff,0 0 4px #fff; pointer-events:none; animation:floatUp .9s ease-out forwards; z-index:9; font-size:17px; }
+  @keyframes floatUp { to { transform:translateY(-46px); opacity:0; } }
+  .homeBtn{position:absolute;top:8px;left:8px;z-index:60;background:rgba(255,255,255,.88);border:2px solid #222;border-radius:8px;padding:4px 11px;font:700 13px "Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#222;text-decoration:none;box-shadow:2px 2px 0 #222;}
+  .homeBtn:active{transform:translate(2px,2px);box-shadow:none;}
+</style>
+</head>
+<body>
+<div id="app">
+  <a href="../" class="homeBtn" title="솜솜시티 홈">← 홈</a>
+
+  <div id="title" class="screen">
+    <img id="titleBg" src="../assets/title_main.png" onerror="this.onerror=null;this.src='../assets/01_group_lineup.png';this.style.objectFit='contain';" alt="솜솜시티 친구들">
+    <div id="titleTop">
+      <h1 id="titleLogo">🃏 솜솜시티: 짝꿍을 찾아라!</h1>
+      <div id="titleSub">뒤집힌 카드 속, 솜솜 친구들의 하루를 맞춰봐!</div>
+    </div>
+    <button id="startBtn" onclick="ui.toSetup()">시작하기</button>
+  </div>
+
+  <div id="setup" class="screen hidden">
+    <h1>누구의 하루를 맞춰볼까?</h1>
+    <div class="sub">고른 친구의 <b>서로 다른 일상 컷</b>들이 카드로 나와요.<br>친구마다 카드 수(난이도)가 달라요 — 골라서 바로 시작!</div>
+    <div class="grid" id="charGrid"></div>
+    <button onclick="ui.showRanking()">🏆 솜솜 랭킹</button>
+  </div>
+
+  <div id="game" class="screen hidden">
+    <div id="hud">
+      <span class="box">⏱ <span id="hTime">0.0</span></span>
+      <span class="box">시도 <span id="hTry">0</span></span>
+      <span class="box" id="combo">콤보 ×0</span>
+      <div id="partner"><span id="partnerSay"></span><img id="partnerImg" src=""></div>
+    </div>
+    <div id="board"></div>
+    <button onclick="ui.quit()" style="font-size:13px;padding:7px 16px;">그만두기</button>
+  </div>
+
+  <div id="ranking" class="screen hidden">
+    <h1>🏆 솜솜 랭킹</h1>
+    <div class="sub">전 세계 솜솜시티 주민들의 기억력 기록</div>
+    <div id="rankList" style="width:100%;max-height:420px;overflow-y:auto;"></div>
+    <button onclick="ui.toSetup()">닫기</button>
+  </div>
+
+  <div id="result" class="screen hidden">
+    <h1 id="resTitle">결과</h1>
+    <img id="resultImg" src="">
+    <div class="quote" id="resQuote"></div>
+    <div id="resScore" style="font-size:20px;font-weight:800;color:#5a4a3a;"></div>
+    <div id="resDetail" class="sub"></div>
+    <div id="resBest" class="sub"></div>
+    <div id="nameRow" style="display:none;gap:8px;align-items:center;">
+      <input id="nameInput" maxlength="8" placeholder="이름 (8자)">
+      <button id="submitBtn" onclick="submitScore()">🏆 랭킹 등록</button>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+      <button onclick="ui.retry()">다시 도전</button>
+      <button onclick="ui.toSetup()">친구 변경</button>
+      <button onclick="shareCard()">📸 자랑하기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// 캐릭터 = 난이도 + 카드 덱 테마. pool장의 일상 컷 중 pairs쌍을 매 판 랜덤으로 뽑아요.
+const CHARS = {
+  boneul:     { name:'보늘',        sd:'../assets/sd_boneul.png',     win:'../assets/sd_boneul_win.png',     hit:'../assets/sd_boneul_hit.png',
+                diff:'easy', pairs:6, pool:8, cols:3, preview:2000, par:40, mult:1,
+                desc:'귀찮아서 카드 6쌍만. 피자처럼 느긋하게',
+                match:'오~ 맞네. 별거 아니네.', miss:'아 귀찮게... 어디 갔지.', clear:'끝. 피자 시킨다.' },
+  bookgeo:    { name:'북거씨',      sd:'../assets/sd_bookgeo.png',    win:'../assets/sd_bookgeo_win.png',    hit:'../assets/sd_bookgeo_hit.png',
+                diff:'easy', pairs:6, pool:8, cols:3, preview:2000, par:45, mult:1,
+                desc:'천천히, 천천히. 여유로운 6쌍',
+                match:'천천히 봐서, 기억하고 있었어요.', miss:'음... 서두르지 말죠.', clear:'느려도, 결국 다 찾았네요.' },
+  kkito:      { name:'끼토',        sd:'../assets/sd_kkito.png',      win:'../assets/sd_kkito_win.png',      hit:'../assets/sd_kkito_hit.png',
+                diff:'normal', pairs:8, pool:12, cols:4, preview:2500, par:60, mult:1.5,
+                desc:'끼토의 바쁜 하루 8쌍. 가스 불은 잠갔나?',
+                match:'조, 좋았어! 기억났어!', miss:'으악, 아니었어?!', clear:'헤헤... 나 기억력 좋지?' },
+  ramda:      { name:'람다',        sd:'../assets/sd_ramda.png',      win:'../assets/sd_ramda_win.png',      hit:'../assets/sd_ramda_hit.png',
+                diff:'normal', pairs:8, pool:12, cols:4, preview:2500, par:60, mult:1.5,
+                desc:'도토리 수집가의 하루 8쌍. 전부 희귀템',
+                match:'찾았다! 완전 희귀템!', miss:'어라, 분명 여기 뒀는데?!', clear:'컬렉션 완성이야!' },
+  migae:      { name:'미개',        sd:'../assets/sd_migae.png',      win:'../assets/sd_migae_win.png',      hit:'../assets/sd_migae_hit.png',
+                diff:'hard', pairs:12, pool:12, cols:4, preview:3500, par:110, mult:2.5,
+                desc:'고수용! 부지런한 개미의 12쌍',
+                match:'뽈뽈! (정답)', miss:'뽈...? (갸우뚱)', clear:'뽈뽈뽈뽈—!! (만세)' },
+  lachilchin: { name:'라칠친 할머니', sd:'../assets/sd_lachilchin.png', win:'../assets/sd_lachilchin_win.png', hit:'../assets/sd_lachilchin_hit.png',
+                diff:'hard', pairs:12, pool:12, cols:4, preview:3500, par:110, mult:2.5,
+                desc:'연륜의 기억력 시험, 12쌍. 아이구 그래~',
+                match:'아이구, 그래~ 이거였지.', miss:'아이구야, 가물가물해~', clear:'늙은이 기억력이 아직 쓸만하네 그래~' },
+};
+const DIFF_LABEL = { easy:'쉬움', normal:'보통', hard:'어려움' };
+const cardImg = (key, i) => `../assets/card_${key}_${i}.png`;
+
+// 카드 뒷면 일러스트 (없으면 🍂 폴백)
+const backImg = new Image();
+backImg.src = '../assets/card_back.png';
+backImg.onload = () => {
+  document.getElementById('board').classList.add('imgback');
+  document.querySelectorAll('.mcard .back').forEach(el => el.style.backgroundImage = `url(${backImg.src})`);
+};
+
+// ---------- audio (WebAudio 합성 — 게임1과 동일 패턴) ----------
+let AC = null, muted = localStorage.getItem('somsom_muted') === '1';
+function ac() {
+  if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+  if (AC.state === 'suspended') AC.resume();
+  return AC;
+}
+function tone(freq, dur, type, gain, when, slide) {
+  const a = ac(), o = a.createOscillator(), g = a.createGain(), t0 = a.currentTime + (when || 0);
+  o.type = type || 'square'; o.frequency.setValueAtTime(freq, t0);
+  if (slide) o.frequency.exponentialRampToValueAtTime(slide, t0 + dur);
+  g.gain.setValueAtTime(gain || 0.08, t0);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g); g.connect(a.destination); o.start(t0); o.stop(t0 + dur + 0.02);
+}
+function sfx(name) {
+  if (muted) return;
+  try {
+    if (name === 'flip') tone(500, 0.06, 'triangle', 0.05, 0, 700);
+    else if (name === 'match') { tone(880, 0.07, 'square', 0.045); tone(1318, 0.1, 'square', 0.045, 0.06); }
+    else if (name === 'combo') tone(660, 0.15, 'sine', 0.06, 0, 990);
+    else if (name === 'miss') tone(200, 0.14, 'triangle', 0.07, 0, 110);
+    else if (name === 'record') [523, 659, 784].forEach((f, i) => tone(f, 0.16, 'square', 0.05, i * 0.09));
+    else if (name === 'clear') [392, 523, 659, 784, 1046].forEach((f, i) => tone(f, 0.2, 'triangle', 0.06, i * 0.11));
+  } catch (e) {}
+}
+
+// ---------- state ----------
+let g = null, curChar = null, lastResult = null, timerRaf = null;
+
+function buildDeck(key) {
+  const c = CHARS[key];
+  const idxs = Array.from({ length: c.pool }, (_, i) => i);
+  for (let i = idxs.length - 1; i > 0; i--) {                                // Fisher–Yates
+    const j = (Math.random() * (i + 1)) | 0;
+    [idxs[i], idxs[j]] = [idxs[j], idxs[i]];
+  }
+  const picked = idxs.slice(0, c.pairs);                                     // 매 판 다른 컷 조합
+  const deck = [];
+  picked.forEach((imgIdx, i) => {
+    deck.push({ id: imgIdx, img: cardImg(key, imgIdx), uid: i * 2 },
+              { id: imgIdx, img: cardImg(key, imgIdx), uid: i * 2 + 1 });
+  });
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = (Math.random() * (i + 1)) | 0;
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  return deck;
+}
+
+const $ = id => document.getElementById(id);
+
+function startGame() {
+  const c = CHARS[curChar];
+  g = { deck: buildDeck(curChar), open: [], solved: 0, tries: 0, combo: 0, bestCombo: 0,
+        score: 0, t0: 0, elapsed: 0, lock: true, done: false };
+  const board = $('board');
+  board.style.gridTemplateColumns = `repeat(${c.cols},1fr)`;
+  board.innerHTML = '';
+  g.deck.forEach((card, idx) => {
+    const el = document.createElement('div');
+    el.className = 'mcard open';                                             // 미리보기: 전부 공개로 시작
+    el.innerHTML = `<div class="inner"><div class="face back"></div><div class="face front"><img src="${card.img}" draggable="false"></div></div>`;
+    if (backImg.complete && backImg.naturalWidth) {
+      board.classList.add('imgback');
+      el.querySelector('.back').style.backgroundImage = `url(${backImg.src})`;
+    }
+    el.onclick = () => tapCard(idx);
+    card.el = el;
+    board.appendChild(el);
+  });
+  setPartnerFace('sd');
+  say(c.name + '의 하루예요. 위치를 외워두세요...', 1);
+  $('hTime').textContent = '0.0'; $('hTry').textContent = '0';
+  $('combo').textContent = '콤보 ×0';
+  ui.show('game');
+  setTimeout(() => {                                                         // 미리보기 종료 → 시작
+    if (!g || g.done) return;
+    for (const c2 of g.deck) c2.el.classList.remove('open');
+    g.lock = false; g.t0 = performance.now();
+    say('시작!', 1.2);
+    tickTimer();
+  }, c.preview);
+}
+
+function tickTimer() {
+  if (!g || g.done) return;
+  g.elapsed = (performance.now() - g.t0) / 1000;
+  $('hTime').textContent = g.elapsed.toFixed(1);
+  timerRaf = requestAnimationFrame(tickTimer);
+}
+
+function tapCard(idx) {
+  if (!g || g.lock || g.done) return;
+  const card = g.deck[idx];
+  if (card.solvedFlag || g.open.includes(idx)) return;
+  card.el.classList.add('open');
+  sfx('flip');
+  g.open.push(idx);
+  if (g.open.length < 2) return;
+  g.tries++; $('hTry').textContent = g.tries;
+  const [a, b] = g.open.map(i => g.deck[i]);
+  if (a.id === b.id) {
+    g.combo++; g.bestCombo = Math.max(g.bestCombo, g.combo);
+    const pts = 100 * g.combo;
+    g.score += pts;
+    a.solvedFlag = b.solvedFlag = true;
+    a.el.classList.add('solved'); b.el.classList.add('solved');
+    g.solved++;
+    g.open = [];
+    sfx(g.combo >= 2 ? 'combo' : 'match');
+    floatAt(b.el, '+' + pts + (g.combo >= 2 ? ' ×' + g.combo : ''));
+    setPartnerFace('win'); say(CHARS[curChar].match, 1.4);
+    if (g.solved === CHARS[curChar].pairs) finishGame();
+  } else {
+    g.lock = true; g.combo = 0;
+    setPartnerFace('hit'); say(CHARS[curChar].miss, 1.4);
+    sfx('miss');
+    a.el.classList.add('wrong'); b.el.classList.add('wrong');
+    setTimeout(() => {
+      a.el.classList.remove('open', 'wrong'); b.el.classList.remove('open', 'wrong');
+      b.el.classList.add('shake'); setTimeout(() => b.el.classList.remove('shake'), 320);
+      g.open = []; g.lock = false;
+    }, 750);
+  }
+  $('combo').textContent = '콤보 ×' + g.combo;
+}
+
+function floatAt(el, txt) {
+  const r = el.getBoundingClientRect();
+  const f = document.createElement('div');
+  f.className = 'floater'; f.textContent = txt;
+  f.style.left = (r.left + r.width / 2 - 20) + 'px';
+  f.style.top = (r.top - 4) + 'px';
+  document.body.appendChild(f);
+  setTimeout(() => f.remove(), 950);
+}
+
+let sayTimer = null;
+function say(txt, dur) {
+  const el = $('partnerSay');
+  el.textContent = txt; el.classList.add('on');
+  clearTimeout(sayTimer);
+  sayTimer = setTimeout(() => el.classList.remove('on'), (dur || 1.4) * 1000);
+}
+function setPartnerFace(kind) {
+  $('partnerImg').src = CHARS[curChar][kind === 'sd' ? 'sd' : kind];
+  if (kind !== 'sd') setTimeout(() => { if ($('partnerImg')) $('partnerImg').src = CHARS[curChar].sd; }, 900);
+}
+
+function finishGame() {
+  g.done = true; cancelAnimationFrame(timerRaf);
+  const c = CHARS[curChar];
+  const timeBonus = Math.max(0, Math.round((c.par - g.elapsed) * 15));
+  const score = Math.round((g.score + timeBonus) * c.mult);
+  sfx('clear');
+  setTimeout(() => showResult(score, timeBonus), 850);
+}
+
+function showResult(score, timeBonus) {
+  const c = CHARS[curChar];
+  const bk = 'somsom3_best_' + curChar;
+  const best = Math.max(score, +(localStorage.getItem(bk) || 0));
+  localStorage.setItem(bk, best);
+  const isNewBest = best === score && score > 0;
+  $('resTitle').textContent = isNewBest ? '🎉 최고 기록!' : '클리어!';
+  $('resultImg').src = c.win;
+  $('resQuote').textContent = '"' + c.clear + '"';
+  $('resScore').textContent = score + '점';
+  $('resDetail').textContent = c.name + '(' + DIFF_LABEL[c.diff] + ') · ' + g.elapsed.toFixed(1) + '초 · 시도 ' + g.tries + '회 · 최대 콤보 ×' + g.bestCombo +
+    (timeBonus > 0 ? ' · 시간 보너스 +' + timeBonus : '');
+  $('resBest').textContent = c.name + ' 최고기록: ' + best + '점';
+  lastResult = { key: curChar, diff: c.diff, score, isNewBest, detail: $('resDetail').textContent };
+  $('nameRow').style.display = score >= 1 ? 'flex' : 'none';
+  $('nameInput').value = localStorage.getItem('somsom_name') || '';
+  $('submitBtn').disabled = false; $('submitBtn').textContent = '🏆 랭킹 등록';
+  document.querySelectorAll('#result .confetti').forEach(e => e.remove());
+  if (isNewBest) {
+    sfx('record');
+    const cols = ['#e8c14a','#e8915a','#8a6fa8','#7fa05b','#d2452a','#375380'];
+    for (let i = 0; i < 26; i++) {
+      const sp = document.createElement('div');
+      sp.className = 'confetti';
+      sp.style.left = Math.random() * 100 + '%';
+      sp.style.background = cols[i % cols.length];
+      sp.style.animationDelay = (Math.random() * 0.9) + 's';
+      $('result').appendChild(sp);
+      setTimeout(() => sp.remove(), 4200);
+    }
+  }
+  ui.show('result');
+}
+
+// ---------- UI ----------
+const ui = {
+  show(id) { for (const sc of ['title','setup','game','result','ranking']) $(sc).classList.toggle('hidden', sc !== id); },
+  toSetup() {
+    if (g) { g.done = true; cancelAnimationFrame(timerRaf); g = null; }
+    ui.show('setup'); buildSetup();
+  },
+  quit() { ui.toSetup(); },
+  retry() { startGame(); },
+  async showRanking(list, me) {
+    ui.show('ranking');
+    const box = $('rankList');
+    box.innerHTML = '<div class="sub" style="padding:20px;">불러오는 중...</div>';
+    if (!list) list = await lbGet();
+    if (list === null) { box.innerHTML = '<div class="sub" style="padding:20px;">랭킹 서버에 연결할 수 없어요 😢</div>'; return; }
+    if (!list.length) { box.innerHTML = '<div class="sub" style="padding:20px;">아직 기록이 없어요. 1호 주민이 되어보세요!</div>'; return; }
+    box.innerHTML = '';
+    list.slice(0, 10).forEach((e, i) => {
+      const c = CHARS[e.c] || CHARS.kkito;
+      const row = document.createElement('div');
+      row.className = 'rankrow' + (me && e.n === me && e.s === (lastResult && lastResult.score) ? ' me' : '');
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1) + '위';
+      row.innerHTML = `<span style="width:36px;font-weight:800;">${medal}</span><img src="${c.sd}"><span class="rname">${String(e.n).slice(0,8).replace(/[<>&]/g,'')}</span><span class="dbadge">${c.name} · ${DIFF_LABEL[e.d] || '쉬움'}</span><span class="rscore">${(+e.s||0)}점</span>`;
+      box.appendChild(row);
+    });
+  },
+};
+
+function buildSetup() {
+  const cg = $('charGrid'); cg.innerHTML = '';
+  for (const k in CHARS) {                                                   // 쉬움 → 어려움 순 정의
+    const c = CHARS[k], best = localStorage.getItem('somsom3_best_' + k) || 0;
+    const d = document.createElement('div');
+    d.className = 'charcard';
+    d.innerHTML = `<span class="badge ${c.diff}">${DIFF_LABEL[c.diff]} · ${c.pairs}쌍</span>` +
+      `<img src="${c.sd}" alt="${c.name}"><div class="nm">${c.name}</div><div class="desc">${c.desc}</div><div class="bs">BEST ${best}</div>`;
+    d.onclick = () => { curChar = k; startGame(); };
+    cg.appendChild(d);
+  }
+}
+buildSetup();
+
+// ---------- 공유 랭킹보드 (Firebase Firestore — 게임1과 동일 프로젝트) ----------
+const FB_KEY = 'AIzaSyBfld7SRrVTxDG0nE_6Z3Mw5kSRTo5bIGY';   // 공개용 식별자 (비밀키 아님)
+const FB_DOCS = 'https://firestore.googleapis.com/v1/projects/somsom-city/databases/(default)/documents';
+async function lbGet() {
+  try {
+    const r = await fetch(FB_DOCS + ':runQuery?key=' + FB_KEY, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ structuredQuery: {
+        from: [{ collectionId: 'memory_scores' }],
+        orderBy: [{ field: { fieldPath: 's' }, direction: 'DESCENDING' }],
+        limit: 100 } }),
+    });
+    const j = await r.json();
+    if (!r.ok || !Array.isArray(j)) return null;
+    const all = j.filter(x => x.document).map(x => {
+      const f = x.document.fields || {};
+      return { n: (f.n && f.n.stringValue) || '?', c: (f.c && f.c.stringValue) || 'kkito',
+               d: (f.d && f.d.stringValue) || 'easy', s: +((f.s && f.s.integerValue) || 0) };
+    });
+    const best = {};                                         // 이름+난이도 조합당 최고 기록 1개
+    for (const e of all) { const k = e.n + '|' + e.d; if (!best[k] || e.s > best[k].s) best[k] = e; }
+    return Object.values(best).sort((a, b) => b.s - a.s).slice(0, 10);
+  } catch (e) { return null; }
+}
+async function submitScore() {
+  if (!lastResult) return;
+  const name = ($('nameInput').value || '').trim().slice(0, 8) || '솜솜이';
+  localStorage.setItem('somsom_name', name);
+  $('submitBtn').disabled = true; $('submitBtn').textContent = '등록 중...';
+  try {
+    const r = await fetch(FB_DOCS + '/memory_scores?key=' + FB_KEY, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields: {
+        n: { stringValue: name },
+        c: { stringValue: lastResult.key },
+        d: { stringValue: lastResult.diff },
+        s: { integerValue: String(lastResult.score) },
+        t: { integerValue: String(Date.now()) } } }),
+    });
+    if (!r.ok) throw new Error('write failed');
+  } catch (e) { $('submitBtn').textContent = '연결 실패 — 다시 시도'; $('submitBtn').disabled = false; return; }
+  sfx('record');
+  ui.showRanking(null, name);
+}
+
+async function shareCard() {
+  if (!lastResult) return;
+  const c = CHARS[lastResult.key];
+  const SC = 2, cw = 420, ch = 560;
+  const cv2 = document.createElement('canvas'); cv2.width = cw * SC; cv2.height = ch * SC;
+  const x = cv2.getContext('2d'); x.scale(SC, SC);
+  x.fillStyle = '#fdfbf5'; x.fillRect(0, 0, cw, ch);
+  x.strokeStyle = '#222'; x.lineWidth = 3; x.strokeRect(10, 10, cw - 20, ch - 20);
+  x.textAlign = 'center';
+  x.fillStyle = '#5a4a3a'; x.font = '800 24px sans-serif';
+  x.fillText('🃏 솜솜시티: 짝꿍을 찾아라!', cw / 2, 56);
+  const im = new Image(); im.src = c.win;
+  await new Promise(r => { im.complete ? r() : (im.onload = r, im.onerror = r); });
+  if (im.naturalWidth) { const h = 200, w = h * im.naturalWidth / im.naturalHeight; x.drawImage(im, cw/2 - w/2, 84, w, h); }
+  x.font = '700 20px sans-serif'; x.fillText(c.name + ' · ' + DIFF_LABEL[c.diff], cw / 2, 318);
+  x.font = '800 46px sans-serif'; x.fillStyle = '#b08a3a'; x.fillText(lastResult.score + '점', cw / 2, 372);
+  if (lastResult.isNewBest) { x.font = '800 18px sans-serif'; x.fillStyle = '#d2452a'; x.fillText('🎉 신기록 달성!', cw / 2, 402); }
+  x.font = '13px sans-serif'; x.fillStyle = '#5a4a3a'; x.fillText(lastResult.detail, cw / 2, 436);
+  x.font = '12px sans-serif'; x.fillStyle = '#9a8b7a';
+  x.fillText('pang861209-rgb.github.io/somsom-city-memory', cw / 2, 524);
+  const blob = await new Promise(r => cv2.toBlob(r, 'image/png'));
+  const file = new File([blob], 'somsom_memory.png', { type: 'image/png' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: '솜솜시티: 짝꿍을 찾아라!' }); return; } catch (e) {}
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'somsom_memory.png'; a.click();
+}
+</script>
+</body>
+</html>
