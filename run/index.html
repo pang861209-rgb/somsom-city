@@ -58,8 +58,8 @@
   .row { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center; }
   /* 캐릭터 인트로 삽화 (가로) */
   #intro { padding:0; overflow:hidden; justify-content:flex-end; cursor:pointer; }
-  #introImg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 32%; z-index:0; }
-  #introBox { position:relative; z-index:1; margin:0 16px 14px 16px; max-width:min(430px,58%); width:auto; align-self:flex-start; background:rgba(253,251,245,.90); border:2.5px solid #222; border-radius:14px; box-shadow:3px 3px 0 rgba(34,34,34,.75); padding:9px 13px; text-align:left; animation:introUp .5s ease-out; }   /* introBox 축소·좌하단 정렬 (캐릭터 가림 방지) */
+  #introImg { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; object-position:center; background:#f3ede2; z-index:0; }   /* contain: 삽화 잘림 방지 */
+  #introBox { position:relative; z-index:1; margin:0 14px 12px 14px; max-width:min(400px,54%); width:auto; align-self:flex-start; background:rgba(253,251,245,.92); border:2.5px solid #222; border-radius:14px; box-shadow:3px 3px 0 rgba(34,34,34,.75); padding:8px 12px; text-align:left; animation:introUp .5s ease-out; }   /* introBox 축소·좌하단 */   /* introBox 축소·좌하단 정렬 (캐릭터 가림 방지) */
   #introBox .iname { font-weight:800; font-size:14px; color:#b08a3a; margin-bottom:4px; }
   #introBox .itext { font-size:13px; color:#5a4a3a; line-height:1.55; }
   #introBox .ihint { margin-top:6px; font-size:10px; color:#9a8b7a; text-align:right; animation:iblink 1.4s infinite; }
@@ -138,7 +138,7 @@
 const CHARS = {
   kkito:      { name:'끼토',  spr:'../assets/run_kkito.png',  sd:'../assets/sd_kkito.png',  dw:80, spd:1.0,  jv:800, djv:720, grav:2500, shield:0, magnet:0,   coinx:1,
     trait:'점프 장인 — 가장 높은 점프 + 더블점프 (만능 기본)', intro:'마감이다! 달려, 끼토!' },
-  migae:      { name:'미개',  spr:'../assets/run_migae.png',  sd:'../assets/sd_migae.png',  dw:24, spd:1.0, jv:700, djv:600, grav:2350, shield:0, magnet:0, coinx:1, jumps:3,
+  migae:      { name:'미개',  spr:'../assets/run_migae.png',  sd:'../assets/sd_migae.png',  dw:24, spd:1.0, jv:660, djv:560, grav:3050, shield:0, magnet:0, coinx:1, jumps:3,
     trait:'삼단 점프 — 6다리로 공중에서 두 번 더! 작아서 잘 안 맞음', intro:'뽈뽈뽈—! 따라와!' },
   ramda:      { name:'람다',  spr:'../assets/run_ramda.png',  sd:'../assets/sd_ramda.png',  dw:58, spd:1.0,  jv:770, djv:700, grav:2500, shield:0, magnet:135, coinx:1,
     trait:'수집형 — 도토리 자석 (주변 도토리가 끌려옴)', intro:'도토리는 다 내 거야!' },
@@ -233,13 +233,15 @@ const GRAV_BASE=2500;
 function newState(key){
   const c=CHARS[key];
   return { key, c, dist:0, speed:195*c.spd, base:195*c.spd, cap:560*c.spd, coins:0, coinPts:0,
-    y:0, vy:0, spin:0, onGround:true, jumps:(c.jumps||2), run:0, shield:c.shield, inv:0, introT:1.8, recordShown:false,
+    y:0, vy:0, spin:0, airJumps:0, onGround:true, jumps:(c.jumps||2), run:0, shield:c.shield, inv:0, introT:1.8, recordShown:false,
     obs:[], gems:[], parts:[], floats:[], nextObs:540, nextGem:260, drops:[], nextDrop:1100,
     over:false, overAt:0, shake:0, hitstop:0, last:performance.now(),
     best:+(localStorage.getItem('runner_best_'+key)||0) };
 }
 function scoreOf(s){ return Math.floor(s.dist/12) + s.coinPts; }
-function jump(){ const s=S; if(!s||s.over||s.jumps<=0)return; const dj=!s.onGround; s.jumps--; s.vy=dj?-s.c.djv:-s.c.jv; s.onGround=false; if(dj)s.spin=1; sfx(dj?'dj':'jump'); for(let i=0;i<6;i++)s.parts.push({x:PX-10,y:GROUND,vx:-60-Math.random()*60,vy:-20-Math.random()*30,g:300,life:.4,max:.4,size:3,col:'#d8c8a8'}); }
+function jump(){ const s=S; if(!s||s.over||s.jumps<=0)return; const dj=!s.onGround; s.jumps--; if(dj)s.airJumps=(s.airJumps||0)+1; else s.airJumps=0;
+  s.vy = dj ? -s.c.djv*Math.pow(0.78,s.airJumps-1) : -s.c.jv;   // 공중 점프는 갈수록 약하게 = 체공 단축
+  s.onGround=false; if(dj)s.spin=1; sfx(dj?'dj':'jump'); for(let i=0;i<6;i++)s.parts.push({x:PX-10,y:GROUND,vx:-60-Math.random()*60,vy:-20-Math.random()*30,g:300,life:.4,max:.4,size:3,col:'#d8c8a8'}); }
 
 // ================= 스폰 =================
 function spawnObstacle(s){
@@ -267,7 +269,7 @@ function loop(now){
     s.speed=Math.min(s.cap, s.speed+4.2*s.c.spd*dt);
     s.dist+=s.speed*dt; s.run+=s.speed*dt;
     s.vy+=s.c.grav*dt; s.y+=s.vy*dt;
-    if(s.y>=0){ if(!s.onGround){ sfx('land'); for(let i=0;i<5;i++)s.parts.push({x:PX,y:GROUND,vx:(Math.random()-.3)*80,vy:-15,g:300,life:.3,max:.3,size:3,col:'#d8c8a8'}); } s.y=0; s.vy=0; s.onGround=true; s.jumps=(s.c.jumps||2); }
+    if(s.y>=0){ if(!s.onGround){ sfx('land'); for(let i=0;i<5;i++)s.parts.push({x:PX,y:GROUND,vx:(Math.random()-.3)*80,vy:-15,g:300,life:.3,max:.3,size:3,col:'#d8c8a8'}); } s.y=0; s.vy=0; s.onGround=true; s.jumps=(s.c.jumps||2); s.airJumps=0; }
     if(s.onGround&&Math.random()<.25)s.parts.push({x:PX-15,y:GROUND-2,vx:-55,vy:-8,g:120,life:.3,max:.3,size:2.5,col:'rgba(180,160,120,.5)'});
     s.nextObs-=s.speed*dt; if(s.nextObs<=0){ spawnObstacle(s); s.nextObs=420+Math.random()*300; }
     s.nextGem-=s.speed*dt; if(s.nextGem<=0){ spawnGems(s); s.nextGem=360+Math.random()*260; }

@@ -51,8 +51,8 @@
   @keyframes confFall { to { transform:translateY(760px) rotate(560deg); opacity:.15; } }
   /* 캐릭터 인트로 삽화 */
   #intro { padding:0; overflow:hidden; justify-content:flex-end; cursor:pointer; }
-  #introImg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 32%; z-index:0; }
-  #introBox { position:relative; z-index:1; margin:0 16px 14px 16px; max-width:min(430px,58%); width:auto; align-self:flex-start; background:rgba(253,251,245,.90); border:2.5px solid #222; border-radius:14px; box-shadow:3px 3px 0 rgba(34,34,34,.75); padding:9px 13px; text-align:left; animation:introUp .5s ease-out; }   /* introBox 축소·좌하단 정렬 (캐릭터 가림 방지) */
+  #introImg { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; object-position:center; background:#f3ede2; z-index:0; }   /* contain: 삽화 잘림 방지 */
+  #introBox { position:relative; z-index:1; margin:0 14px 12px 14px; max-width:min(400px,54%); width:auto; align-self:flex-start; background:rgba(253,251,245,.92); border:2.5px solid #222; border-radius:14px; box-shadow:3px 3px 0 rgba(34,34,34,.75); padding:8px 12px; text-align:left; animation:introUp .5s ease-out; }   /* introBox 축소·좌하단 */   /* introBox 축소·좌하단 정렬 (캐릭터 가림 방지) */
   #introBox .iname { font-weight:800; font-size:15px; color:#b08a3a; margin-bottom:5px; }
   #introBox .itext { font-size:13.5px; color:#5a4a3a; line-height:1.6; }
   #introBox .ihint { margin-top:8px; font-size:11px; color:#9a8b7a; text-align:right; animation:iblink 1.4s infinite; }
