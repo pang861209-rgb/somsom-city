@@ -138,7 +138,7 @@
 const CHARS = {
   kkito:      { name:'끼토',  spr:'../assets/run_kkito.png',  sd:'../assets/sd_kkito.png',  dw:80, spd:1.0,  jv:800, djv:720, grav:2500, shield:0, magnet:0,   coinx:1,
     trait:'점프 장인 — 가장 높은 점프 + 더블점프 (만능 기본)', intro:'마감이다! 달려, 끼토!' },
-  migae:      { name:'미개',  spr:'../assets/run_migae.png',  sd:'../assets/sd_migae.png',  dw:24, spd:1.0, jv:660, djv:560, grav:3050, shield:0, magnet:0, coinx:1, jumps:3,
+  migae:      { name:'미개',  spr:'../assets/run_migae.png',  sd:'../assets/sd_migae.png',  dw:24, spd:1.0, jv:980, djv:840, grav:4600, shield:0, magnet:0, coinx:1, jumps:3,
     trait:'삼단 점프 — 6다리로 공중에서 두 번 더! 작아서 잘 안 맞음', intro:'뽈뽈뽈—! 따라와!' },
   ramda:      { name:'람다',  spr:'../assets/run_ramda.png',  sd:'../assets/sd_ramda.png',  dw:58, spd:1.0,  jv:770, djv:700, grav:2500, shield:0, magnet:135, coinx:1,
     trait:'수집형 — 도토리 자석 (주변 도토리가 끌려옴)', intro:'도토리는 다 내 거야!' },
@@ -240,7 +240,7 @@ function newState(key){
 }
 function scoreOf(s){ return Math.floor(s.dist/12) + s.coinPts; }
 function jump(){ const s=S; if(!s||s.over||s.jumps<=0)return; const dj=!s.onGround; s.jumps--; if(dj)s.airJumps=(s.airJumps||0)+1; else s.airJumps=0;
-  s.vy = dj ? -s.c.djv*Math.pow(0.78,s.airJumps-1) : -s.c.jv;   // 공중 점프는 갈수록 약하게 = 체공 단축
+  s.vy = dj ? -s.c.djv : -s.c.jv;
   s.onGround=false; if(dj)s.spin=1; sfx(dj?'dj':'jump'); for(let i=0;i<6;i++)s.parts.push({x:PX-10,y:GROUND,vx:-60-Math.random()*60,vy:-20-Math.random()*30,g:300,life:.4,max:.4,size:3,col:'#d8c8a8'}); }
 
 // ================= 스폰 =================
