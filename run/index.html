@@ -134,15 +134,15 @@
 const CHARS = {
   kkito:      { name:'끼토',  spr:'../assets/run_kkito.png',  sd:'../assets/sd_kkito.png',  dw:80, spd:1.0,  jv:800, djv:720, grav:2500, shield:0, magnet:0,   coinx:1,
     trait:'점프 장인 — 가장 높은 점프 + 더블점프 (만능 기본)', intro:'마감이다! 달려, 끼토!' },
-  migae:      { name:'미개',  spr:'../assets/run_migae.png',  sd:'../assets/sd_migae.png',  dw:50, spd:1.0, jv:700, djv:600, grav:2350, shield:0, magnet:0, coinx:1, jumps:3,
+  migae:      { name:'미개',  spr:'../assets/run_migae.png',  sd:'../assets/sd_migae.png',  dw:24, spd:1.0, jv:700, djv:600, grav:2350, shield:0, magnet:0, coinx:1, jumps:3,
     trait:'삼단 점프 — 6다리로 공중에서 두 번 더! 작아서 잘 안 맞음', intro:'뽈뽈뽈—! 따라와!' },
-  ramda:      { name:'람다',  spr:'../assets/run_ramda.png',  sd:'../assets/sd_ramda.png',  dw:82, spd:1.0,  jv:770, djv:700, grav:2500, shield:0, magnet:135, coinx:1,
+  ramda:      { name:'람다',  spr:'../assets/run_ramda.png',  sd:'../assets/sd_ramda.png',  dw:58, spd:1.0,  jv:770, djv:700, grav:2500, shield:0, magnet:135, coinx:1,
     trait:'수집형 — 도토리 자석 (주변 도토리가 끌려옴)', intro:'도토리는 다 내 거야!' },
-  boneul:     { name:'보늘',  spr:'../assets/run_boneul.png', sd:'../assets/sd_boneul.png', dw:92, spd:0.82, jv:715, djv:650, grav:2700, shield:1, magnet:0,   coinx:1,
+  boneul:     { name:'보늘',  spr:'../assets/run_boneul.png', sd:'../assets/sd_boneul.png', dw:74, spd:0.82, jv:715, djv:650, grav:2700, shield:1, magnet:0,   coinx:1,
     trait:'탱커형 — 첫 충돌 1회 무효 (느리지만 든든)', intro:'천천히 가도 안 죽어~' },
-  bookgeo:    { name:'북거씨', spr:'../assets/run_bookgeo.png', sd:'../assets/sd_bookgeo.png', dw:90, spd:0.85, jv:720, djv:660, grav:1750, shield:0, magnet:0, coinx:1,
+  bookgeo:    { name:'북거씨', spr:'../assets/run_bookgeo.png', sd:'../assets/sd_bookgeo.png', dw:49, spd:0.85, jv:720, djv:660, grav:1750, shield:0, magnet:0, coinx:1,
     trait:'플로팅형 — 천천히 떨어져 타이밍이 관대 (쉬움)', intro:'서두르지 않아도 돼요.' },
-  lachilchin: { name:'라칠친', spr:'../assets/run_lachilchin.png', sd:'../assets/sd_lachilchin.png', dw:76, spd:0.9, jv:760, djv:690, grav:2500, shield:0, magnet:0, coinx:2,
+  lachilchin: { name:'라칠친', spr:'../assets/run_lachilchin.png', sd:'../assets/sd_lachilchin.png', dw:35, spd:0.9, jv:760, djv:690, grav:2500, shield:0, magnet:0, coinx:2,
     trait:'알뜰형 — 도토리 점수 2배 (느린 시작)', intro:'아이구, 천천히 줍자 그래~' },
 };
 
@@ -199,6 +199,7 @@ function loadFrames(k){
 for (const k in CHARS) loadFrames(k);
 let bg = new Image(), bgReady = false; bg.src = '../assets/bg_runner.png'; bg.onload = () => bgReady = true;
 let acorn = null; { const a = new Image(); a.src = '../assets/prop_acorn.png'; a.onload = () => { try { acorn = downscale(keyOutWhiteBg(a), 90); } catch(e){} }; }
+let ginkgo = null; { const g = new Image(); g.src = '../assets/prop_ginkgo.png'; g.onload = () => { try { ginkgo = downscale(keyOutWhiteBg(g), 90); } catch(e){} }; }
 
 // ================= 오디오 =================
 let AC=null, muted=localStorage.getItem('runner_muted')==='1', bgmT=null, bgmStep=0;
@@ -214,6 +215,8 @@ function sfx(n){ if(muted)return; try{
   else if(n==='record')[523,659,784].forEach((f,i)=>tone(f,.16,'square',.05,i*.09));
   else if(n==='over')[392,311,233].forEach((f,i)=>tone(f,.25,'triangle',.07,i*.18));
   else if(n==='near'){tone(1180,.05,'triangle',.045);tone(1560,.07,'triangle',.04,.04);}
+  else if(n==='warn'){tone(980,.07,'square',.05);tone(980,.07,'square',.05,.12);}
+  else if(n==='thud'){tone(95,.14,'sine',.09,0,55);tone(60,.16,'triangle',.06,.02);}
 }catch(e){} }
 const BGM=[392,494,587,494,440,392,440,494,587,659,587,494,440,392,330,392];
 function startBgm(){ if(muted||bgmT)return; try{ac();}catch(e){return;} bgmT=setInterval(()=>{ if(muted||!S||S.over)return; tone(BGM[bgmStep%BGM.length],.26,'triangle',.018); bgmStep++; },230); }
@@ -226,7 +229,7 @@ function newState(key){
   const c=CHARS[key];
   return { key, c, dist:0, speed:195*c.spd, base:195*c.spd, cap:560*c.spd, coins:0, coinPts:0,
     y:0, vy:0, onGround:true, jumps:(c.jumps||2), run:0, shield:c.shield, inv:0, introT:1.8, recordShown:false,
-    obs:[], gems:[], parts:[], floats:[], nextObs:540, nextGem:260,
+    obs:[], gems:[], parts:[], floats:[], nextObs:540, nextGem:260, drops:[], nextDrop:1100,
     over:false, overAt:0, shake:0, hitstop:0, last:performance.now(),
     best:+(localStorage.getItem('runner_best_'+key)||0) };
 }
@@ -263,6 +266,7 @@ function loop(now){
     if(s.onGround&&Math.random()<.25)s.parts.push({x:PX-15,y:GROUND-2,vx:-55,vy:-8,g:120,life:.3,max:.3,size:2.5,col:'rgba(180,160,120,.5)'});
     s.nextObs-=s.speed*dt; if(s.nextObs<=0){ spawnObstacle(s); s.nextObs=420+Math.random()*300; }
     s.nextGem-=s.speed*dt; if(s.nextGem<=0){ spawnGems(s); s.nextGem=360+Math.random()*260; }
+    s.nextDrop-=s.speed*dt; if(s.nextDrop<=0 && s.dist>500){ s.drops.push({x:W+70,ph:0,t:0,y:-70}); s.nextDrop=850+Math.random()*750; }   // 낙하 은행 (경고→낙하→잔류)
   }
 
   const _set=sprites[s.key], _fa=(_set&&_set.length)?_set[0]:null;
@@ -294,6 +298,24 @@ function loop(now){
     }
   }
   s.obs=s.obs.filter(o=>o.x+o.w>-20);
+  // ── 낙하 은행 업데이트: 경고(그림자) → 낙하 → 바닥 잔류 후 소멸 ──
+  const dropHit=()=>{ if(s.shield>0){ s.shield--; s.inv=1.1; s.shake=.35; sfx('block'); s.floats.push({x:PX,y:py-70,txt:'막았다!',col:'#3a7a5a',life:1.1}); }
+    else { s.over=true; s.overAt=now; s.shake=.5; s.hitstop=.12; sfx('hit'); sfx('over'); stopBgm(); } };
+  for(const d of s.drops){
+    d.x-=s.speed*dt; d.t+=dt;
+    if(d.ph===0){ if(d.t>0.75){ d.ph=1; d.t=0; sfx('warn'); } }
+    else if(d.ph===1){
+      d.y+=1500*dt;
+      if(d.y>=GROUND-14){ d.y=GROUND-14; d.ph=2; d.t=0; s.shake=Math.max(s.shake,.18); sfx('thud');
+        for(let i=0;i<7;i++)s.parts.push({x:d.x,y:GROUND,vx:(Math.random()-.5)*140,vy:-30-Math.random()*60,g:340,life:.4,max:.4,size:3,col:'#e8c14a'}); }
+      if(!s.over && s.inv<=0 && Math.abs(d.x-cx)<half+9 && d.y+13>py-s.c.dw*0.9 && d.y-13<py) dropHit();
+    }
+    else if(d.ph===2){
+      if(!s.over && s.inv<=0 && cx+half>d.x-11 && cx-half<d.x+11 && py>GROUND-27) dropHit();
+      if(d.t>3.2){ d.ph=3; for(let i=0;i<5;i++)s.parts.push({x:d.x,y:GROUND-10,vx:(Math.random()-.5)*80,vy:-40,g:300,life:.35,max:.35,size:2.5,col:'#d8c8a8'}); }
+    }
+  }
+  s.drops=s.drops.filter(d=>d.x>-40 && d.ph<3);
   for(const g of s.gems){
     g.x-=s.speed*dt;
     if(!g.taken && s.c.magnet){ const dx=cx-g.x, dy=cy-g.y, d=Math.hypot(dx,dy)||1; if(d<s.c.magnet){ g.x+=dx/d*220*dt; g.y+=dy/d*220*dt; } }
@@ -331,6 +353,17 @@ function draw(s,now,score){
   ctx.strokeStyle='rgba(150,130,90,.35)'; ctx.lineWidth=3; ctx.beginPath(); let lo=-((s.dist)%64); for(let x=lo;x<W;x+=64){ctx.moveTo(x,GROUND+24);ctx.lineTo(x+28,GROUND+24);} ctx.stroke();
   // 장애물
   for(const o of s.obs){ const top=GROUND-o.h; ctx.fillStyle=o.h>48?'#b07a4a':'#9a7a4a'; ctx.strokeStyle='#222'; ctx.lineWidth=2; ctx.beginPath(); ctx.roundRect(o.x,top,o.w,o.h,5); ctx.fill(); ctx.stroke(); ctx.fillStyle='rgba(255,255,255,.18)'; ctx.beginPath(); ctx.roundRect(o.x+3,top+3,o.w-6,6,3); ctx.fill(); }
+  // ── 낙하 은행 렌더 ──
+  for(const d of s.drops){
+    if(d.ph===0){ const bl=.25+.3*Math.abs(Math.sin(now/90));           // 경고: 깜빡이는 그림자 + !
+      ctx.globalAlpha=bl; ctx.fillStyle='#c98a2a'; ctx.beginPath(); ctx.ellipse(d.x,GROUND+4,16,5.5,0,0,7); ctx.fill(); ctx.globalAlpha=1;
+      ctx.font='800 17px sans-serif'; ctx.textAlign='center'; ctx.strokeStyle='#fff'; ctx.lineWidth=3;
+      ctx.strokeText('!',d.x,GROUND-16); ctx.fillStyle='#d2452a'; ctx.fillText('!',d.x,GROUND-16); }
+    else { const gy=(d.ph===1)?d.y:GROUND-14;
+      ctx.globalAlpha=.28; ctx.fillStyle='#000'; ctx.beginPath(); ctx.ellipse(d.x,GROUND+4,13,4.5,0,0,7); ctx.fill(); ctx.globalAlpha=1;
+      if(ginkgo){ const w=30,h=30*ginkgo.height/ginkgo.width; ctx.save(); ctx.translate(d.x,gy); if(d.ph===1)ctx.rotate(now/120%6.28); ctx.drawImage(ginkgo,-w/2,-h/2,w,h); ctx.restore(); }
+      else { ctx.fillStyle='#e8c14a'; ctx.strokeStyle='#222'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(d.x,gy,12,0,7); ctx.fill(); ctx.stroke(); } }
+  }
   // 도토리
   for(const g of s.gems){ ctx.globalAlpha=0.5; ctx.fillStyle='#fffaf0'; ctx.beginPath(); ctx.arc(g.x,g.y,16,0,7); ctx.fill(); ctx.globalAlpha=1; if(acorn){ const w=28,h=28*acorn.height/acorn.width; ctx.drawImage(acorn,g.x-w/2,g.y-h/2,w,h);} else { ctx.font='24px serif'; ctx.textAlign='center'; ctx.fillText('🌰',g.x,g.y+8);} }
   // 파티클
