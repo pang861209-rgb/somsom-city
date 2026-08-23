@@ -39,13 +39,17 @@
 
   /* ---------- 인트로 삽화 ---------- */
   #intro { padding:0; position:relative; overflow:hidden; justify-content:flex-end; cursor:pointer; height:100vh; height:100dvh; }
-  #introImg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; }
-  #introBox { position:relative; z-index:1; margin:0 16px 26px; background:rgba(253,251,245,.94); border:2.5px solid #222; border-radius:14px; box-shadow:3px 3px 0 #222; padding:15px 18px; text-align:left; animation:introUp .5s ease-out; }
+  #introImg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 32%; z-index:0; }
+  #introBox { position:relative; z-index:1; margin:0 16px 14px 16px; max-width:min(430px,58%); width:auto; align-self:flex-start; background:rgba(253,251,245,.90); border:2.5px solid #222; border-radius:14px; box-shadow:3px 3px 0 rgba(34,34,34,.75); padding:9px 13px; text-align:left; animation:introUp .5s ease-out; }   /* introBox 축소·좌하단 정렬 (캐릭터 가림 방지) */
   #introBox .iname { font-weight:800; font-size:15px; color:#b08a3a; margin-bottom:6px; }
   #introBox .itext { font-size:14px; color:#5a4a3a; line-height:1.65; }
   #introBox .ihint { margin-top:10px; font-size:11px; color:#9a8b7a; text-align:right; animation:iblink 1.4s infinite; }
   @keyframes introUp { from{transform:translateY(24px);opacity:0} to{transform:translateY(0);opacity:1} }
   @keyframes iblink { 50%{opacity:.35} }
+  /* introCompact: 낮은 화면에서 말풍선이 화면을 덮지 않도록 */
+  @media (max-height:430px){ #introBox{max-width:min(360px,52%); padding:7px 11px; margin-bottom:10px;}
+    #introBox .iname{font-size:12px;} #introBox .itext{font-size:11.5px; line-height:1.4;}
+    #introBox .ihint{font-size:9px;} }
 
   /* ---------- game ---------- */
   /* 보드가 남은 화면 높이를 전부 채움 — 하단 공백 없음 */

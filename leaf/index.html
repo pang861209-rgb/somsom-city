@@ -51,13 +51,17 @@
   @keyframes confFall { to { transform:translateY(760px) rotate(560deg); opacity:.15; } }
   /* 캐릭터 인트로 삽화 */
   #intro { padding:0; overflow:hidden; justify-content:flex-end; cursor:pointer; }
-  #introImg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; }
-  #introBox { position:relative; z-index:1; margin:0 14px 22px; background:rgba(253,251,245,.94); border:2.5px solid #222; border-radius:14px; box-shadow:3px 3px 0 #222; padding:14px 16px; text-align:left; animation:introUp .5s ease-out; }
+  #introImg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 32%; z-index:0; }
+  #introBox { position:relative; z-index:1; margin:0 16px 14px 16px; max-width:min(430px,58%); width:auto; align-self:flex-start; background:rgba(253,251,245,.90); border:2.5px solid #222; border-radius:14px; box-shadow:3px 3px 0 rgba(34,34,34,.75); padding:9px 13px; text-align:left; animation:introUp .5s ease-out; }   /* introBox 축소·좌하단 정렬 (캐릭터 가림 방지) */
   #introBox .iname { font-weight:800; font-size:15px; color:#b08a3a; margin-bottom:5px; }
   #introBox .itext { font-size:13.5px; color:#5a4a3a; line-height:1.6; }
   #introBox .ihint { margin-top:8px; font-size:11px; color:#9a8b7a; text-align:right; animation:iblink 1.4s infinite; }
   @keyframes introUp { from{transform:translateY(24px);opacity:0} to{transform:translateY(0);opacity:1} }
   @keyframes iblink { 50%{opacity:.35} }
+  /* introCompact: 낮은 화면에서 말풍선이 화면을 덮지 않도록 */
+  @media (max-height:430px){ #introBox{max-width:min(360px,52%); padding:7px 11px; margin-bottom:10px;}
+    #introBox .iname{font-size:12px;} #introBox .itext{font-size:11.5px; line-height:1.4;}
+    #introBox .ihint{font-size:9px;} }
   .homeBtn{position:absolute;top:8px;left:8px;z-index:60;background:rgba(255,255,255,.88);border:2px solid #222;border-radius:8px;padding:4px 11px;font:700 13px "Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#222;text-decoration:none;box-shadow:2px 2px 0 #222;}
   .homeBtn:active{transform:translate(2px,2px);box-shadow:none;}
 </style>
