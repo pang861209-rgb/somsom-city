@@ -320,7 +320,7 @@ function draw(s,now,score){
   let im=null;
   if(frames && frames.length){
     if(!s.onGround) im=frames[frames.length>=4?3:frames.length-1];   // 공중 = 도약(마지막) 프레임
-    else im=frames[Math.floor(s.run/11)%frames.length];              // 땅 = 런사이클 재생
+    else im=frames[Math.floor(s.run/22)%frames.length];              // 땅 = 런사이클 재생
   }
   const py=GROUND+s.y; const bob=s.onGround?-Math.abs(Math.sin(s.run*0.08))*2:0;
   // 그림자
