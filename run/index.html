@@ -334,7 +334,7 @@ function draw(s,now,score){
   // 인트로
   if(s.introT>0){ ctx.globalAlpha=Math.min(1,s.introT/.4); ctx.font='800 18px sans-serif'; ctx.textAlign='center'; ctx.fillStyle='#5a4a3a'; ctx.strokeStyle='#fff'; ctx.lineWidth=4; ctx.strokeText(s.c.intro,W/2,80); ctx.fillText(s.c.intro,W/2,80); ctx.globalAlpha=1; }
   // HUD
-  ctx.fillStyle='#5a4a3a'; ctx.font='800 22px sans-serif'; ctx.textAlign='left'; ctx.fillText(score+' m',16,36);
+  ctx.fillStyle='#5a4a3a'; ctx.font='800 22px sans-serif'; ctx.textAlign='left'; ctx.fillText(score+' m',88,36);   // 88: 좌상단 '← 홈' 버튼과 겹치지 않게
   ctx.font='800 15px sans-serif'; ctx.textAlign='right'; ctx.fillText('🌰 '+s.coins,W-14,30);
   if(s.shield>0){ ctx.fillStyle='#3a7a5a'; ctx.font='800 13px sans-serif'; ctx.fillText('🛡 보호막',W-14,50); }
   ctx.restore();
