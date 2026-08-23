@@ -171,6 +171,7 @@ addEventListener('resize', layout);
 addEventListener('orientationchange', () => setTimeout(layout, 250));
 const $ = id => document.getElementById(id);
 const LOSE = '으아아—! 마감 늦었어!';
+const NEAR_MAX = 34, NEAR_TIGHT = 14;   // 니어미스 판정 간격(px): 34 이내=아슬아슬, 14 이내=완벽
 
 function downscale(src, tw){ let c=src; while(c.width/2>tw){ const n=document.createElement('canvas'); n.width=(c.width/2)|0; n.height=(c.height/2)|0; const x=n.getContext('2d'); x.imageSmoothingEnabled=true; x.imageSmoothingQuality='high'; x.drawImage(c,0,0,n.width,n.height); c=n; } return c; }
 function keyOutWhiteBg(im){ const c=document.createElement('canvas'); c.width=im.naturalWidth; c.height=im.naturalHeight; const x=c.getContext('2d'); x.drawImage(im,0,0); const d=x.getImageData(0,0,c.width,c.height),p=d.data,w=c.width,h=c.height; const white=i=>p[i]>228&&p[i+1]>228&&p[i+2]>228; const seen=new Uint8Array(w*h),q=[]; for(let X=0;X<w;X++)q.push(X,(h-1)*w+X); for(let Y=0;Y<h;Y++)q.push(Y*w,Y*w+w-1); while(q.length){const n=q.pop(); if(n<0||n>=w*h||seen[n])continue; seen[n]=1; if(!white(n*4))continue; p[n*4+3]=0; const X=n%w; if(X>0)q.push(n-1); if(X<w-1)q.push(n+1); q.push(n-w,n+w);} x.putImageData(d,0,0); return c; }
@@ -212,6 +213,7 @@ function sfx(n){ if(muted)return; try{
   else if(n==='hit'){tone(220,.22,'sawtooth',.08,0,70);tone(110,.25,'square',.05,.02,60);}
   else if(n==='record')[523,659,784].forEach((f,i)=>tone(f,.16,'square',.05,i*.09));
   else if(n==='over')[392,311,233].forEach((f,i)=>tone(f,.25,'triangle',.07,i*.18));
+  else if(n==='near'){tone(1180,.05,'triangle',.045);tone(1560,.07,'triangle',.04,.04);}
 }catch(e){} }
 const BGM=[392,494,587,494,440,392,440,494,587,659,587,494,440,392,330,392];
 function startBgm(){ if(muted||bgmT)return; try{ac();}catch(e){return;} bgmT=setInterval(()=>{ if(muted||!S||S.over)return; tone(BGM[bgmStep%BGM.length],.26,'triangle',.018); bgmStep++; },230); }
@@ -268,9 +270,27 @@ function loop(now){
   const half=Math.max(10,Math.min(24,drawW*0.30)), py=GROUND+s.y, cx=PX, cy=py-s.c.dw*0.45;
   for(const o of s.obs){
     o.x-=s.speed*dt;
-    if(!s.over && s.inv<=0 && cx+half>o.x+6 && cx-half<o.x+o.w-6 && py>GROUND-o.h+6){
+    const ovX = cx+half>o.x+6 && cx-half<o.x+o.w-6;                       // 가로로 겹치는 중
+    if(!s.over && s.inv<=0 && ovX && py>GROUND-o.h+6){
       if(s.shield>0){ s.shield--; s.inv=1.1; s.shake=.35; sfx('block'); s.floats.push({x:PX,y:py-70,txt:'막았다!',col:'#3a7a5a',life:1.1}); }
       else { s.over=true; s.overAt=now; s.shake=.5; s.hitstop=.12; sfx('hit'); sfx('over'); stopBgm(); }
+    }
+    // ── 니어미스: 장애물 위를 아슬아슬하게 넘으면 보너스 (붙어서 달릴수록 이득) ──
+    if(!s.over && s.inv<=0){
+      if(ovX){
+        const cl=(GROUND-o.h)-py;                                          // 발끝과 장애물 윗면 간격
+        if(cl>-8 && cl<(o.mc===undefined?1e9:o.mc)) o.mc=cl;               // 지나가는 동안 최소 간격 기록
+      } else if(o.mc!==undefined && !o.nmDone && o.x+o.w<cx-half){
+        o.nmDone=true;
+        if(o.mc<=NEAR_MAX){
+          const tight=o.mc<=NEAR_TIGHT, pts=tight?40:20;
+          s.coinPts+=pts; s.nears=(s.nears||0)+1;
+          if(tight)s.tights=(s.tights||0)+1;
+          sfx('near');
+          s.floats.push({x:PX+34,y:py-96,txt:(tight?'완벽! +':'아슬아슬! +')+pts,
+                         col:tight?'#d2452a':'#b08a3a',life:1.0});
+        }
+      }
     }
   }
   s.obs=s.obs.filter(o=>o.x+o.w>-20);
@@ -349,7 +369,8 @@ function endGame(score){
   const spr=(sprites[key]&&sprites[key].length)?sprites[key][0]:null; $('resImg').src=spr&&spr.toDataURL?spr.toDataURL():c.sd;
   $('resQuote').textContent='"'+(c.name==='끼토'?LOSE:c.intro)+'"';
   $('resScore').textContent=score+' m';
-  $('resDetail').textContent=c.name+' · 도토리 '+s.coins+'개';
+  $('resDetail').textContent=c.name+' · 도토리 '+s.coins+'개'
+    +(s.nears?' · 아슬아슬 '+s.nears+'회'+(s.tights?' (완벽 '+s.tights+')':''):'');
   $('resBest').textContent=c.name+' 최고기록: '+best+' m';
   lastResult={key,score,coins:s.coins,best,isNew};
   $('nameRow').style.display=score>=1?'flex':'none';
