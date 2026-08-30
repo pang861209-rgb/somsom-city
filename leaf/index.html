@@ -8,8 +8,8 @@
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   body { background:#f3ede2; font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; display:flex; justify-content:center; align-items:center; min-height:100dvh; }
-  #app { width:min(420px,100vw); position:relative; }
-  canvas { display:block; width:100%; background:#fdfbf5; border-radius:12px; }
+  #app { width:min(420px,100vw); height:100dvh; position:relative; }
+  canvas { display:block; width:100%; height:100%; background:#fdfbf5; border-radius:0; }
   .screen { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; background:#fdfbf5; border-radius:12px; padding:20px; text-align:center; }
   .hidden { display:none; }
   h1 { font-size:26px; color:#5a4a3a; }
@@ -284,9 +284,18 @@ const CHARS = {
 };
 
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
-const W = 420, H = 680, GROUND = H - 34;
+let W = 420, H = 680, GROUND = H - 34;                    // 화면 비율에 맞춰 layout()에서 갱신
 const DPR = Math.min(3, window.devicePixelRatio || 1);   // 레티나 대응 — 그래픽 깨짐 방지
-cv.width = W * DPR; cv.height = H * DPR;
+function layout(){
+  const r = cv.getBoundingClientRect();
+  W = Math.max(300, Math.round(r.width || 420));
+  H = Math.max(420, Math.round(r.height || 680));
+  GROUND = H - 34;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+}
+layout();
+addEventListener('resize', layout);
+addEventListener('orientationchange', () => setTimeout(layout, 250));
 
 // 큰 원본을 한 번에 줄이면 계단 현상 → 절반씩 단계적 축소
 function downscale(src, targetW) {
