@@ -170,7 +170,7 @@
     background:#FDFBF5;border:2.5px solid #2B2620;border-radius:18px;padding:9px 16px;display:flex;align-items:center;gap:10px;
     box-shadow:0 5px 0 -1px #E4D9C0, 0 14px 22px -14px rgba(74,52,26,.5);transition:transform .45s cubic-bezier(.2,.8,.3,1);
     font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;white-space:nowrap;pointer-events:none;}
-  #achToast.on{transform:translateX(-50%) translateY(0);}
+  #achToast.on{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible;}
   #achToast .ai{font-size:20px;}
   #achToast .at{font-size:11px;font-weight:800;color:#B08A3A;letter-spacing:.06em;}
   #achToast .an{font-size:14px;font-weight:800;color:#2B2620;}
@@ -352,7 +352,8 @@ function mulberry32(a) {
     return ((t ^ t >>> 14) >>> 0) / 4294967296;
   };
 }
-const DAILY_CHAR = KEYS[(Math.imul(dayKey(), 2654435761) >>> 0) % KEYS.length];
+const DAILY_ORDER = ['kkito','boneul','migae','ramda','bookgeo','lachilchin'];   // 세 게임 공통 순서
+const DAILY_CHAR = DAILY_ORDER[(Math.imul(dayKey(), 2654435761) >>> 0) % DAILY_ORDER.length];
 
 // 카드 뒷면 일러스트 (없으면 🍂 폴백)
 const backImg = new Image();

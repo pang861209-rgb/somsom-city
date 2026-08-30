@@ -99,12 +99,18 @@
   /* 업적 (Phase 2) */
   #achToast{position:absolute;top:14px;left:50%;transform:translateX(-50%) translateY(-140%);z-index:95;
     background:#FDFBF5;border:2.5px solid #2B2620;border-radius:18px;padding:9px 16px;display:flex;align-items:center;gap:10px;
-    box-shadow:0 5px 0 -1px #E4D9C0, 0 14px 22px -14px rgba(74,52,26,.5);transition:transform .45s cubic-bezier(.2,.8,.3,1);
+    box-shadow:0 5px 0 -1px #E4D9C0, 0 14px 22px -14px rgba(74,52,26,.5);opacity:0;visibility:hidden;transition:transform .45s cubic-bezier(.2,.8,.3,1),opacity .3s;
     font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;white-space:nowrap;pointer-events:none;}
-  #achToast.on{transform:translateX(-50%) translateY(0);}
+  #achToast.on{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible;}
   #achToast .ai{font-size:20px;}
   #achToast .at{font-size:11px;font-weight:800;color:#B08A3A;letter-spacing:.06em;}
   #achToast .an{font-size:14px;font-weight:800;color:#2B2620;}
+
+  #dailyRow{display:flex;justify-content:center;}
+  #dailyBtn2{background:#F6EED8;border:2.5px solid #2B2620;border-radius:16px;padding:9px 18px;
+    font-size:13.5px;font-weight:800;color:#2B2620;cursor:pointer;font-family:inherit;
+    box-shadow:0 3px 0 -1px #C9B98F;}
+  #dailyBtn2:active{transform:translateY(2px);box-shadow:none;}
 </style>
 </head>
 <body>
@@ -146,6 +152,7 @@
       <span class="pill">아슬아슬 넘으면 보너스</span>
       <span class="pill">⚠ 떨어지는 은행 주의</span>
     </div>
+    <div id="dailyRow"><button id="dailyBtn2"></button></div>
     <div class="grid" id="charGrid"></div>
     <button onclick="ui.toTitle()" style="font-size:13px;padding:7px 16px;">← 뒤로</button>
   </div>
@@ -743,7 +750,17 @@ const LANDMARKS = [
 const lmImg = {};
 for(const L of LANDMARKS){ const im=new Image(); im.src='../assets/'+L.f;
   im.onload=()=>{ try{ lmImg[L.id]=downscale(keyOutWhiteBg(im),150); }catch(e){ lmImg[L.id]=im; } }; }
-const DAILY_RUN = ['kkito','migae','ramda','boneul','bookgeo','lachilchin'][(Math.imul(dayKey(),2654435761)>>>0)%6];
+
+// 세 게임이 같은 친구를 뽑도록 순서를 고정합니다 (게임마다 CHARS 정의 순서가 달라서)
+const DAILY_ORDER = ['kkito','boneul','migae','ramda','bookgeo','lachilchin'];
+const DAILY_CHAR_ID = DAILY_ORDER[(Math.imul(dayKey(), 2654435761) >>> 0) % DAILY_ORDER.length];
+
+// 오늘의 도전 — 마을 전체가 같은 친구와 놉니다
+(function(){ const b=document.getElementById('dailyBtn2'); if(!b) return;
+  const c=CHARS[DAILY_CHAR_ID]; if(!c) return;
+  b.textContent='📅 오늘의 도전 — '+c.name;
+  b.addEventListener('click', ()=> ui.showIntro(DAILY_CHAR_ID));
+})();
 </script>
 </body>
 </html>
