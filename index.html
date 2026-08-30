@@ -2,173 +2,123 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>솜솜시티 — 미니게임 마을</title>
 <meta name="description" content="솜솜시티 친구들과 즐기는 미니게임 3종: 낙엽피하기 · 달리기 · 짝맞추기">
+<meta name="theme-color" content="#221E18">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&display=swap">
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
-  body{
-    font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#4a3b2c;
-    display:flex;justify-content:center;
-    background:radial-gradient(120% 80% at 50% 0%,#faf4e8 0%,#f1e7d3 60%,#ecdfc6 100%);
-  }
+  body{background:#221E18;color:#EFE7D6;font-family:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+    display:flex;justify-content:center;word-break:keep-all;-webkit-font-smoothing:antialiased;}
   #app{width:min(470px,100vw);height:100dvh;display:flex;flex-direction:column;
-    padding:18px 15px 16px;gap:14px;overflow:hidden;}
+    padding:22px 16px 16px;gap:12px;overflow:hidden;}
+  a{color:#F2C14B;text-decoration:none;}
 
-  /* ── header ── */
-  header{flex:0 0 auto;text-align:center;padding-top:2px;}
-  .logo{font-size:29px;font-weight:900;letter-spacing:-.5px;color:#3f3122;
-    display:inline-flex;align-items:center;gap:7px;}
-  .logo .lf{font-size:23px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.15));}
-  .tag{margin-top:4px;font-size:12.5px;font-weight:600;color:#a8977f;letter-spacing:.2px;word-break:keep-all;}
+  /* 머리 */
+  header{flex:none;display:flex;align-items:center;gap:10px;}
+  .logo{font-family:'Black Han Sans',sans-serif;font-size:26px;color:#F2C14B;letter-spacing:-.01em;line-height:1;}
+  #profChip{margin-left:auto;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.09);
+    border-radius:999px;padding:5px 13px 5px 5px;cursor:pointer;flex:none;}
+  #profChip img{width:26px;height:26px;border-radius:50%;object-fit:contain;background:transparent;}
+  #profChip .pn{font-size:12px;font-weight:700;color:#EFE7D6;max-width:76px;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap;display:block;}
+  #profChip .pc{font-size:11px;font-weight:700;color:#F2C14B;display:block;}
 
-  /* ── picker ── */
-  .picker{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:14px;}
+  /* 오늘의 미션 */
+  #missionBox{flex:none;background:rgba(255,255,255,.07);border-radius:16px;padding:10px 13px;
+    display:flex;flex-direction:column;gap:7px;}
+  #missionBox .mh{display:flex;align-items:center;gap:8px;}
+  #missionBox .mh .lb{font-size:9.5px;font-weight:700;letter-spacing:.14em;color:#F2C14B;}
+  #missionBox .mh .pg{margin-left:auto;font-size:11.5px;font-weight:700;color:#EFE7D6;}
+  .mRow{display:flex;align-items:center;gap:8px;font-size:11.5px;color:#CFC5B0;}
+  .mRow .bx{width:14px;height:14px;border-radius:5px;border:1.5px solid rgba(255,255,255,.28);flex:none;
+    display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#221E18;}
+  .mRow.ok .bx{background:#F2C14B;border-color:#F2C14B;}
+  .mRow.ok{color:#7E7768;text-decoration:line-through;}
 
-  .card{
-    position:relative;flex:1 1 0;min-height:0;display:block;border-radius:24px;overflow:hidden;
-    text-decoration:none;isolation:isolate;
-    box-shadow:0 14px 28px -12px rgba(74,52,26,.5), 0 3px 8px -2px rgba(74,52,26,.22),
-               inset 0 0 0 1px rgba(255,255,255,.14);
-    transition:transform .16s cubic-bezier(.2,.7,.3,1), box-shadow .16s;
-    transform:translateZ(0);
-  }
-  .card:active{transform:scale(.975);
-    box-shadow:0 8px 16px -10px rgba(74,52,26,.5),0 2px 5px -2px rgba(74,52,26,.2),inset 0 0 0 1px rgba(255,255,255,.14);}
+  /* 게임 블록 */
+  .picker{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:12px;}
+  .blk{position:relative;flex:1 1 0;min-height:0;border-radius:22px;display:flex;align-items:center;
+    padding:16px 18px;text-decoration:none;transition:transform .12s cubic-bezier(.2,.8,.3,1);overflow:visible;}
+  .blk:active{transform:scale(.978);}
+  .blk .mask{position:absolute;inset:0;border-radius:22px;overflow:hidden;z-index:1;}
+  .blk .mask img{width:100%;height:100%;object-fit:cover;opacity:.20;mix-blend-mode:luminosity;}
+  .blk .txt{position:relative;z-index:2;max-width:62%;}
+  .blk .no{font-size:10px;font-weight:700;letter-spacing:.18em;opacity:.7;}
+  .blk .nm{font-family:'Black Han Sans',sans-serif;font-size:30px;line-height:1.05;margin-top:2px;}
+  .blk .ds{font-size:11.5px;opacity:.8;margin-top:4px;line-height:1.35;}
+  .blk .ch{position:absolute;right:10px;bottom:-4px;z-index:3;object-fit:contain;
+    filter:drop-shadow(-5px 8px 12px rgba(0,0,0,.5));pointer-events:none;}
+  .picker .blk:nth-child(1){z-index:3;} .picker .blk:nth-child(2){z-index:2;} .picker .blk:nth-child(3){z-index:1;}
 
-  .art{position:absolute;inset:0;z-index:0;}
-  .art .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-  .art .ch{position:absolute;bottom:0;object-fit:contain;filter:drop-shadow(-3px 6px 7px rgba(40,25,10,.32));}
-  .art .deco{position:absolute;object-fit:contain;opacity:.9;filter:drop-shadow(0 2px 3px rgba(40,25,10,.2));}
+  /* 아래 버튼 */
+  .footRow{flex:none;display:flex;gap:8px;}
+  .footBtn{flex:1;background:rgba(255,255,255,.08);border:none;border-radius:14px;padding:11px;
+    text-align:center;font-size:12.5px;font-weight:700;color:#EFE7D6;cursor:pointer;font-family:inherit;}
+  .footBtn:active{background:rgba(255,255,255,.14);}
 
-  /* per-card art placement */
-  .leaf .bg{object-position:center 30%;}
-  .leaf .ch{right:9%;width:31%;max-width:120px;}
-  .leaf .d1{top:14%;right:34%;width:13%;transform:rotate(-14deg);}
-  .leaf .d2{top:30%;right:15%;width:11%;transform:rotate(16deg);}
-  .run  .bg{object-position:center 62%;}
-  .run  .ch{right:4%;width:44%;max-width:180px;}
-  .match .bg{object-position:center 78%;}
-  .match .ch{right:6%;width:30%;max-width:120px;}
-
-  /* legibility scrim — heavier on the text (left) side */
-  .scrim{position:absolute;inset:0;z-index:1;
-    background:linear-gradient(100deg,
-      rgba(38,26,14,.82) 0%, rgba(38,26,14,.62) 30%, rgba(38,26,14,.28) 52%, rgba(38,26,14,0) 74%);}
-
-  .content{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;
-    justify-content:center;gap:7px;padding:16px 18px;max-width:66%;color:#fff7ea;}
-  .tagno{align-self:flex-start;display:inline-flex;align-items:center;gap:5px;
-    font-size:10.5px;font-weight:800;letter-spacing:1.5px;padding:3px 9px;border-radius:999px;
-    color:#fff;background:var(--acc);box-shadow:0 2px 6px -1px rgba(0,0,0,.35);}
-  .nm{font-size:25px;font-weight:900;line-height:1.05;letter-spacing:-.3px;
-    text-shadow:0 2px 8px rgba(20,12,4,.55);}
-  .nm .em{font-size:21px;}
-  .ds{font-size:12.5px;font-weight:500;line-height:1.4;color:#f4e9d6;
-    word-break:keep-all;text-shadow:0 1px 4px rgba(20,12,4,.5);opacity:.95;}
-  .play{margin-top:3px;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;
-    font-size:13px;font-weight:800;color:#3f3122;background:rgba(255,251,244,.94);
-    padding:7px 15px 7px 16px;border-radius:999px;box-shadow:0 3px 9px -2px rgba(0,0,0,.4);}
-  .play .arw{font-weight:900;color:var(--acc);}
-
-  @media (max-height:650px){
-    #app{gap:10px;padding-top:12px;}
-    .logo{font-size:24px;} .tag{display:none;}
-    .nm{font-size:21px;} .ds{display:none;} .content{gap:6px;}
-  }
-
-  /* 업적 (Phase 2) */
-  .footRow{flex:none;display:flex;gap:9px;}
-  .footBtn{flex:1;background:rgba(253,251,245,.92);border:2.5px solid #2B2620;border-radius:16px;
-    padding:9px;text-align:center;font-size:13px;font-weight:800;color:#2B2620;cursor:pointer;
-    box-shadow:0 3px 0 -1px #E4D9C0;font-family:inherit;}
-  .footBtn:active{transform:translateY(2px);box-shadow:none;}
-  #achPanel{position:fixed;inset:0;z-index:90;display:none;align-items:flex-end;justify-content:center;
-    background:rgba(43,38,32,.46);}
-  #achPanel.on{display:flex;}
-  #achSheet{width:min(470px,100%);max-height:86vh;overflow-y:auto;background:#FDFBF5;
-    border:2.5px solid #2B2620;border-bottom:none;border-radius:26px 26px 0 0;padding:20px 18px 26px;
-    display:flex;flex-direction:column;gap:14px;box-shadow:0 -12px 30px -14px rgba(74,52,26,.55);}
-  #achSheet .hd{display:flex;align-items:baseline;gap:9px;}
-  #achSheet .hd .t{font-size:20px;font-weight:900;color:#2B2620;}
-  #achSheet .hd .c{font-size:12.5px;font-weight:700;color:#B08A3A;margin-left:auto;}
-  .achGrp{font-size:11px;font-weight:800;letter-spacing:.12em;color:#9A8B7A;margin-top:4px;}
-  .achRow{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:14px;
-    border:2px solid #E4D9C0;background:#fff;}
-  .achRow.got{border-color:#2B2620;background:#F6EED8;}
-  .achRow .ic{width:26px;text-align:center;font-size:17px;flex:none;filter:grayscale(1);opacity:.35;}
-  .achRow.got .ic{filter:none;opacity:1;}
-  .achRow .tx{flex:1;min-width:0;}
-  .achRow .nm{font-size:13.5px;font-weight:800;color:#9A8B7A;}
-  .achRow.got .nm{color:#2B2620;}
-  .achRow .ds{font-size:11.5px;color:#9A8B7A;}
-
-  .sheetWrap{position:fixed;inset:0;z-index:90;display:none;align-items:flex-end;justify-content:center;background:rgba(43,38,32,.46);}
+  /* 시트 공통 */
+  .sheetWrap{position:fixed;inset:0;z-index:90;display:none;align-items:flex-end;justify-content:center;
+    background:rgba(10,8,5,.62);}
   .sheetWrap.on{display:flex;}
-  .sheetWrap .sheet{width:min(470px,100%);max-height:86vh;overflow-y:auto;background:#FDFBF5;
-    border:2.5px solid #2B2620;border-bottom:none;border-radius:26px 26px 0 0;padding:20px 18px 26px;
-    display:flex;flex-direction:column;gap:14px;box-shadow:0 -12px 30px -14px rgba(74,52,26,.55);}
+  .sheetWrap .sheet{width:min(470px,100%);max-height:86vh;overflow-y:auto;background:#2B2620;
+    border-radius:24px 24px 0 0;padding:20px 18px 24px;display:flex;flex-direction:column;gap:13px;}
   .sheetWrap .hd{display:flex;align-items:baseline;gap:9px;}
-  .sheetWrap .hd .t{font-size:20px;font-weight:900;color:#2B2620;}
-  .sheetWrap .hd .c{font-size:12.5px;font-weight:700;color:#B08A3A;margin-left:auto;}
-  .dexGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;}
-  .dexCell{border:2px solid #E4D9C0;border-radius:16px;background:#fff;padding:9px 6px;
+  .sheetWrap .hd .t{font-family:'Black Han Sans',sans-serif;font-size:21px;color:#F2C14B;}
+  .sheetWrap .hd .c{font-size:12px;font-weight:700;color:#A9A08C;margin-left:auto;}
+  .achGrp{font-size:10px;font-weight:700;letter-spacing:.14em;color:#8A8271;margin-top:6px;}
+
+  /* 칭호 */
+  #titleBar{display:flex;align-items:center;gap:9px;background:rgba(242,193,75,.12);border-radius:13px;padding:9px 12px;}
+  #titleBar .tn{font-size:13px;font-weight:800;color:#F2C14B;}
+  #titleBar .tp{margin-left:auto;font-size:11px;font-weight:700;color:#A9A08C;}
+  #titleBar .bar{height:6px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;flex:1;max-width:110px;}
+  #titleBar .bar i{display:block;height:100%;background:#F2C14B;}
+
+  /* 업적 행 */
+  .achRow{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:13px;background:rgba(255,255,255,.05);}
+  .achRow.got{background:rgba(242,193,75,.14);}
+  .achRow .ic{width:24px;text-align:center;font-size:16px;flex:none;filter:grayscale(1);opacity:.3;}
+  .achRow.got .ic{filter:none;opacity:1;}
+  .achRow .nm{font-size:13px;font-weight:800;color:#7E7768;}
+  .achRow.got .nm{color:#EFE7D6;}
+  .achRow .ds{font-size:11px;color:#7E7768;}
+
+  /* 도감 */
+  .dexGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+  .dexCell{border-radius:14px;background:rgba(255,255,255,.05);padding:9px 6px;
     display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;}
-  .dexCell.got{border-color:#2B2620;background:#F6EED8;}
-  .dexCell img{width:100%;height:58px;object-fit:contain;filter:grayscale(1);opacity:.22;}
+  .dexCell.got{background:rgba(242,193,75,.14);}
+  .dexCell img{width:100%;height:54px;object-fit:contain;filter:grayscale(1) brightness(.6);opacity:.35;}
   .dexCell.got img{filter:none;opacity:1;}
-  .dexCell .n{font-size:11.5px;font-weight:800;color:#9A8B7A;}
-  .dexCell.got .n{color:#2B2620;}
-  .cutRow{display:flex;align-items:center;gap:10px;padding:8px 11px;border:2px solid #E4D9C0;border-radius:14px;background:#fff;}
-  .cutRow .nm{flex:1;font-size:13px;font-weight:800;color:#5A4A3A;}
-  .cutRow .pg{font-size:12px;font-weight:700;color:#B08A3A;}
+  .dexCell .n{font-size:11px;font-weight:700;color:#7E7768;}
+  .dexCell.got .n{color:#EFE7D6;}
+  .cutRow{display:flex;align-items:center;gap:10px;padding:8px 11px;border-radius:12px;background:rgba(255,255,255,.05);}
+  .cutRow .nm{flex:1;font-size:12.5px;font-weight:700;color:#CFC5B0;}
+  .cutRow .pg{font-size:12px;font-weight:800;color:#F2C14B;}
 
-  /* 프로필 · 미션 (Phase 3) */
-  header{display:flex;align-items:center;gap:10px;text-align:left;}
-  .hTitle{display:flex;flex-direction:column;gap:2px;}
-  #profChip{margin-left:auto;display:flex;align-items:center;gap:8px;background:rgba(253,251,245,.94);
-    border:2.5px solid #2B2620;border-radius:999px;padding:4px 12px 4px 5px;box-shadow:0 3px 0 -1px #E4D9C0;
-    cursor:pointer;flex:none;}
-  #profChip img{width:26px;height:26px;border-radius:50%;object-fit:contain;background:#F6EED8;border:2px solid #2B2620;}
-  #profChip .pn{font-size:12.5px;font-weight:800;color:#2B2620;max-width:78px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  #profChip .pc{font-size:11.5px;font-weight:700;color:#B08A3A;}
-  #missionBox{flex:none;background:#F6EED8;border:2.5px solid #2B2620;border-radius:18px;padding:9px 12px;
-    display:flex;flex-direction:column;gap:6px;box-shadow:0 4px 0 -1px #C9B98F;}
-  #missionBox .mh{display:flex;align-items:center;gap:7px;}
-  #missionBox .mh .lb{font-size:10px;font-weight:800;letter-spacing:.12em;color:#8A6A1A;
-    border:2px solid #8A6A1A;border-radius:999px;padding:1px 8px;}
-  #missionBox .mh .pg{margin-left:auto;font-size:12px;font-weight:800;color:#B08A3A;}
-  .mRow{display:flex;align-items:center;gap:8px;font-size:12px;color:#5A4A3A;}
-  .mRow .bx{width:15px;height:15px;border-radius:5px;border:2px solid #2B2620;background:#FDFBF5;flex:none;
-    display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#2B2620;}
-  .mRow.ok .bx{background:#6F9152;color:#fff;border-color:#2B2620;}
-  .mRow.ok{color:#9A8B7A;text-decoration:line-through;}
-  .wkRow{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:14px;border:2px solid #E4D9C0;background:#fff;}
-  .wkRow.me{background:#F6EED8;border-color:#2B2620;}
-  .wkRow .rk{width:26px;font-weight:800;font-size:12.5px;color:#5A4A3A;}
-  .wkRow .nm{flex:1;font-size:13.5px;font-weight:800;color:#2B2620;}
-  .wkRow .sc{font-size:13px;font-weight:800;color:#B08A3A;}
-  .wkRow .br{display:flex;gap:3px;margin-left:6px;}
-  .wkRow .br i{width:7px;height:14px;border-radius:2px;background:#E4D9C0;display:block;}
+  /* 주간 */
+  .wkRow{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:13px;background:rgba(255,255,255,.05);}
+  .wkRow.me{background:rgba(242,193,75,.16);}
+  .wkRow .rk{width:26px;font-weight:800;font-size:12px;color:#A9A08C;}
+  .wkRow .nm{flex:1;font-size:13px;font-weight:800;color:#EFE7D6;}
+  .wkRow .sc{font-size:13px;font-weight:800;color:#F2C14B;}
+  .wkRow .br{display:flex;gap:3px;margin-left:6px;align-items:flex-end;}
+  .wkRow .br i{width:6px;border-radius:2px;display:block;}
 
-  #titleBar{display:flex;align-items:center;gap:9px;background:#F6EED8;border:2px solid #2B2620;
-    border-radius:14px;padding:9px 12px;}
-  #titleBar .tn{font-size:13.5px;font-weight:900;color:#2B2620;}
-  #titleBar .tp{margin-left:auto;font-size:11.5px;font-weight:700;color:#8A6A1A;}
-  #titleBar .bar{height:7px;border-radius:999px;background:#EFE7D6;border:1.5px solid #2B2620;overflow:hidden;flex:1;max-width:110px;}
-  #titleBar .bar i{display:block;height:100%;background:#B08A3A;}
+  @media (max-height:660px){ .blk .nm{font-size:25px;} .blk .ds{display:none;} #missionList{display:none;} }
 </style>
 </head>
 <body>
 <div id="app">
 
   <header>
-    <div class="hTitle">
-      <div class="logo"><span class="lf">🍂</span> 솜솜시티</div>
-      <div class="tag">오늘은 어떤 놀이?</div>
-    </div>
-    <div id="profChip"><img id="profAv" src="assets/sd_kkito_t.png" alt=""><span><span class="pn" id="profName">솜솜이</span><br><span class="pc" id="profCoin">🌰 0</span></span></div>
+    <div class="logo">솜솜시티</div>
+    <div id="profChip"><img id="profAv" src="assets/sd_kkito_t.png" alt=""><span><span class="pn" id="profName">솜솜이</span><span class="pc" id="profCoin">🌰 0</span></span></div>
   </header>
 
   <div id="missionBox">
@@ -176,51 +126,23 @@
     <div id="missionList"></div>
   </div>
 
-  <div class="picker">
-
-    <a class="card leaf" href="leaf/" style="--acc:#e0a12b;">
-      <div class="art">
-        <img class="bg" src="assets/title_bg_leaf.png" alt="">
-        <img class="ch" src="assets/sd_kkito_t.png" alt="">
-      </div>
-      <div class="scrim"></div>
-      <div class="content">
-        <span class="tagno">GAME 01</span>
-        <span class="nm"><span class="em">🍂</span> 낙엽피하기</span>
-        <span class="ds">은행나무 골목, 떨어지는 은행을 요리조리 피해 버텨라!</span>
-        <span class="play">플레이 <span class="arw">▶</span></span>
-      </div>
+  <nav class="picker">
+    <a class="blk" href="leaf/" style="background:#E0A12B;color:#2B2005;">
+      <div class="mask"><img src="assets/bg_alley.png" alt="" style="object-position:center 12%;"></div>
+      <div class="txt"><div class="no">GAME 01</div><div class="nm">낙엽피하기</div><div class="ds">떨어지는 은행을 요리조리</div></div>
+      <img class="ch" src="assets/sd_kkito_t.png" alt="" style="height:142%;max-height:190px;">
     </a>
-
-    <a class="card run" href="run/" style="--acc:#dd7a34;">
-      <div class="art">
-        <img class="bg" src="assets/bg_runner.png" alt="">
-        <img class="ch" src="assets/run_kkito_t.png" alt="">
-      </div>
-      <div class="scrim"></div>
-      <div class="content">
-        <span class="tagno">GAME 02</span>
-        <span class="nm"><span class="em">🏃</span> 달리기</span>
-        <span class="ds">끼토의 마감 질주! 장애물을 뛰어넘어 멀리 달려보자.</span>
-        <span class="play">플레이 <span class="arw">▶</span></span>
-      </div>
+    <a class="blk" href="run/" style="background:#D2612C;color:#2B1305;">
+      <div class="mask"><img src="assets/bg_runner.png" alt=""></div>
+      <div class="txt"><div class="no">GAME 02</div><div class="nm">달리기</div><div class="ds">끼토의 마감 질주</div></div>
+      <img class="ch" src="assets/run_kkito_t.png" alt="" style="height:124%;max-height:168px;right:-2px;">
     </a>
-
-    <a class="card match" href="match/" style="--acc:#6f9152;">
-      <div class="art">
-        <img class="bg" src="assets/title_bg_match.png" alt="">
-        <img class="ch" src="assets/sd_boneul_t.png" alt="">
-      </div>
-      <div class="scrim"></div>
-      <div class="content">
-        <span class="tagno">GAME 03</span>
-        <span class="nm"><span class="em">🃏</span> 짝맞추기</span>
-        <span class="ds">뒤집힌 카드 속 솜솜 친구들의 짝꿍을 찾아라!</span>
-        <span class="play">플레이 <span class="arw">▶</span></span>
-      </div>
+    <a class="blk" href="match/" style="background:#5F8348;color:#0F2007;">
+      <div class="mask"><img src="assets/title_bg_match.png" alt=""></div>
+      <div class="txt"><div class="no">GAME 03</div><div class="nm">짝맞추기</div><div class="ds">뒤집힌 카드 속 짝꿍</div></div>
+      <img class="ch" src="assets/sd_boneul_t.png" alt="" style="height:138%;max-height:186px;">
     </a>
-
-  </div>
+  </nav>
 
   <div class="footRow">
     <button class="footBtn" id="achOpen">🏅 업적</button>
@@ -228,14 +150,6 @@
     <button class="footBtn" id="wkOpen">🏆 주간</button>
   </div>
 
-
-  <div id="dexPanel" class="sheetWrap">
-    <div class="sheet">
-      <div class="hd"><span class="t">도감</span><span class="c" id="dexCount"></span></div>
-      <div id="dexList"></div>
-      <button class="footBtn" id="dexClose">닫기</button>
-    </div>
-  </div>
   <div id="wkPanel" class="sheetWrap">
     <div class="sheet">
       <div class="hd"><span class="t">이번 주 통합 랭킹</span><span class="c" id="wkNote"></span></div>
@@ -244,8 +158,16 @@
     </div>
   </div>
 
-  <div id="achPanel">
-    <div id="achSheet">
+  <div id="dexPanel" class="sheetWrap">
+    <div class="sheet">
+      <div class="hd"><span class="t">도감</span><span class="c" id="dexCount"></span></div>
+      <div id="dexList"></div>
+      <button class="footBtn" id="dexClose">닫기</button>
+    </div>
+  </div>
+
+  <div id="achPanel" class="sheetWrap">
+    <div class="sheet">
       <div class="hd"><span class="t">업적</span><span class="c" id="achCount"></span></div>
       <div id="titleBar"></div>
       <div id="achList"></div>
@@ -254,7 +176,6 @@
   </div>
 
 </div>
-
 <script>
 // ── 업적 보기 (게임들이 localStorage에 남긴 기록을 모아서 표시) ──
 const ACH = [
@@ -296,8 +217,6 @@ document.getElementById('achOpen').addEventListener('click', ()=>{ renderAch(); 
 document.getElementById('achClose').addEventListener('click', ()=> document.getElementById('achPanel').classList.remove('on'));
 document.getElementById('achPanel').addEventListener('click', e=>{ if(e.target.id==='achPanel') e.currentTarget.classList.remove('on'); });
 </script>
-
-
 <script>
 const DEX_ITEMS = [
   {g:'낙엽피하기 소품', items:[
@@ -345,13 +264,11 @@ document.getElementById('dexOpen').addEventListener('click', ()=>{ renderDex(); 
 document.getElementById('dexClose').addEventListener('click', ()=> document.getElementById('dexPanel').classList.remove('on'));
 document.getElementById('dexPanel').addEventListener('click', e=>{ if(e.target.id==='dexPanel') e.currentTarget.classList.remove('on'); });
 </script>
-
-
 <script>
 // ── 프로필 · 오늘의 미션 · 주간 통합 랭킹 (Phase 3) ──
 const CH_NAME = {kkito:'끼토', boneul:'보늘', migae:'미개', ramda:'람다', bookgeo:'북거씨', lachilchin:'라칠친 할머니'};
-const CH_AV   = {kkito:'assets/sd_kkito_t.png', boneul:'assets/sd_boneul_t.png', migae:'assets/sd_migae.png',
-                 ramda:'assets/sd_ramda.png', bookgeo:'assets/sd_bookgeo.png', lachilchin:'assets/sd_lachilchin.png'};
+const CH_AV   = {kkito:'assets/sd_kkito_t.png', boneul:'assets/sd_boneul_t.png', migae:'assets/sd_migae_t.png',
+                 ramda:'assets/sd_ramda_t.png', bookgeo:'assets/sd_bookgeo_t.png', lachilchin:'assets/sd_lachilchin_t.png'};
 const DAILY_ORDER = ['kkito','boneul','migae','ramda','bookgeo','lachilchin'];
 function dayKey(){ const d=new Date(); return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate(); }
 const DAILY_CHAR_ID = DAILY_ORDER[(Math.imul(dayKey(),2654435761)>>>0)%DAILY_ORDER.length];
@@ -436,8 +353,6 @@ document.getElementById('wkClose').addEventListener('click', ()=> document.getEl
 document.getElementById('wkPanel').addEventListener('click', e=>{ if(e.target.id==='wkPanel') e.currentTarget.classList.remove('on'); });
 document.getElementById('profChip').addEventListener('click', ()=>{ document.getElementById('achOpen').click(); });
 </script>
-
-
 <script>
 // 누적 도토리로 열리는 칭호 — 도토리를 마을 공용 재화로 쓰는 첫 장치
 const TITLES = [
@@ -459,6 +374,5 @@ function renderTitleBar(){
 }
 document.getElementById('achOpen').addEventListener('click', renderTitleBar);
 </script>
-
 </body>
 </html>
