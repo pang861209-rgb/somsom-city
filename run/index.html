@@ -90,6 +90,11 @@
     font-family:inherit;cursor:pointer;background:#FDFBF5;color:#2B2620;box-shadow:0 3px 0 -1px #E4D9C0;}
   #pauseCard button.pri{background:#E0A83A;box-shadow:0 3px 0 -1px #A8781F;}
   #pauseCard button:active{transform:translateY(2px);box-shadow:none;}
+
+  /* 조작 안내 (Phase 1) — 낙엽피하기와 같은 패턴 */
+  .howto { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-top:2px; }
+  .howto .pill { font-size:11px; font-weight:700; color:#5a4a3a; background:#f3ede2;
+    border:1.5px solid #e2d8c4; border-radius:20px; padding:4px 12px; white-space:nowrap; }
 </style>
 </head>
 <body>
@@ -123,6 +128,13 @@
   <div id="select" class="screen hidden">
     <h1>캐릭터 선택</h1>
     <div class="sub">함께 달릴 친구를 골라보세요 · 속도 · 점프 · 회피가 캐릭터마다 달라요</div>
+    <div class="howto">
+      <span class="pill">👆 탭 = 점프</span>
+      <span class="pill">공중에서 한 번 더</span>
+      <span class="pill">🌰 도토리 모으기</span>
+      <span class="pill">아슬아슬 넘으면 보너스</span>
+      <span class="pill">⚠ 떨어지는 은행 주의</span>
+    </div>
     <div class="grid" id="charGrid"></div>
     <button onclick="ui.toTitle()" style="font-size:13px;padding:7px 16px;">← 뒤로</button>
   </div>

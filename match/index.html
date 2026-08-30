@@ -159,6 +159,11 @@
     font-family:inherit;cursor:pointer;background:#FDFBF5;color:#2B2620;box-shadow:0 3px 0 -1px #E4D9C0;}
   #pauseCard button.pri{background:#E0A83A;box-shadow:0 3px 0 -1px #A8781F;}
   #pauseCard button:active{transform:translateY(2px);box-shadow:none;}
+
+  /* 조작 안내 (Phase 1) — 낙엽피하기와 같은 패턴 */
+  .howto { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-top:2px; }
+  .howto .pill { font-size:11px; font-weight:700; color:#5a4a3a; background:#f3ede2;
+    border:1.5px solid #e2d8c4; border-radius:20px; padding:4px 12px; white-space:nowrap; }
 </style>
 </head>
 <body>
@@ -186,6 +191,11 @@
   <div id="setup" class="screen hidden">
     <h1>누구의 하루를 맞춰볼까?</h1>
     <div class="sub">고른 친구의 <b>서로 다른 일상 컷</b>들이 카드로 나와요.<br>친구마다 난이도와 <b>특별한 규칙</b>이 달라요!</div>
+    <div class="howto">
+      <span class="pill">👆 카드를 탭해 뒤집기</span>
+      <span class="pill">두 장이 같으면 성공</span>
+      <span class="pill">연속 성공 = 콤보 점수</span>
+    </div>
     <button id="dailyBtn" onclick="ui.startDaily()"></button>
     <div class="grid" id="charGrid"></div>
     <div style="display:flex;gap:8px;">
@@ -450,7 +460,7 @@ function startGame(daily) {
     if (g !== myG || g.done) return;
     $('countdown').classList.add('hidden');
     for (const c2 of g.deck) c2.el.classList.remove('open');
-    g.lock = false; g.t0 = performance.now();
+    g.lock = false; g.t0 = performance.now(); startBgm();
     say('시작!', 1.2);
     tickTimer();
     if (c.rule === 'sleepy') startSleepy();
@@ -609,7 +619,7 @@ function addDex(char, idx) {
 }
 
 function finishGame() {
-  g.done = true; cancelAnimationFrame(timerRaf); clearInterval(sleepTimer);
+  g.done = true; cancelAnimationFrame(timerRaf); clearInterval(sleepTimer); stopBgm();
   const c = CHARS[curChar];
   let timeBonus = 0, effBonus = 0;
   if (c.rule === 'steady') effBonus = Math.max(0, c.pairs * 3 - g.tries) * 60;   // 북거씨: 시도 효율 채점
@@ -666,7 +676,7 @@ let curRankTab = 'all', rankCache = null;
 const ui = {
   show(id) { for (const sc of ['title','setup','intro','game','result','ranking','dex']) $(sc).classList.toggle('hidden', sc !== id); showPauseBtn(id === 'game'); },
   toSetup() {
-    if (g) { g.done = true; cancelAnimationFrame(timerRaf); clearInterval(sleepTimer); g = null; }
+    if (g) { g.done = true; cancelAnimationFrame(timerRaf); clearInterval(sleepTimer); stopBgm(); g = null; }
     clearTimeout(introTimer); introPending = null;
     ui.show('setup'); buildSetup();
   },
@@ -704,6 +714,7 @@ const ui = {
     muted = !muted;
     localStorage.setItem('somsom_muted', muted ? '1' : '0');
     $('muteBtn').textContent = muted ? '🔇' : '🔊';
+    if (muted) stopBgm(); else if (g && !g.done && !paused) startBgm();
   },
   retry() { startGame(curDaily); },                                          // 재도전은 인트로 생략
   startDaily() { ui.showIntro(DAILY_CHAR, true); },
@@ -876,11 +887,11 @@ async function shareCard() {
 let paused=false, pauseLock=false;
 function canPause(){ return !!(g && !g.done && !$('game').classList.contains('hidden')); }
 function pauseGame(){ if(paused||!canPause())return; paused=true; pauseLock=g.lock; g.lock=true;
-  cancelAnimationFrame(timerRaf); clearInterval(sleepTimer); sleepTimer=null;
+  cancelAnimationFrame(timerRaf); clearInterval(sleepTimer); sleepTimer=null; stopBgm();
   $('pauseWrap').classList.add('on'); }
 function resumeGame(){ if(!paused)return; paused=false; $('pauseWrap').classList.remove('on');
   if(g && !g.done){ g.t0 = performance.now() - g.elapsed*1000; g.lock = pauseLock; tickTimer();
-    if(CHARS[g.key] && CHARS[g.key].rule==='sleepy') startSleepy(); } }
+    if(CHARS[g.key] && CHARS[g.key].rule==='sleepy') startSleepy(); startBgm(); } }
 function showPauseBtn(v){ $('pauseBtn').style.display = v ? 'block' : 'none'; if(!v){ paused=false; $('pauseWrap').classList.remove('on'); } }
 $('pauseBtn').addEventListener('click', e=>{ e.stopPropagation(); pauseGame(); });
 $('pauseResume').addEventListener('click', e=>{ e.stopPropagation(); resumeGame(); });
@@ -888,6 +899,21 @@ $('pauseQuit').addEventListener('click', e=>{ e.stopPropagation(); paused=false;
 document.addEventListener('visibilitychange', ()=>{ if(document.hidden) pauseGame(); });
 addEventListener('blur', ()=>pauseGame());
 addEventListener('keydown', e=>{ if(e.key==='Escape'){ paused?resumeGame():pauseGame(); } });
+
+// ── 배경음악 (Phase 1) — 카드 게임에 맞춰 낙엽·달리기보다 느리고 잔잔하게 ──
+let bgmTimer = null, bgmStep = 0;
+const BGM_NOTES = [523, 587, 659, 587, 523, 494, 440, 494, 523, 440, 392, 440, 523, 587, 523, 494];
+function startBgm() {
+  if (muted || bgmTimer) return;
+  try { ac(); } catch (e) { return; }
+  bgmTimer = setInterval(() => {
+    if (muted || !g || g.done || paused) return;
+    tone(BGM_NOTES[bgmStep % BGM_NOTES.length], 0.42, 'triangle', 0.016);
+    if (bgmStep % 4 === 0) tone(BGM_NOTES[bgmStep % BGM_NOTES.length] / 2, 0.55, 'sine', 0.010);
+    bgmStep++;
+  }, 420);
+}
+function stopBgm() { clearInterval(bgmTimer); bgmTimer = null; }
 </script>
 </body>
 </html>
