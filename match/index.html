@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>솜솜시티: 짝꿍을 찾아라!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   body { background:#f3ede2; font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; display:flex; justify-content:center; min-height:100vh; }
@@ -174,6 +175,83 @@
   #achToast .ai{font-size:20px;}
   #achToast .at{font-size:11px;font-weight:800;color:#B08A3A;letter-spacing:.06em;}
   #achToast .an{font-size:14px;font-weight:800;color:#2B2620;}
+
+  /* ═══ B안 스킨 — 게임 화면(DOM)을 허브와 같은 톤으로. 캔버스 게임플레이는 밝게 유지 ═══ */
+  body{background:#221E18;color:#EFE7D6;}
+  .screen{background:#221E18;color:#EFE7D6;}
+  #select,#ranking,#result,#setup,#dex,#game{background:#221E18;}
+  h1{font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif;color:#F2C14B;letter-spacing:-.01em;font-weight:400;}
+  .sub,.selSub{color:#A9A08C;}
+  #titleLogo,#logo{font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif;color:#F2C14B;
+    text-shadow:0 3px 14px rgba(0,0,0,.6);font-weight:400;}
+  #titleSub,#logoSub,#fsHint{color:#E6DCC6;text-shadow:0 2px 8px rgba(0,0,0,.7);}
+  #titleBg,#introImg{filter:brightness(.72) saturate(.92);}
+
+  button{background:rgba(255,255,255,.10);border:none;border-radius:14px;color:#EFE7D6;
+    box-shadow:none;font-family:inherit;}
+  button:active{background:rgba(255,255,255,.18);transform:none;box-shadow:none;}
+  #startBtn,#dailyBtn,#dailyBtn2{background:#F2C14B;color:#221E18;font-weight:800;border:none;box-shadow:none;}
+  #startBtn:active,#dailyBtn:active,#dailyBtn2:active{background:#D9A93C;transform:none;}
+
+  .howto .pill{background:rgba(255,255,255,.08);border:none;color:#CFC5B0;}
+
+  /* 캐릭터 카드 */
+  .card,.charcard{background:rgba(255,255,255,.07);border:none;box-shadow:none;color:#EFE7D6;}
+  .card:active,.charcard:active{background:rgba(255,255,255,.13);transform:none;box-shadow:none;}
+  .card .nm,.charcard .nm{color:#EFE7D6;}
+  .card .ab,.card .abil,.charcard .desc,.card .info,.card .top{color:#A9A08C;}
+  .card .bs,.charcard .bs,.card .best{color:#F2C14B;}
+  .card .bar .lab{color:#8A8271;}
+  .card .seg i{background:rgba(255,255,255,.14);}
+  .card .seg i.on{background:#F2C14B;}
+  .card .diff,.card .sk,.card .tag{color:#CFC5B0;}
+  .infoBtn{border-color:#8A8271 !important;color:#8A8271 !important;background:transparent !important;}
+
+  /* 랭킹 */
+  .rankrow{border-bottom:1px solid rgba(255,255,255,.09);color:#EFE7D6;}
+  .rankrow .rname{color:#EFE7D6;}
+  .rankrow .rscore{color:#F2C14B;}
+  .rankrow .sub,.rankrow .dbadge{color:#A9A08C;background:rgba(255,255,255,.08);}
+  .rankrow.me{background:rgba(242,193,75,.16);border-radius:12px;}
+  .rtab.sel{background:#F2C14B;color:#221E18;transform:none;}
+
+  /* 결과 */
+  .quote,#resQuote{background:rgba(255,255,255,.07);color:#E6DCC6;}
+  #resScore{color:#F2C14B !important;}
+  #nameRow input{background:rgba(255,255,255,.09);border:none;color:#EFE7D6;}
+  #nameRow input::placeholder{color:#8A8271;}
+
+  /* 인트로 말풍선 */
+  #introBox{background:rgba(34,30,24,.90);border:none;box-shadow:0 10px 30px -14px rgba(0,0,0,.8);}
+  #introBox .iname{color:#F2C14B;}
+  #introBox .itext{color:#E6DCC6;}
+  #introBox .ihint{color:#8A8271;}
+
+  /* 일시정지·토스트 */
+  #pauseCard{background:#2B2620;border:none;box-shadow:0 16px 40px -18px rgba(0,0,0,.85);}
+  #pauseCard .pt{color:#F2C14B;}
+  #pauseCard .ps{color:#A9A08C;}
+  #pauseCard button{background:rgba(255,255,255,.10);border:none;color:#EFE7D6;box-shadow:none;}
+  #pauseCard button.pri{background:#F2C14B;color:#221E18;box-shadow:none;}
+  #achToast{background:#2B2620;border:none;box-shadow:0 12px 30px -14px rgba(0,0,0,.85);}
+  #achToast .at{color:#F2C14B;}
+  #achToast .an{color:#EFE7D6;}
+
+  /* 짝맞추기 전용 */
+  .badge.easy{background:rgba(143,190,116,.22);color:#8FBE74;border:none;}
+  .badge.normal{background:rgba(242,193,75,.20);color:#F2C14B;border:none;}
+  .badge.hard{background:rgba(228,132,104,.22);color:#E48468;border:none;}
+  #hud .box{background:rgba(255,255,255,.09);color:#EFE7D6;}
+  #combo{color:#F2C14B;}
+  #partnerSay{background:rgba(34,30,24,.92);border:none;color:#E6DCC6;}
+  .dexcell{background:rgba(255,255,255,.06);border:none;}
+  .dexcell.q{background:rgba(255,255,255,.04);color:#6E6858;}
+  .dexhead{color:#CFC5B0;}
+  .dexhead .cnt{color:#F2C14B;}
+  .dexSpecial{background:rgba(255,255,255,.06);color:#A9A08C;}
+  .mcard .front{background:#EFE7D6;}
+  .mcard .back{background:#3A342A;}
+  #ruleModal .rm{background:#2B2620;color:#EFE7D6;border:none;}
 </style>
 </head>
 <body>
@@ -296,27 +374,27 @@
 // rule: sleepy(졸다가 공개) / steady(시간 무관, 시도 채점) / recheck(첫 실수 무효)
 //       rare(✨컷 2배) / swap(실수 2회마다 자리 교체) / hint(미리보기 3쌍만)
 const CHARS = {
-  boneul:     { name:'보늘',        sd:'../assets/sd_boneul.png',     win:'../assets/sd_boneul_win.png',     hit:'../assets/sd_boneul_hit.png',
+  boneul:     { name:'보늘',        sd:'../assets/sd_boneul_t.png',     win:'../assets/sd_boneul_win_t.png',     hit:'../assets/sd_boneul_hit_t.png',
                 diff:'easy', pairs:6, pool:8, cols:3, preview:2000, par:40, mult:1, rule:'sleepy',
                 desc: '6쌍 · 가끔 졸다가 카드를 살짝 보여줘요',
                 match:'오~ 맞네. 별거 아니네.', miss:'아 귀찮게... 어디 갔지.', clear:'끝. 피자 시킨다.' },
-  bookgeo:    { name:'북거씨',      sd:'../assets/sd_bookgeo.png',    win:'../assets/sd_bookgeo_win.png',    hit:'../assets/sd_bookgeo_hit.png',
+  bookgeo:    { name:'북거씨',      sd:'../assets/sd_bookgeo_t.png',    win:'../assets/sd_bookgeo_win_t.png',    hit:'../assets/sd_bookgeo_hit_t.png',
                 diff:'easy', pairs:6, pool:8, cols:3, preview:2000, par:45, mult:1, rule:'steady',
                 desc: '6쌍 · 시간 무관! 적게 틀릴수록 고득점',
                 match:'천천히 봐서, 기억하고 있었어요.', miss:'음... 서두르지 말죠.', clear:'느려도, 결국 다 찾았네요.' },
-  kkito:      { name:'끼토',        sd:'../assets/sd_kkito.png',      win:'../assets/sd_kkito_win.png',      hit:'../assets/sd_kkito_hit.png',
+  kkito:      { name:'끼토',        sd:'../assets/sd_kkito_t.png',      win:'../assets/sd_kkito_win_t.png',      hit:'../assets/sd_kkito_hit_t.png',
                 diff:'normal', pairs:8, pool:12, cols:4, preview:2500, par:60, mult:1.5, rule:'recheck',
                 desc: '8쌍 · 첫 실수 1회는 무효 (재확인!)',
                 match:'조, 좋았어! 기억났어!', miss:'으악, 아니었어?!', clear:'헤헤... 나 기억력 좋지?' },
-  ramda:      { name:'람다',        sd:'../assets/sd_ramda.png',      win:'../assets/sd_ramda_win.png',      hit:'../assets/sd_ramda_hit.png',
+  ramda:      { name:'람다',        sd:'../assets/sd_ramda_t.png',      win:'../assets/sd_ramda_win_t.png',      hit:'../assets/sd_ramda_hit_t.png',
                 diff:'normal', pairs:8, pool:12, cols:4, preview:2500, par:60, mult:1.5, rule:'rare',
                 desc: '8쌍 · 희귀템 컷을 맞추면 점수 2배!',
                 match:'찾았다! 완전 희귀템!', miss:'어라, 분명 여기 뒀는데?!', clear:'컬렉션 완성이야!' },
-  migae:      { name:'미개',        sd:'../assets/sd_migae.png',      win:'../assets/sd_migae_win.png',      hit:'../assets/sd_migae_hit.png',
+  migae:      { name:'미개',        sd:'../assets/sd_migae_t.png',      win:'../assets/sd_migae_win_t.png',      hit:'../assets/sd_migae_hit_t.png',
                 diff:'hard', pairs:12, pool:12, cols:4, preview:3500, par:110, mult:2.5, rule:'swap',
                 desc: '12쌍 · 실수 2번마다 개미가 카드를 옮겨요!',
                 match:'뽈뽈! (정답)', miss:'뽈...? (갸우뚱)', clear:'뽈뽈뽈뽈—!! (만세)' },
-  lachilchin: { name:'라칠친 할머니', sd:'../assets/sd_lachilchin.png', win:'../assets/sd_lachilchin_win.png', hit:'../assets/sd_lachilchin_hit.png',
+  lachilchin: { name:'라칠친 할머니', sd:'../assets/sd_lachilchin_t.png', win:'../assets/sd_lachilchin_win_t.png', hit:'../assets/sd_lachilchin_hit_t.png',
                 diff:'hard', pairs:12, pool:12, cols:4, preview:2800, par:110, mult:2.5, rule:'hint',
                 desc: '12쌍 · 미리보기는 기억나는 3쌍만 (연륜)',
                 match:'아이구, 그래~ 이거였지.', miss:'아이구야, 가물가물해~', clear:'늙은이 기억력이 아직 쓸만하네 그래~' },

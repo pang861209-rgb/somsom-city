@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="달려라 솜솜시티">
 <meta name="theme-color" content="#e9e2d4">
 <title>달려라 솜솜시티! (솜솜시티 러너)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body { height:100%; overflow:hidden; }
@@ -17,7 +18,7 @@
   canvas { display:block; width:100%; height:100%; background:#fdfbf5; touch-action:none; }
   #rotate { position:fixed; inset:0; z-index:99; background:#fdfbf5; display:none; flex-direction:column; align-items:center; justify-content:center; gap:12px; font-size:20px; font-weight:800; color:#5a4a3a; text-align:center; padding:24px; }
   @media (orientation:portrait) { #rotate { display:flex; } }
-  .screen { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:14px 18px; text-align:center; overflow-y:auto; }
+  .screen { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:10px 18px; text-align:center; overflow-y:auto; }
   .hidden { display:none; }
   h1 { font-size:24px; color:#5a4a3a; }
   .sub { color:#7a6a5a; font-size:12px; line-height:1.5; }
@@ -92,7 +93,7 @@
   #pauseCard button:active{transform:translateY(2px);box-shadow:none;}
 
   /* 조작 안내 (Phase 1) — 낙엽피하기와 같은 패턴 */
-  .howto { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-top:2px; }
+  .howto { display:flex; gap:5px; justify-content:center; flex-wrap:wrap; margin-top:0; }
   .howto .pill { font-size:11px; font-weight:700; color:#5a4a3a; background:#f3ede2;
     border:1.5px solid #e2d8c4; border-radius:20px; padding:4px 12px; white-space:nowrap; }
 
@@ -111,6 +112,83 @@
     font-size:13.5px;font-weight:800;color:#2B2620;cursor:pointer;font-family:inherit;
     box-shadow:0 3px 0 -1px #C9B98F;}
   #dailyBtn2:active{transform:translateY(2px);box-shadow:none;}
+
+  /* ═══ B안 스킨 — 게임 화면(DOM)을 허브와 같은 톤으로. 캔버스 게임플레이는 밝게 유지 ═══ */
+  body{background:#221E18;color:#EFE7D6;}
+  .screen{background:#221E18;color:#EFE7D6;}
+  #select,#ranking,#result,#setup,#dex,#game{background:#221E18;}
+  h1{font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif;color:#F2C14B;letter-spacing:-.01em;font-weight:400;}
+  .sub,.selSub{color:#A9A08C;}
+  #titleLogo,#logo{font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif;color:#F2C14B;
+    text-shadow:0 3px 14px rgba(0,0,0,.6);font-weight:400;}
+  #titleSub,#logoSub,#fsHint{color:#E6DCC6;text-shadow:0 2px 8px rgba(0,0,0,.7);}
+  #titleBg,#introImg{filter:brightness(.72) saturate(.92);}
+
+  button{background:rgba(255,255,255,.10);border:none;border-radius:14px;color:#EFE7D6;
+    box-shadow:none;font-family:inherit;}
+  button:active{background:rgba(255,255,255,.18);transform:none;box-shadow:none;}
+  #startBtn,#dailyBtn,#dailyBtn2{background:#F2C14B;color:#221E18;font-weight:800;border:none;box-shadow:none;}
+  #startBtn:active,#dailyBtn:active,#dailyBtn2:active{background:#D9A93C;transform:none;}
+
+  .howto .pill{background:rgba(255,255,255,.08);border:none;color:#CFC5B0;}
+
+  /* 캐릭터 카드 */
+  .card,.charcard{background:rgba(255,255,255,.07);border:none;box-shadow:none;color:#EFE7D6;}
+  .card:active,.charcard:active{background:rgba(255,255,255,.13);transform:none;box-shadow:none;}
+  .card .nm,.charcard .nm{color:#EFE7D6;}
+  .card .ab,.card .abil,.charcard .desc,.card .info,.card .top{color:#A9A08C;}
+  .card .bs,.charcard .bs,.card .best{color:#F2C14B;}
+  .card .bar .lab{color:#8A8271;}
+  .card .seg i{background:rgba(255,255,255,.14);}
+  .card .seg i.on{background:#F2C14B;}
+  .card .diff,.card .sk,.card .tag{color:#CFC5B0;}
+  .infoBtn{border-color:#8A8271 !important;color:#8A8271 !important;background:transparent !important;}
+
+  /* 랭킹 */
+  .rankrow{border-bottom:1px solid rgba(255,255,255,.09);color:#EFE7D6;}
+  .rankrow .rname{color:#EFE7D6;}
+  .rankrow .rscore{color:#F2C14B;}
+  .rankrow .sub,.rankrow .dbadge{color:#A9A08C;background:rgba(255,255,255,.08);}
+  .rankrow.me{background:rgba(242,193,75,.16);border-radius:12px;}
+  .rtab.sel{background:#F2C14B;color:#221E18;transform:none;}
+
+  /* 결과 */
+  .quote,#resQuote{background:rgba(255,255,255,.07);color:#E6DCC6;}
+  #resScore{color:#F2C14B !important;}
+  #nameRow input{background:rgba(255,255,255,.09);border:none;color:#EFE7D6;}
+  #nameRow input::placeholder{color:#8A8271;}
+
+  /* 인트로 말풍선 */
+  #introBox{background:rgba(34,30,24,.90);border:none;box-shadow:0 10px 30px -14px rgba(0,0,0,.8);}
+  #introBox .iname{color:#F2C14B;}
+  #introBox .itext{color:#E6DCC6;}
+  #introBox .ihint{color:#8A8271;}
+
+  /* 일시정지·토스트 */
+  #pauseCard{background:#2B2620;border:none;box-shadow:0 16px 40px -18px rgba(0,0,0,.85);}
+  #pauseCard .pt{color:#F2C14B;}
+  #pauseCard .ps{color:#A9A08C;}
+  #pauseCard button{background:rgba(255,255,255,.10);border:none;color:#EFE7D6;box-shadow:none;}
+  #pauseCard button.pri{background:#F2C14B;color:#221E18;box-shadow:none;}
+  #achToast{background:#2B2620;border:none;box-shadow:0 12px 30px -14px rgba(0,0,0,.85);}
+  #achToast .at{color:#F2C14B;}
+  #achToast .an{color:#EFE7D6;}
+
+  /* 짝맞추기 전용 */
+  .badge.easy{background:rgba(143,190,116,.22);color:#8FBE74;border:none;}
+  .badge.normal{background:rgba(242,193,75,.20);color:#F2C14B;border:none;}
+  .badge.hard{background:rgba(228,132,104,.22);color:#E48468;border:none;}
+  #hud .box{background:rgba(255,255,255,.09);color:#EFE7D6;}
+  #combo{color:#F2C14B;}
+  #partnerSay{background:rgba(34,30,24,.92);border:none;color:#E6DCC6;}
+  .dexcell{background:rgba(255,255,255,.06);border:none;}
+  .dexcell.q{background:rgba(255,255,255,.04);color:#6E6858;}
+  .dexhead{color:#CFC5B0;}
+  .dexhead .cnt{color:#F2C14B;}
+  .dexSpecial{background:rgba(255,255,255,.06);color:#A9A08C;}
+  .mcard .front{background:#EFE7D6;}
+  .mcard .back{background:#3A342A;}
+  #ruleModal .rm{background:#2B2620;color:#EFE7D6;border:none;}
 </style>
 </head>
 <body>
@@ -194,17 +272,17 @@
 // spd:기본속도배수  jv/djv:점프력/더블점프력  grav:중력  dw:그리기/히트박스 크기
 // shield:첫충돌 무효 횟수  magnet:도토리 자석 범위  coinx:도토리 점수배수
 const CHARS = {
-  kkito:      { name:'끼토',  spr:'../assets/run_kkito.png',  sd:'../assets/sd_kkito.png',  dw:80, spd:1.0,  jv:800, djv:720, grav:2500, shield:0, magnet:0,   coinx:1,
+  kkito:      { name:'끼토',  spr:'../assets/run_kkito_t.png',  sd:'../assets/sd_kkito_t.png',  dw:80, spd:1.0,  jv:800, djv:720, grav:2500, shield:0, magnet:0,   coinx:1,
     trait:'점프 장인 — 가장 높은 점프 + 더블점프 (만능 기본)', intro:'마감이다! 달려, 끼토!' },
-  migae:      { name:'미개',  spr:'../assets/run_migae.png',  sd:'../assets/sd_migae.png',  dw:24, spd:1.0, jv:700, djv:600, grav:2350, shield:0, magnet:0, coinx:1, jumps:3,
+  migae:      { name:'미개',  spr:'../assets/run_migae_t.png',  sd:'../assets/sd_migae_t.png',  dw:24, spd:1.0, jv:700, djv:600, grav:2350, shield:0, magnet:0, coinx:1, jumps:3,
     trait:'삼단 점프 — 6다리로 공중에서 두 번 더! 작아서 잘 안 맞음', intro:'뽈뽈뽈—! 따라와!' },
-  ramda:      { name:'람다',  spr:'../assets/run_ramda.png',  sd:'../assets/sd_ramda.png',  dw:58, spd:1.0,  jv:770, djv:700, grav:2500, shield:0, magnet:135, coinx:1,
+  ramda:      { name:'람다',  spr:'../assets/run_ramda_t.png',  sd:'../assets/sd_ramda_t.png',  dw:58, spd:1.0,  jv:770, djv:700, grav:2500, shield:0, magnet:135, coinx:1,
     trait:'수집형 — 도토리 자석 (주변 도토리가 끌려옴)', intro:'도토리는 다 내 거야!' },
-  boneul:     { name:'보늘',  spr:'../assets/run_boneul.png', sd:'../assets/sd_boneul.png', dw:74, spd:0.82, jv:715, djv:650, grav:2700, shield:1, magnet:0,   coinx:1,
+  boneul:     { name:'보늘',  spr:'../assets/run_boneul_t.png', sd:'../assets/sd_boneul_t.png', dw:74, spd:0.82, jv:715, djv:650, grav:2700, shield:1, magnet:0,   coinx:1,
     trait:'탱커형 — 첫 충돌 1회 무효 (느리지만 든든)', intro:'천천히 가도 안 죽어~' },
-  bookgeo:    { name:'북거씨', spr:'../assets/run_bookgeo.png', sd:'../assets/sd_bookgeo.png', dw:49, spd:0.85, jv:720, djv:660, grav:1750, shield:0, magnet:0, coinx:1,
+  bookgeo:    { name:'북거씨', spr:'../assets/run_bookgeo_t.png', sd:'../assets/sd_bookgeo_t.png', dw:49, spd:0.85, jv:720, djv:660, grav:1750, shield:0, magnet:0, coinx:1,
     trait:'플로팅형 — 천천히 떨어져 타이밍이 관대 (쉬움)', intro:'서두르지 않아도 돼요.' },
-  lachilchin: { name:'라칠친 할머니', spr:'../assets/run_lachilchin.png', sd:'../assets/sd_lachilchin.png', dw:35, spd:0.9, jv:760, djv:690, grav:2500, shield:0, magnet:0, coinx:2,
+  lachilchin: { name:'라칠친 할머니', spr:'../assets/run_lachilchin_t.png', sd:'../assets/sd_lachilchin_t.png', dw:35, spd:0.9, jv:760, djv:690, grav:2500, shield:0, magnet:0, coinx:2,
     trait:'알뜰형 — 도토리 점수 2배 (느린 시작)', intro:'아이구, 천천히 줍자 그래~' },
 };
 
