@@ -164,10 +164,21 @@
   .howto { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-top:2px; }
   .howto .pill { font-size:11px; font-weight:700; color:#5a4a3a; background:#f3ede2;
     border:1.5px solid #e2d8c4; border-radius:20px; padding:4px 12px; white-space:nowrap; }
+
+  /* 업적 (Phase 2) */
+  #achToast{position:absolute;top:14px;left:50%;transform:translateX(-50%) translateY(-140%);z-index:95;
+    background:#FDFBF5;border:2.5px solid #2B2620;border-radius:18px;padding:9px 16px;display:flex;align-items:center;gap:10px;
+    box-shadow:0 5px 0 -1px #E4D9C0, 0 14px 22px -14px rgba(74,52,26,.5);transition:transform .45s cubic-bezier(.2,.8,.3,1);
+    font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;white-space:nowrap;pointer-events:none;}
+  #achToast.on{transform:translateX(-50%) translateY(0);}
+  #achToast .ai{font-size:20px;}
+  #achToast .at{font-size:11px;font-weight:800;color:#B08A3A;letter-spacing:.06em;}
+  #achToast .an{font-size:14px;font-weight:800;color:#2B2620;}
 </style>
 </head>
 <body>
 <div id="app">
+  <div id="achToast"><span class="ai">🏅</span><span><span class="at">업적 달성</span><br><span class="an"></span></span></div>
   <div id="pauseWrap"><div id="pauseCard">
     <div class="pt">잠깐 쉬는 중</div>
     <div class="ps">기록은 그대로 있어요</div>
@@ -651,6 +662,7 @@ function showResult(score, timeBonus, effBonus, perfect) {
     (justCompleted ? ' 완성! 🎁 스페셜 컷 해금 — 도감에서 확인하세요!' : (dexArr.length === c.pool ? ' 완성! 🏅' : ''));
   $('resBest').textContent = c.name + ' 최고기록: ' + best + '점';
   lastResult = { key: curChar, diff: c.diff, score, isNewBest, daily: curDaily, detail: $('resDetail').textContent };
+  achReport({g:'match', key:curChar, diff:c.diff, cleared:true, misses:g.misses||0, time:g.elapsed||0, coins:0});
   $('nameRow').style.display = score >= 1 ? 'flex' : 'none';
   $('nameInput').value = localStorage.getItem('somsom_name') || '';
   $('submitBtn').disabled = false; $('submitBtn').textContent = '🏆 랭킹 등록';
@@ -914,6 +926,78 @@ function startBgm() {
   }, 420);
 }
 function stopBgm() { clearInterval(bgmTimer); bgmTimer = null; }
+
+// ── 업적 (Phase 2) — 세 게임 공용. 기록은 localStorage에 쌓이고 허브에서 모아 봅니다 ──
+const ACH = [
+  {id:'leaf_first', g:'leaf',  n:'가을 첫걸음',   d:'낙엽피하기에서 점수를 남겼어요'},
+  {id:'leaf_1000',  g:'leaf',  n:'골목 단골',     d:'낙엽피하기 1,000점'},
+  {id:'leaf_5000',  g:'leaf',  n:'은행 도사',     d:'낙엽피하기 5,000점'},
+  {id:'leaf_combo10',g:'leaf', n:'줍기의 달인',   d:'한 판에 10콤보'},
+  {id:'leaf_gold5', g:'leaf',  n:'황금잎 수집가', d:'한 판에 황금잎 5장'},
+  {id:'run_500',    g:'run',   n:'첫 질주',       d:'달리기 500m'},
+  {id:'run_2000',   g:'run',   n:'출근길 정복',   d:'달리기 2,000m'},
+  {id:'run_5000',   g:'run',   n:'마감 초월',     d:'달리기 5,000m'},
+  {id:'run_near10', g:'run',   n:'아슬아슬',      d:'한 판에 아슬아슬 회피 10회'},
+  {id:'run_tight3', g:'run',   n:'종이 한 장 차', d:'한 판에 완벽 회피 3회'},
+  {id:'run_combo5', g:'run',   n:'도토리 행진',   d:'달리기에서 5콤보'},
+  {id:'match_first',g:'match', n:'짝꿍 상봉',     d:'짝맞추기를 처음 끝냈어요'},
+  {id:'match_perfect',g:'match',n:'한 번도 안 틀림',d:'실수 없이 클리어'},
+  {id:'match_hard', g:'match', n:'열두 쌍의 기억',d:'어려움을 클리어'},
+  {id:'match_fast', g:'match', n:'번개 기억력',   d:'60초 안에 클리어'},
+  {id:'all_three',  g:'all',   n:'마을 한 바퀴',  d:'세 게임을 모두 해봤어요'},
+  {id:'all_chars',  g:'all',   n:'여섯 친구',     d:'여섯 주민 모두와 놀았어요'},
+  {id:'coins_500',  g:'all',   n:'도토리 창고',   d:'도토리를 500개 모았어요'},
+];
+function achLoad(){ try{ return JSON.parse(localStorage.getItem('somsom_ach')||'{}'); }catch(e){ return {}; } }
+function achStats(){ try{ return JSON.parse(localStorage.getItem('somsom_stats')||'{}'); }catch(e){ return {}; } }
+let achQueue = [];
+function achUnlock(id){
+  const a = achLoad(); if(a[id]) return false;
+  a[id] = Date.now(); try{ localStorage.setItem('somsom_ach', JSON.stringify(a)); }catch(e){}
+  achQueue.push(id); if(achQueue.length===1) achShowNext(); return true;
+}
+function achShowNext(){
+  const el = document.getElementById('achToast'); if(!el || !achQueue.length) return;
+  const a = ACH.find(x=>x.id===achQueue[0]); if(!a){ achQueue.shift(); return achShowNext(); }
+  el.querySelector('.an').textContent = a.n;
+  el.classList.add('on');
+  try{ if(typeof sfx==='function') sfx('record'); }catch(e){}
+  setTimeout(()=>{ el.classList.remove('on');
+    setTimeout(()=>{ achQueue.shift(); achShowNext(); }, 500); }, 2200);
+}
+// 게임이 끝날 때 한 번 호출 — 누적 기록을 갱신하고 조건을 확인합니다
+function achReport(ev){
+  const st = achStats();
+  st.played = st.played || {}; st.played[ev.g] = (st.played[ev.g]||0) + 1;
+  st.chars  = st.chars  || {}; if(ev.key) st.chars[ev.key] = 1;
+  st.coins  = (st.coins||0) + (ev.coins||0);
+  try{ localStorage.setItem('somsom_stats', JSON.stringify(st)); }catch(e){}
+  if(ev.g==='leaf'){
+    if(ev.score>0) achUnlock('leaf_first');
+    if(ev.score>=1000) achUnlock('leaf_1000');
+    if(ev.score>=5000) achUnlock('leaf_5000');
+    if((ev.combo||0)>=10) achUnlock('leaf_combo10');
+    if((ev.gold||0)>=5)  achUnlock('leaf_gold5');
+  } else if(ev.g==='run'){
+    if((ev.dist||0)>=500)  achUnlock('run_500');
+    if((ev.dist||0)>=2000) achUnlock('run_2000');
+    if((ev.dist||0)>=5000) achUnlock('run_5000');
+    if((ev.nears||0)>=10)  achUnlock('run_near10');
+    if((ev.tights||0)>=3)  achUnlock('run_tight3');
+    if((ev.combo||0)>=5)   achUnlock('run_combo5');
+  } else if(ev.g==='match'){
+    if(ev.cleared){
+      achUnlock('match_first');
+      if((ev.misses||0)===0) achUnlock('match_perfect');
+      if(ev.diff==='hard')   achUnlock('match_hard');
+      if((ev.time||1e9)<60)  achUnlock('match_fast');
+    }
+  }
+  const p = st.played||{};
+  if(p.leaf && p.run && p.match) achUnlock('all_three');
+  if(Object.keys(st.chars||{}).length >= 6) achUnlock('all_chars');
+  if((st.coins||0) >= 500) achUnlock('coins_500');
+}
 </script>
 </body>
 </html>

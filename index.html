@@ -77,6 +77,32 @@
     .logo{font-size:24px;} .tag{display:none;}
     .nm{font-size:21px;} .ds{display:none;} .content{gap:6px;}
   }
+
+  /* 업적 (Phase 2) */
+  .footRow{flex:none;display:flex;gap:9px;}
+  .footBtn{flex:1;background:rgba(253,251,245,.92);border:2.5px solid #2B2620;border-radius:16px;
+    padding:9px;text-align:center;font-size:13px;font-weight:800;color:#2B2620;cursor:pointer;
+    box-shadow:0 3px 0 -1px #E4D9C0;font-family:inherit;}
+  .footBtn:active{transform:translateY(2px);box-shadow:none;}
+  #achPanel{position:fixed;inset:0;z-index:90;display:none;align-items:flex-end;justify-content:center;
+    background:rgba(43,38,32,.46);}
+  #achPanel.on{display:flex;}
+  #achSheet{width:min(470px,100%);max-height:86vh;overflow-y:auto;background:#FDFBF5;
+    border:2.5px solid #2B2620;border-bottom:none;border-radius:26px 26px 0 0;padding:20px 18px 26px;
+    display:flex;flex-direction:column;gap:14px;box-shadow:0 -12px 30px -14px rgba(74,52,26,.55);}
+  #achSheet .hd{display:flex;align-items:baseline;gap:9px;}
+  #achSheet .hd .t{font-size:20px;font-weight:900;color:#2B2620;}
+  #achSheet .hd .c{font-size:12.5px;font-weight:700;color:#B08A3A;margin-left:auto;}
+  .achGrp{font-size:11px;font-weight:800;letter-spacing:.12em;color:#9A8B7A;margin-top:4px;}
+  .achRow{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:14px;
+    border:2px solid #E4D9C0;background:#fff;}
+  .achRow.got{border-color:#2B2620;background:#F6EED8;}
+  .achRow .ic{width:26px;text-align:center;font-size:17px;flex:none;filter:grayscale(1);opacity:.35;}
+  .achRow.got .ic{filter:none;opacity:1;}
+  .achRow .tx{flex:1;min-width:0;}
+  .achRow .nm{font-size:13.5px;font-weight:800;color:#9A8B7A;}
+  .achRow.got .nm{color:#2B2620;}
+  .achRow .ds{font-size:11.5px;color:#9A8B7A;}
 </style>
 </head>
 <body>
@@ -133,6 +159,61 @@
 
   </div>
 
+  <div class="footRow">
+    <button class="footBtn" id="achOpen">🏅 업적</button>
+  </div>
+
+  <div id="achPanel">
+    <div id="achSheet">
+      <div class="hd"><span class="t">업적</span><span class="c" id="achCount"></span></div>
+      <div id="achList"></div>
+      <button class="footBtn" id="achClose">닫기</button>
+    </div>
+  </div>
+
 </div>
+
+<script>
+// ── 업적 보기 (게임들이 localStorage에 남긴 기록을 모아서 표시) ──
+const ACH = [
+  {id:'leaf_first', g:'낙엽피하기', n:'가을 첫걸음',   d:'낙엽피하기에서 점수를 남겼어요'},
+  {id:'leaf_1000',  g:'낙엽피하기', n:'골목 단골',     d:'낙엽피하기 1,000점'},
+  {id:'leaf_5000',  g:'낙엽피하기', n:'은행 도사',     d:'낙엽피하기 5,000점'},
+  {id:'leaf_combo10',g:'낙엽피하기',n:'줍기의 달인',   d:'한 판에 10콤보'},
+  {id:'leaf_gold5', g:'낙엽피하기', n:'황금잎 수집가', d:'한 판에 황금잎 5장'},
+  {id:'run_500',    g:'달리기',    n:'첫 질주',       d:'달리기 500m'},
+  {id:'run_2000',   g:'달리기',    n:'출근길 정복',   d:'달리기 2,000m'},
+  {id:'run_5000',   g:'달리기',    n:'마감 초월',     d:'달리기 5,000m'},
+  {id:'run_near10', g:'달리기',    n:'아슬아슬',      d:'한 판에 아슬아슬 회피 10회'},
+  {id:'run_tight3', g:'달리기',    n:'종이 한 장 차', d:'한 판에 완벽 회피 3회'},
+  {id:'run_combo5', g:'달리기',    n:'도토리 행진',   d:'달리기에서 5콤보'},
+  {id:'match_first',g:'짝맞추기',  n:'짝꿍 상봉',     d:'짝맞추기를 처음 끝냈어요'},
+  {id:'match_perfect',g:'짝맞추기',n:'한 번도 안 틀림',d:'실수 없이 클리어'},
+  {id:'match_hard', g:'짝맞추기',  n:'열두 쌍의 기억',d:'어려움을 클리어'},
+  {id:'match_fast', g:'짝맞추기',  n:'번개 기억력',   d:'60초 안에 클리어'},
+  {id:'all_three',  g:'솜솜시티',  n:'마을 한 바퀴',  d:'세 게임을 모두 해봤어요'},
+  {id:'all_chars',  g:'솜솜시티',  n:'여섯 친구',     d:'여섯 주민 모두와 놀았어요'},
+  {id:'coins_500',  g:'솜솜시티',  n:'도토리 창고',   d:'도토리를 500개 모았어요'},
+];
+function achLoad(){ try{ return JSON.parse(localStorage.getItem('somsom_ach')||'{}'); }catch(e){ return {}; } }
+function renderAch(){
+  const got = achLoad(), list = document.getElementById('achList');
+  document.getElementById('achCount').textContent = Object.keys(got).length + ' / ' + ACH.length;
+  list.innerHTML = '';
+  let cur = '';
+  for(const a of ACH){
+    if(a.g !== cur){ cur = a.g;
+      const h = document.createElement('div'); h.className='achGrp'; h.textContent=cur; list.appendChild(h); }
+    const r = document.createElement('div');
+    r.className = 'achRow' + (got[a.id] ? ' got' : '');
+    r.innerHTML = '<span class="ic">🏅</span><span class="tx"><span class="nm">'+a.n+'</span><br><span class="ds">'+a.d+'</span></span>';
+    list.appendChild(r);
+  }
+}
+document.getElementById('achOpen').addEventListener('click', ()=>{ renderAch(); document.getElementById('achPanel').classList.add('on'); });
+document.getElementById('achClose').addEventListener('click', ()=> document.getElementById('achPanel').classList.remove('on'));
+document.getElementById('achPanel').addEventListener('click', e=>{ if(e.target.id==='achPanel') e.currentTarget.classList.remove('on'); });
+</script>
+
 </body>
 </html>
