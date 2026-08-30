@@ -279,7 +279,7 @@ const CHARS = {
                 intro:'떨어지는 도토리, 전부 내 거야!', hit:'앗 따가! 방금 거 환불해줘!', record:'이 기록 완전 희귀템이야!', lose:'방금 그 도토리 완전 희귀템이었는데!' },
   lachilchin: { name:'라칠친 할머니', img:'../assets/06_lachilchin.png', sd:'../assets/sd_lachilchin_t.png', speed:3.8, lives:1, w:50, h:58, tag:'반전형', color:'#b0608a', diff:3, skill:'🔄 룰 반전', desc:'은행=점수! 나뭇가지 주의', flip:true,
                 intro:'아이구, 은행 줍기엔 내가 선수지. 그래~', hit:'아이구야! 참말로~', record:'아이구, 늙은이가 또 해냈네 그래~', lose:'아이구, 그래~ 오늘은 이만 줍자.' },
-  bookgeo:    { name:'북거씨',      img:'../assets/07_bookgeo.png',    sd:'../assets/sd_bookgeo_t.png',    speed:2.8, lives:1, w:70, h:52, hitScale:0.68, tag:'방어형', color:'#3a8a7a', diff:2, skill:'🐢 등딱지 쉘터', desc:'더블터치로 잠깐 무적', shell:true,
+  bookgeo:    { name:'북거씨',      img:'../assets/07_bookgeo.png',    sd:'../assets/sd_bookgeo_t.png',    speed:2.8, lives:1, w:70, h:52, hitScale:0.85, tag:'방어형', color:'#3a8a7a', diff:1, skill:'🐢 등딱지 쉘터', desc:'더블터치로 잠깐 무적', shell:true,
                 intro:'서두르지 않아도, 이길 수 있어요.', hit:'음... 다음엔 등딱지로 막죠.', record:'천천히 왔는데, 어느새 신기록이네요.', lose:'천천히, 천천히... 다시 해봅시다.' },
 };
 
@@ -406,6 +406,7 @@ function newState(key) {
     objs: [], warns: [], particles: [], floaters: [], stains: [], leaves: [],
     spawnAt: 0, dir: 0, hitFlash: 0, shake: 0, squash: 0, scorePop: 0,
     shellUntil: 0, shellCdUntil: 0, slowUntil: 0, slowCdUntil: 0, over: false, overAt: 0, hitstop: 0, moveT: 0,
+    targetX: null,                                            // 손가락을 끌면 그 x로 따라간다(null이면 좌/우 절반 탭)
     introT: 1.8,
     bubble: null, recordShown: false, prevBest: +(localStorage.getItem('somsom2_best_' + key) || 0),
     acorns: 0, ginkgos: 0, goldens: 0, combo: 0, comboT: 0, bestCombo: 0,
@@ -559,7 +560,14 @@ function loop(now) {
 
   // move
   if (!s.over) {
-    s.x += s.dir * s.c.speed * 60 * dt;
+    const stepPx = s.c.speed * 60 * dt;
+    if (s.targetX !== null) {                                   // 끌어서 위치 지정
+      const d = s.targetX - s.x;
+      if (Math.abs(d) <= stepPx) { s.x = s.targetX; s.dir = 0; }
+      else { s.dir = d > 0 ? 1 : -1; s.x += s.dir * stepPx; }
+    } else {
+      s.x += s.dir * stepPx;                                    // 좌/우 절반 탭(기존 조작)
+    }
     s.x = Math.max(s.c.w/2, Math.min(W - s.c.w/2, s.x));
     if (s.dir !== 0) s.moveT += dt; else s.moveT = 0;
     if (s.introT <= 0) spawn(s);
@@ -579,8 +587,8 @@ function loop(now) {
     }
   }
 
-  const px = s.x, py = GROUND - 6 - s.c.h/2, shell = now < s.shellUntil;
-  const slowMo = (s.c.slow && now < s.slowUntil) ? 0.32 : 1;            // 끼토 귀 슬로우
+  const px = s.x, py = GROUND - 6 - s.c.h/2, shell = s.t < s.shellUntil;
+  const slowMo = (s.c.slow && s.t < s.slowUntil) ? 0.32 : 1;            // 끼토 귀 슬로우
   for (const o of s.objs) {
     o.y += o.vy * 60 * dt * slowMo; o.x += (o.vx||0) * 60 * dt * slowMo;
     if (o.x < 14 || o.x > W-14) o.vx = -(o.vx||0);
@@ -786,13 +794,13 @@ function draw(s, now, shell) {
   const hearts = '❤'.repeat(Math.max(0,s.lives));
   ctx.strokeText(hearts, W-14, 31); ctx.fillText(hearts, W-14, 31);
   if (s.c.shell) {
-    const cd = Math.max(0, (s.shellCdUntil - now)/1000);
+    const cd = Math.max(0, s.shellCdUntil - s.t);
     const txt = cd > 0 ? '쉘터 ' + cd.toFixed(1) + 's' : '쉘터 준비됨';
     ctx.font = '700 12px sans-serif';
     ctx.strokeText(txt, W-14, 52); ctx.fillText(txt, W-14, 52);
   }
   if (s.c.slow) {
-    const cd = Math.max(0, (s.slowCdUntil - now)/1000);
+    const cd = Math.max(0, s.slowCdUntil - s.t);
     const txt = cd > 0 ? '슬로우 ' + cd.toFixed(1) + 's' : '슬로우 준비됨';
     ctx.font = '700 12px sans-serif';
     ctx.strokeText(txt, W-14, 52); ctx.fillText(txt, W-14, 52);
@@ -809,7 +817,7 @@ function draw(s, now, shell) {
   }
 
   // 슬로우 모션 (끼토) — 푸른 잔물결 틴트
-  if (s.c.slow && now < s.slowUntil) {
+  if (s.c.slow && s.t < s.slowUntil) {
     ctx.globalAlpha = 0.12 + 0.05 * Math.sin(now / 110);
     ctx.fillStyle = '#5a7ab0'; ctx.fillRect(-10, -10, W+20, H+20);
     ctx.globalAlpha = 1;
@@ -824,18 +832,18 @@ function draw(s, now, shell) {
 }
 
 function useShell() {
+  // 지속·쿨다운은 벽시계(performance.now)가 아니라 게임 시간 s.t로 잰다.
+  // 벽시계로 재면 일시정지 중에도 쉘터가 그대로 흘러가 풀고 나면 사라져 있었다.
   const s = state; if (!s || !s.c.shell || s.over) return;
-  const now = performance.now();
-  if (now < s.shellCdUntil) return;
-  s.shellUntil = now + 1200; s.shellCdUntil = now + 5000;
+  if (s.t < s.shellCdUntil) return;
+  s.shellUntil = s.t + 1.2; s.shellCdUntil = s.t + 5.0;
   sfx('shell');
   floatTxt(s, s.x, GROUND - s.c.h*1.7 - 16, '쉘터!', '#3a7a5a');
 }
 function useSlow() {
-  const s = state; if (!s || !s.c.slow || s.over) return;
-  const now = performance.now();
-  if (now < s.slowCdUntil) return;
-  s.slowUntil = now + 1400; s.slowCdUntil = now + 6000;
+  const s = state; if (!s || !s.c.slow || s.over) return;   // 게임 시간 기준 — useShell 주석 참고
+  if (s.t < s.slowCdUntil) return;
+  s.slowUntil = s.t + 1.4; s.slowCdUntil = s.t + 6.0;
   sfx('slow'); buzz(20);
   floatTxt(s, s.x, GROUND - s.c.h*1.7 - 16, '슬로우!', '#5a7ab0');
   burst(s, s.x, GROUND - s.c.h, ['#cdd8ee','#fff'], 8, 100, 40);          // 귀 펄럭
@@ -1031,8 +1039,8 @@ buildGrid();
 // ---------- input ----------
 addEventListener('keydown', e => {
   if (!state) return;
-  if (e.key === 'ArrowLeft') state.dir = -1;
-  if (e.key === 'ArrowRight') state.dir = 1;
+  if (e.key === 'ArrowLeft') { state.dir = -1; state.targetX = null; }
+  if (e.key === 'ArrowRight') { state.dir = 1; state.targetX = null; }
   if (e.key === 'ArrowUp') { e.preventDefault(); action(); }
   if (e.key === ' ') { e.preventDefault(); action(); }
 });
@@ -1041,22 +1049,35 @@ addEventListener('keyup', e => {
   if (e.key === 'ArrowLeft' && state.dir === -1) state.dir = 0;
   if (e.key === 'ArrowRight' && state.dir === 1) state.dir = 0;
 });
+// 조작은 두 가지를 겹쳐 쓴다.
+//  · 그냥 누르면 예전대로 화면 좌/우 절반 = 왼쪽/오른쪽 이동
+//  · 손가락을 끌면 그 지점으로 따라간다 — 절반 탭만으로는 정확한 위치를 못 잡아
+//    빠른 캐릭터일수록 목표를 지나쳐 오히려 불리했다(미개 4.7초 vs 북거씨 20.9초).
+let touchStartX = 0, dragging = false;
 function touchDir(e) {
   if (!state) return;
   const t = e.touches[0]; if (!t) { state.dir = 0; return; }
   const r = cv.getBoundingClientRect();
-  state.dir = (t.clientX - r.left) < r.width/2 ? -1 : 1;
+  const x = (t.clientX - r.left) * (W / r.width);              // 캔버스 좌표계로
+  if (dragging || Math.abs(t.clientX - touchStartX) > 12) {
+    dragging = true;
+    state.targetX = Math.max(state.c.w/2, Math.min(W - state.c.w/2, x));
+  } else {
+    state.targetX = null;
+    state.dir = (t.clientX - r.left) < r.width/2 ? -1 : 1;
+  }
   e.preventDefault();
 }
 let lastTapT = 0;
 cv.addEventListener('touchstart', e => {
+  const t0 = e.touches[0]; touchStartX = t0 ? t0.clientX : 0; dragging = false;
   touchDir(e);
   const nowT = performance.now();                       // 더블 터치 = 쉘터 (북거씨)
   if (nowT - lastTapT < 300) action();
   lastTapT = nowT;
 }, {passive:false});
 cv.addEventListener('touchmove', touchDir, {passive:false});
-cv.addEventListener('touchend', () => { if (state) state.dir = 0; });
+cv.addEventListener('touchend', () => { dragging = false; if (state) { state.dir = 0; state.targetX = null; } });
 $('actionBtn').addEventListener('click', action);
 $('actionBtn').addEventListener('touchstart', e => { e.preventDefault(); action(); }, {passive:false});
 $('muteBtn').textContent = muted ? '🔇' : '🔊';
