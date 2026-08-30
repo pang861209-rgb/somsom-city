@@ -276,9 +276,17 @@ function statsLoad(){ try{ return JSON.parse(localStorage.getItem('somsom_stats'
 function missionLoad(){ try{ return JSON.parse(localStorage.getItem('somsom_missions')||'{}'); }catch(e){ return {}; } }
 function missionSpec(){
   const r=(Math.imul(dayKey(),2246822519)>>>0);
-  return {leaf:{label:'낙엽피하기 '+[300,600,1000][r%3]+'점 넘기'},
-          run:{label:'달리기 '+[500,1000,1500][(r>>3)%3]+'m 달리기'},
-          match:{label:'짝맞추기 실수 '+[0,1,2][(r>>6)%3]+'회 이하로 클리어'}};
+  // ⚠ r은 부호 없는 32비트인데 `>>`는 부호 있는 시프트라, r이 2^31을 넘는 날엔 음수가 된다.
+  //   JS의 %는 부호를 유지하므로 [0,1,2][-2] → undefined. 반드시 >>> 를 쓸 것.
+  // ⚠ goal과 label은 반드시 같은 값에서 나와야 한다. 예전엔 각자 따로 계산해
+  //   한쪽만 부호 있는 시프트를 써서 서로 어긋날 수 있었다.
+  const leafGoal = [300,600,1000][r%3];
+  const runGoal  = [500,1000,1500][(r>>>3)%3];
+  const missGoal = [0,1,2][(r>>>6)%3];
+  return {leaf: {goal:leafGoal, label:'낙엽피하기 '+leafGoal+'점 넘기'},
+          run:  {goal:runGoal,  label:'달리기 '+runGoal+'m 달리기'},
+          match:{goal:missGoal, label:'짝맞추기 '+(missGoal===0 ? '실수 없이 클리어'
+                                                              : '실수 '+missGoal+'회 이하로 클리어')}};
 }
 function titleFor(coins){
   if(coins>=2000) return '은행나무 지킴이';
