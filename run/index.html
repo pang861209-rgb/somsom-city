@@ -286,7 +286,7 @@ function newState(key){
   return { key, c, dist:0, speed:195*c.spd, base:195*c.spd, cap:560*c.spd, coins:0, coinPts:0,
     y:0, vy:0, spin:0, airJumps:0, onGround:true, jumps:(c.jumps||2), run:0, shield:c.shield, inv:0, introT:1.8, recordShown:false,
     obs:[], gems:[], parts:[], floats:[], nextObs:540, nextGem:260, drops:[], nextDrop:1100,
-    combo:0, comboT:0, bestCombo:0,
+    combo:0, comboT:0, bestCombo:0, marks:[], nextMark:700,
     over:false, overAt:0, shake:0, hitstop:0, last:performance.now(),
     best:+(localStorage.getItem('runner_best_'+key)||0) };
 }
@@ -325,6 +325,8 @@ function loop(now){
     if(s.onGround&&Math.random()<.25)s.parts.push({x:PX-15,y:GROUND-2,vx:-55,vy:-8,g:120,life:.3,max:.3,size:2.5,col:'rgba(180,160,120,.5)'});
     s.nextObs-=s.speed*dt; if(s.nextObs<=0){ spawnObstacle(s); s.nextObs=420+Math.random()*300; }
     s.nextGem-=s.speed*dt; if(s.nextGem<=0){ spawnGems(s); s.nextGem=360+Math.random()*260; }
+    s.nextMark-=s.speed*dt; if(s.nextMark<=0){ const L=LANDMARKS[(s.markIdx=(s.markIdx||0)+1)%LANDMARKS.length];
+      s.marks.push({x:W+60, id:L.id, n:L.n, got:false}); s.nextMark=900+Math.random()*500; }   // 코스 랜드마크
     s.nextDrop-=s.speed*dt; if(s.nextDrop<=0 && s.dist>500){ s.drops.push({x:W+70,ph:0,t:0,y:-70}); s.nextDrop=850+Math.random()*750; }   // 낙하 은행 (경고→낙하→잔류)
   }
 
@@ -375,6 +377,9 @@ function loop(now){
     }
   }
   s.drops=s.drops.filter(d=>d.x>-40 && d.ph<3);
+  for(const m of s.marks){ m.x-=s.speed*dt;
+    if(!m.got && m.x<cx){ m.got=true; dexAdd(m.id, m.n); } }
+  s.marks=s.marks.filter(m=>m.x>-140);
   for(const g of s.gems){
     g.x-=s.speed*dt;
     if(!g.taken && s.c.magnet){ const dx=cx-g.x, dy=cy-g.y, d=Math.hypot(dx,dy)||1; if(d<s.c.magnet){ g.x+=dx/d*220*dt; g.y+=dy/d*220*dt; } }
@@ -415,6 +420,9 @@ function draw(s,now,score){
   ctx.strokeStyle='#222'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,GROUND); ctx.lineTo(W,GROUND); ctx.stroke();
   ctx.strokeStyle='rgba(150,130,90,.35)'; ctx.lineWidth=3; ctx.beginPath(); let lo=-((s.dist)%64); for(let x=lo;x<W;x+=64){ctx.moveTo(x,GROUND+24);ctx.lineTo(x+28,GROUND+24);} ctx.stroke();
   // 장애물
+  for(const m of s.marks){ const im=lmImg[m.id]; if(!im) continue;
+    const h=Math.min(96,GROUND*0.30), w=h*(im.width||im.naturalWidth)/(im.height||im.naturalHeight);
+    ctx.globalAlpha=.92; ctx.drawImage(im, m.x-w/2, GROUND-h, w, h); ctx.globalAlpha=1; }
   for(const o of s.obs){ const top=GROUND-o.h; ctx.fillStyle=o.h>48?'#b07a4a':'#9a7a4a'; ctx.strokeStyle='#222'; ctx.lineWidth=2; ctx.beginPath(); ctx.roundRect(o.x,top,o.w,o.h,5); ctx.fill(); ctx.stroke(); ctx.fillStyle='rgba(255,255,255,.18)'; ctx.beginPath(); ctx.roundRect(o.x+3,top+3,o.w-6,6,3); ctx.fill(); }
   // ── 낙하 은행(썩은 열매) 렌더 — '먹는 것'과 확실히 구분되게 위험 신호 강조 ──
   for(const d of s.drops){
@@ -709,6 +717,33 @@ function achReport(ev){
   if(Object.keys(st.chars||{}).length >= 6) achUnlock('all_chars');
   if((st.coins||0) >= 500) achUnlock('coins_500');
 }
+
+// ── 도감 (Phase 2) — 게임에서 만난 것을 모아 허브에서 봅니다 ──
+function dexLoad(){ try{ return JSON.parse(localStorage.getItem('somsom_dex')||'{}'); }catch(e){ return {}; } }
+function dexAdd(id, label){
+  const d = dexLoad(); if(d[id]) return false;
+  d[id] = Date.now(); try{ localStorage.setItem('somsom_dex', JSON.stringify(d)); }catch(e){}
+  const el = document.getElementById('achToast');
+  if(el){ el.querySelector('.at').textContent='도감 발견'; el.querySelector('.an').textContent=label;
+    el.classList.add('on'); try{ if(typeof sfx==='function') sfx('record'); }catch(e){}
+    setTimeout(()=>{ el.classList.remove('on');
+      setTimeout(()=>{ el.querySelector('.at').textContent='업적 달성'; }, 500); }, 2000); }
+  return true;
+}
+// ── 오늘의 도전 — 세 게임이 같은 씨앗을 써서 마을 전체가 같은 친구와 놉니다 ──
+function dayKey(){ const d=new Date(); return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate(); }
+
+const LANDMARKS = [
+  {id:'run_postbox', f:'dex_run_postbox.png',  n:'골목 우체통'},
+  {id:'run_busstop', f:'dex_run_busstop.png',  n:'버스 정류장'},
+  {id:'run_bench',   f:'dex_run_bench.png',    n:'공원 벤치'},
+  {id:'run_lamp',    f:'dex_run_lamp.png',     n:'가로등'},
+  {id:'run_bakery',  f:'dex_run_bakery.png',   n:'골목 빵집'},
+];
+const lmImg = {};
+for(const L of LANDMARKS){ const im=new Image(); im.src='../assets/'+L.f;
+  im.onload=()=>{ try{ lmImg[L.id]=downscale(keyOutWhiteBg(im),150); }catch(e){ lmImg[L.id]=im; } }; }
+const DAILY_RUN = ['kkito','migae','ramda','boneul','bookgeo','lachilchin'][(Math.imul(dayKey(),2654435761)>>>0)%6];
 </script>
 </body>
 </html>

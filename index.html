@@ -103,6 +103,26 @@
   .achRow .nm{font-size:13.5px;font-weight:800;color:#9A8B7A;}
   .achRow.got .nm{color:#2B2620;}
   .achRow .ds{font-size:11.5px;color:#9A8B7A;}
+
+  .sheetWrap{position:fixed;inset:0;z-index:90;display:none;align-items:flex-end;justify-content:center;background:rgba(43,38,32,.46);}
+  .sheetWrap.on{display:flex;}
+  .sheetWrap .sheet{width:min(470px,100%);max-height:86vh;overflow-y:auto;background:#FDFBF5;
+    border:2.5px solid #2B2620;border-bottom:none;border-radius:26px 26px 0 0;padding:20px 18px 26px;
+    display:flex;flex-direction:column;gap:14px;box-shadow:0 -12px 30px -14px rgba(74,52,26,.55);}
+  .sheetWrap .hd{display:flex;align-items:baseline;gap:9px;}
+  .sheetWrap .hd .t{font-size:20px;font-weight:900;color:#2B2620;}
+  .sheetWrap .hd .c{font-size:12.5px;font-weight:700;color:#B08A3A;margin-left:auto;}
+  .dexGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;}
+  .dexCell{border:2px solid #E4D9C0;border-radius:16px;background:#fff;padding:9px 6px;
+    display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;}
+  .dexCell.got{border-color:#2B2620;background:#F6EED8;}
+  .dexCell img{width:100%;height:58px;object-fit:contain;filter:grayscale(1);opacity:.22;}
+  .dexCell.got img{filter:none;opacity:1;}
+  .dexCell .n{font-size:11.5px;font-weight:800;color:#9A8B7A;}
+  .dexCell.got .n{color:#2B2620;}
+  .cutRow{display:flex;align-items:center;gap:10px;padding:8px 11px;border:2px solid #E4D9C0;border-radius:14px;background:#fff;}
+  .cutRow .nm{flex:1;font-size:13px;font-weight:800;color:#5A4A3A;}
+  .cutRow .pg{font-size:12px;font-weight:700;color:#B08A3A;}
 </style>
 </head>
 <body>
@@ -161,8 +181,17 @@
 
   <div class="footRow">
     <button class="footBtn" id="achOpen">🏅 업적</button>
+    <button class="footBtn" id="dexOpen">📖 도감</button>
   </div>
 
+
+  <div id="dexPanel" class="sheetWrap">
+    <div class="sheet">
+      <div class="hd"><span class="t">도감</span><span class="c" id="dexCount"></span></div>
+      <div id="dexList"></div>
+      <button class="footBtn" id="dexClose">닫기</button>
+    </div>
+  </div>
   <div id="achPanel">
     <div id="achSheet">
       <div class="hd"><span class="t">업적</span><span class="c" id="achCount"></span></div>
@@ -213,6 +242,55 @@ function renderAch(){
 document.getElementById('achOpen').addEventListener('click', ()=>{ renderAch(); document.getElementById('achPanel').classList.add('on'); });
 document.getElementById('achClose').addEventListener('click', ()=> document.getElementById('achPanel').classList.remove('on'));
 document.getElementById('achPanel').addEventListener('click', e=>{ if(e.target.id==='achPanel') e.currentTarget.classList.remove('on'); });
+</script>
+
+
+<script>
+const DEX_ITEMS = [
+  {g:'낙엽피하기 소품', items:[
+    {id:'leaf_pinecone', f:'assets/dex_leaf_pinecone.png', n:'솔방울'},
+    {id:'leaf_maple',    f:'assets/dex_leaf_maple.png',    n:'단풍잎'},
+    {id:'leaf_chestnut', f:'assets/dex_leaf_chestnut.png', n:'알밤'},
+  ]},
+  {g:'달리기 랜드마크', items:[
+    {id:'run_postbox', f:'assets/dex_run_postbox.png', n:'골목 우체통'},
+    {id:'run_busstop', f:'assets/dex_run_busstop.png', n:'버스 정류장'},
+    {id:'run_bench',   f:'assets/dex_run_bench.png',   n:'공원 벤치'},
+    {id:'run_lamp',    f:'assets/dex_run_lamp.png',    n:'가로등'},
+    {id:'run_bakery',  f:'assets/dex_run_bakery.png',  n:'골목 빵집'},
+  ]},
+];
+const CUT_POOL = {kkito:12, boneul:8, migae:12, ramda:12, bookgeo:8, lachilchin:12};
+const CUT_NAME = {kkito:'끼토', boneul:'보늘', migae:'미개', ramda:'람다', bookgeo:'북거씨', lachilchin:'라칠친 할머니'};
+function dexLoad(){ try{ return JSON.parse(localStorage.getItem('somsom_dex')||'{}'); }catch(e){ return {}; } }
+function cutLoad(){ try{ return JSON.parse(localStorage.getItem('somsom3_dex')||'{}'); }catch(e){ return {}; } }
+function renderDex(){
+  const got=dexLoad(), cuts=cutLoad(), list=document.getElementById('dexList');
+  let have=0, total=0;
+  list.innerHTML='';
+  for(const sec of DEX_ITEMS){
+    const h=document.createElement('div'); h.className='achGrp'; h.textContent=sec.g; list.appendChild(h);
+    const grid=document.createElement('div'); grid.className='dexGrid';
+    for(const it of sec.items){
+      total++; const ok=!!got[it.id]; if(ok) have++;
+      const c=document.createElement('div'); c.className='dexCell'+(ok?' got':'');
+      c.innerHTML='<img src="'+it.f+'" alt=""><span class="n">'+(ok?it.n:'？')+'</span>';
+      grid.appendChild(c);
+    }
+    list.appendChild(grid);
+  }
+  const h2=document.createElement('div'); h2.className='achGrp'; h2.textContent='짝맞추기 일상 컷'; list.appendChild(h2);
+  for(const k in CUT_POOL){
+    const n=(cuts[k]||[]).length, p=CUT_POOL[k]; have+=n; total+=p;
+    const r=document.createElement('div'); r.className='cutRow';
+    r.innerHTML='<span class="nm">'+CUT_NAME[k]+'</span><span class="pg">'+n+' / '+p+'</span>';
+    list.appendChild(r);
+  }
+  document.getElementById('dexCount').textContent = have+' / '+total;
+}
+document.getElementById('dexOpen').addEventListener('click', ()=>{ renderDex(); document.getElementById('dexPanel').classList.add('on'); });
+document.getElementById('dexClose').addEventListener('click', ()=> document.getElementById('dexPanel').classList.remove('on'));
+document.getElementById('dexPanel').addEventListener('click', e=>{ if(e.target.id==='dexPanel') e.currentTarget.classList.remove('on'); });
 </script>
 
 </body>

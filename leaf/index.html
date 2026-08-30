@@ -380,6 +380,7 @@ function spawn(s) {
     if (s.c.flip) type = r < 0.45 ? 'ginkgo' : (r < 0.80 ? 'branch' : 'acorn');
     else          type = r < 0.68 ? 'ginkgo' : 'acorn';
     if (Math.random() < 0.05) type = 'golden';                  // 가끔 떨어지는 귀한 황금잎(+200)
+    if (Math.random() < 0.018) type = 'relic';                  // 아주 가끔 떨어지는 도감 소품
     const vy = (185 + s.t * 6.5 + Math.random() * 80) / 60 * (type === 'golden' ? 0.65 : 1);  // 황금잎은 천천히
     const vx = s.t > 18 ? (Math.random() - 0.5) * Math.min(1.8, s.t * 0.04) : 0;  // 후반 커브볼
     const obj = { type, x, y: -20, vy, vx };
@@ -480,7 +481,14 @@ function loop(now) {
     if (!s.over && Math.abs(o.x - px) < rx + 13 && Math.abs(o.y - py) < ry + 13) {
       o.dead = true;
       const harmful = s.c.flip ? (o.type === 'branch') : (o.type === 'ginkgo');
-      if (o.type === 'golden') {
+      if (o.type === 'relic') {
+        const R = RELICS[(Math.random()*RELICS.length)|0];
+        const m = bumpCombo(s), pts = 120 * m;
+        s.score += pts; s.scorePop = 0.45; sfx('record');
+        burst(s, o.x, o.y, ['#c98b5e','#e8c14a','#fff'], 14, 150, 70);
+        floatTxt(s, o.x, o.y-12, '+' + pts + ' ' + R.n, '#8a6a1a');
+        dexAdd(R.id, R.n);
+      } else if (o.type === 'golden') {
         const m = bumpCombo(s), pts = 200 * m;
         s.score += pts; s.scorePop = 0.5; s.goldens++; sfx('record'); buzz([20, 40, 20]);
         burst(s, o.x, o.y, ['#f5c518','#ffd95a','#fff'], 18, 170, 80);
@@ -596,6 +604,7 @@ function draw(s, now, shell) {
     }
     else if (o.type === 'golden') drawGolden(o.x, o.y, now);
     else if (o.type === 'ginkgo') drawGinkgo(o.x, o.y);
+    else if (o.type === 'relic') drawRelic(o.x, o.y);
     else if (o.type === 'acorn') drawAcorn(o.x, o.y);
     else drawBranch(o.x, o.y);
   }
@@ -1035,6 +1044,37 @@ function achReport(ev){
   if(p.leaf && p.run && p.match) achUnlock('all_three');
   if(Object.keys(st.chars||{}).length >= 6) achUnlock('all_chars');
   if((st.coins||0) >= 500) achUnlock('coins_500');
+}
+
+// ── 도감 (Phase 2) — 게임에서 만난 것을 모아 허브에서 봅니다 ──
+function dexLoad(){ try{ return JSON.parse(localStorage.getItem('somsom_dex')||'{}'); }catch(e){ return {}; } }
+function dexAdd(id, label){
+  const d = dexLoad(); if(d[id]) return false;
+  d[id] = Date.now(); try{ localStorage.setItem('somsom_dex', JSON.stringify(d)); }catch(e){}
+  const el = document.getElementById('achToast');
+  if(el){ el.querySelector('.at').textContent='도감 발견'; el.querySelector('.an').textContent=label;
+    el.classList.add('on'); try{ if(typeof sfx==='function') sfx('record'); }catch(e){}
+    setTimeout(()=>{ el.classList.remove('on');
+      setTimeout(()=>{ el.querySelector('.at').textContent='업적 달성'; }, 500); }, 2000); }
+  return true;
+}
+// ── 오늘의 도전 — 세 게임이 같은 씨앗을 써서 마을 전체가 같은 친구와 놉니다 ──
+function dayKey(){ const d=new Date(); return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate(); }
+
+// ── 도감 소품 (Phase 2) ──
+const RELICS = [
+  {id:'leaf_pinecone', f:'../assets/dex_leaf_pinecone.png', n:'솔방울'},
+  {id:'leaf_maple',    f:'../assets/dex_leaf_maple.png',    n:'단풍잎'},
+  {id:'leaf_chestnut', f:'../assets/dex_leaf_chestnut.png', n:'알밤'},
+];
+const relicImg = [];
+RELICS.forEach((R,i)=>{ const im=new Image(); im.src=R.f; im.onload=()=>{ relicImg[i]=im; }; });
+function drawRelic(x, y){
+  const im = relicImg[0] || relicImg[1] || relicImg[2];
+  ctx.save(); ctx.globalAlpha = 0.55; ctx.fillStyle = '#fffaf0';
+  ctx.beginPath(); ctx.arc(x, y, 19, 0, 7); ctx.fill(); ctx.restore();
+  if (im) { const w = 34, h = 34 * im.height / im.width; ctx.drawImage(im, x - w/2, y - h/2, w, h); }
+  else { ctx.font = '24px serif'; ctx.textAlign = 'center'; ctx.fillText('🌰', x, y + 8); }
 }
 </script>
 </body>
