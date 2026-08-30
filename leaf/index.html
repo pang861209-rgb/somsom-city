@@ -190,6 +190,7 @@
             left:calc(8px + env(safe-area-inset-left)) !important; }
   .pauseBtn{ top:calc(8px + env(safe-area-inset-top)); }
   #achToast{ top:calc(14px + env(safe-area-inset-top)); }
+  img[src=""], img:not([src]){ visibility:hidden; }   /* 런타임에 채워지는 이미지가 깨져 보이지 않게 */
 </style>
 </head>
 <body>
@@ -488,7 +489,8 @@ function spawn(s) {
     else          type = r < 0.68 ? 'ginkgo' : 'acorn';
     if (Math.random() < 0.05) type = 'golden';                  // 가끔 떨어지는 귀한 황금잎(+200)
     if (Math.random() < 0.018) type = 'relic';                  // 아주 가끔 떨어지는 도감 소품
-    const vy = (185 + s.t * 6.5 + Math.random() * 80) / 60 * (type === 'golden' ? 0.65 : 1);  // 황금잎은 천천히
+    const hs = GROUND / 646;                                   // 화면이 길수록 빠르게 → 기기별 난이도 통일
+    const vy = (185 + s.t * 6.5 + Math.random() * 80) / 60 * hs * (type === 'golden' ? 0.65 : 1);  // 황금잎은 천천히
     const vx = s.t > 18 ? (Math.random() - 0.5) * Math.min(1.8, s.t * 0.04) : 0;  // 후반 커브볼
     const obj = { type, x, y: -20, vy, vx };
     if (s.c.telegraph) s.warns.push({ x, t: 0.5, obj });
