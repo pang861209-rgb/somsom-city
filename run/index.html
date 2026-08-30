@@ -275,6 +275,7 @@ function newState(key){
   return { key, c, dist:0, speed:195*c.spd, base:195*c.spd, cap:560*c.spd, coins:0, coinPts:0,
     y:0, vy:0, spin:0, airJumps:0, onGround:true, jumps:(c.jumps||2), run:0, shield:c.shield, inv:0, introT:1.8, recordShown:false,
     obs:[], gems:[], parts:[], floats:[], nextObs:540, nextGem:260, drops:[], nextDrop:1100,
+    combo:0, comboT:0, bestCombo:0,
     over:false, overAt:0, shake:0, hitstop:0, last:performance.now(),
     best:+(localStorage.getItem('runner_best_'+key)||0) };
 }
@@ -323,7 +324,7 @@ function loop(now){
     o.x-=s.speed*dt;
     const ovX = cx+half>o.x+6 && cx-half<o.x+o.w-6;                       // 가로로 겹치는 중
     if(!s.over && s.inv<=0 && ovX && py>GROUND-o.h+6){
-      if(s.shield>0){ s.shield--; s.inv=1.1; s.shake=.35; sfx('block'); s.floats.push({x:PX,y:py-70,txt:'막았다!',col:'#3a7a5a',life:1.1}); }
+      if(s.shield>0){ s.shield--; s.inv=1.1; s.shake=.35; s.combo=0; s.comboT=0; sfx('block'); s.floats.push({x:PX,y:py-70,txt:'막았다!',col:'#3a7a5a',life:1.1}); }
       else { s.over=true; s.overAt=now; s.shake=.5; s.hitstop=.12; sfx('hit'); sfx('over'); stopBgm(); }
     }
     // ── 니어미스: 장애물 위를 아슬아슬하게 넘으면 보너스 (붙어서 달릴수록 이득) ──
@@ -367,7 +368,9 @@ function loop(now){
     g.x-=s.speed*dt;
     if(!g.taken && s.c.magnet){ const dx=cx-g.x, dy=cy-g.y, d=Math.hypot(dx,dy)||1; if(d<s.c.magnet){ g.x+=dx/d*220*dt; g.y+=dy/d*220*dt; } }
     if(!g.taken && Math.abs(g.x-cx)<26 && Math.abs(g.y-cy)<34){
-      g.taken=true; s.coins++; const pts=30*s.c.coinx; s.coinPts+=pts; sfx('coin');
+      g.taken=true; s.coins++;
+      s.combo++; if(s.combo>s.bestCombo)s.bestCombo=s.combo; s.comboT=3.0;   // 연속 줍기 = 콤보
+      const mult=Math.min(5,s.combo), pts=30*s.c.coinx*mult; s.coinPts+=pts; sfx('coin');
       for(let i=0;i<8;i++)s.parts.push({x:g.x,y:g.y,vx:(Math.random()-.5)*120,vy:(Math.random()-.5)*120-40,g:300,life:.5,max:.5,size:3,col:['#b5824a','#e8c14a','#fff'][i%3]});
       s.floats.push({x:g.x,y:g.y-10,txt:'+'+pts,col:'#b08a3a',life:.7});
     }
@@ -381,6 +384,7 @@ function loop(now){
   for(const f of s.floats){ f.life-=dt; f.y-=34*dt; } s.floats=s.floats.filter(f=>f.life>0);
   s.shake=Math.max(0,s.shake-dt);
   if(s.spin>0)s.spin=Math.max(0,s.spin-dt*2.8);   // 공중 플립 감쇠
+  if(s.comboT>0 && !s.over){ s.comboT-=dt; if(s.comboT<=0) s.combo=0; }   // 줍기 끊기면 콤보 리셋
 
   draw(s,now,score);
   if(s.over && now-s.overAt>800) return endGame(score);
@@ -460,6 +464,10 @@ function draw(s,now,score){
   // HUD
   ctx.fillStyle='#5a4a3a'; ctx.font='800 22px sans-serif'; ctx.textAlign='left'; ctx.fillText(score+' m',150,36);   // 88: 좌상단 '← 홈' 버튼과 겹치지 않게
   ctx.font='800 15px sans-serif'; ctx.textAlign='right'; ctx.fillText('🌰 '+s.coins,W-14,30);
+  if(s.combo>=2){                                     // 콤보 표시 (남은 시간 줄면 흐려짐)
+    ctx.globalAlpha=Math.min(1,0.4+s.comboT/3.0*0.6);
+    ctx.fillStyle='#d2452a'; ctx.font='800 14px sans-serif'; ctx.textAlign='right';
+    ctx.fillText('🔥 '+s.combo+'콤보 ×'+Math.min(5,s.combo),W-14,68); ctx.globalAlpha=1; ctx.fillStyle='#5a4a3a'; }
   if(s.shield>0){ ctx.fillStyle='#3a7a5a'; ctx.font='800 13px sans-serif'; ctx.fillText('🛡 보호막',W-14,50); }
   ctx.restore();
 }
@@ -474,6 +482,7 @@ function endGame(score){
   $('resQuote').textContent='"'+(c.name==='끼토'?LOSE:c.intro)+'"';
   $('resScore').textContent=score+' m';
   $('resDetail').textContent=c.name+' · 도토리 '+s.coins+'개'
+    +(s.bestCombo>=2?' · 최고 '+s.bestCombo+'콤보':'')
     +(s.nears?' · 아슬아슬 '+s.nears+'회'+(s.tights?' (완벽 '+s.tights+')':''):'');
   $('resBest').textContent=c.name+' 최고기록: '+best+' m';
   lastResult={key,score,coins:s.coins,best,isNew};
