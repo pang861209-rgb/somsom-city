@@ -959,7 +959,10 @@ async function lbGet() {
       body: JSON.stringify({ structuredQuery: {
         from: [{ collectionId: 'memory_scores' }],
         orderBy: [{ field: { fieldPath: 's' }, direction: 'DESCENDING' }],
-        limit: 100 } }),
+        // ⚠ 한 사람이 여러 기록을 남기므로, 이 limit 안에 '모든 사람의 최고 기록'이
+        //   들어와야 한다. 100이던 시절 낙엽피하기는 이미 기록 130건이라
+        //   101위 밖이 최고인 사람은 랭킹에서 통째로 사라져 있었다.
+        limit: 1000 } }),
     });
     const j = await r.json();
     if (!r.ok || !Array.isArray(j)) return null;

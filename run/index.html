@@ -691,7 +691,7 @@ const FB='https://firestore.googleapis.com/v1/projects/somsom-city/databases/(de
 async function lbGet(){
   try{
     const r=await fetch(FB+':runQuery?key='+FB_KEY,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({structuredQuery:{from:[{collectionId:'runner_scores'}],orderBy:[{field:{fieldPath:'s'},direction:'DESCENDING'}],limit:100}})});
+      body:JSON.stringify({structuredQuery:{from:[{collectionId:'runner_scores'}],orderBy:[{field:{fieldPath:'s'},direction:'DESCENDING'}],limit:1000}})});   // 100이면 기록이 쌓였을 때 하위 인원이 통째로 사라진다
     const j=await r.json(); if(!r.ok||!Array.isArray(j))return null;
     const all=j.filter(d=>d.document).map(d=>{const f=d.document.fields||{};return{n:(f.n&&f.n.stringValue)||'?',c:(f.c&&f.c.stringValue)||'kkito',s:+((f.s&&f.s.integerValue)||0)};});
     const best={}; for(const e of all){const kk=e.n+'|'+e.c; if(!best[kk]||e.s>best[kk].s)best[kk]=e;}

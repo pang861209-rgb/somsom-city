@@ -324,7 +324,7 @@ const FB_DOCS='https://firestore.googleapis.com/v1/projects/somsom-city/database
 async function fetchCol(col){
   try{
     const r=await fetch(FB_DOCS+':runQuery?key='+FB_KEY,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({structuredQuery:{from:[{collectionId:col}],orderBy:[{field:{fieldPath:'s'},direction:'DESCENDING'}],limit:200}})});
+      body:JSON.stringify({structuredQuery:{from:[{collectionId:col}],orderBy:[{field:{fieldPath:'s'},direction:'DESCENDING'}],limit:1000}})});   // 주간 합산도 같은 이유로 넉넉히
     const j=await r.json(); if(!Array.isArray(j)) return [];
     return j.filter(d=>d.document).map(d=>{const f=d.document.fields||{};
       return {n:(f.n&&f.n.stringValue)||'?', s:+((f.s&&f.s.integerValue)||0), t:+((f.t&&f.t.integerValue)||0)};});
