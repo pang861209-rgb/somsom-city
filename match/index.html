@@ -729,8 +729,10 @@ function renderRank(me) {
     list = Object.values(best).sort((a, b) => b.s - a.s).slice(0, 10);
   } else {
     $('rankSub').textContent = '전 세계 솜솜시티 주민들의 기억력 기록';
-    const best = {};                                         // 이름+난이도 조합당 최고 기록 1개
-    for (const e of rankCache) { const k = e.n + '|' + e.d; if (!best[k] || e.s > best[k].s) best[k] = e; }
+    const best = {};                                         // 이름+캐릭터 조합당 최고 기록 1개
+    // ⚠️ 예전엔 이름+난이도로 묶어, 같은 난이도의 다른 캐릭터 기록이 통째로 사라졌음
+    //    (캐릭터가 곧 난이도이므로 캐릭터 기준이 맞고, 낙엽·달리기와도 통일됨)
+    for (const e of rankCache) { const k = e.n + '|' + e.c; if (!best[k] || e.s > best[k].s) best[k] = e; }
     list = Object.values(best).sort((a, b) => b.s - a.s).slice(0, 10);
   }
   if (!list.length) { box.innerHTML = '<div class="sub" style="padding:20px;">아직 기록이 없어요. 1호 주민이 되어보세요!</div>'; return; }
