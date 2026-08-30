@@ -151,6 +151,13 @@
   .wkRow .sc{font-size:13px;font-weight:800;color:#B08A3A;}
   .wkRow .br{display:flex;gap:3px;margin-left:6px;}
   .wkRow .br i{width:7px;height:14px;border-radius:2px;background:#E4D9C0;display:block;}
+
+  #titleBar{display:flex;align-items:center;gap:9px;background:#F6EED8;border:2px solid #2B2620;
+    border-radius:14px;padding:9px 12px;}
+  #titleBar .tn{font-size:13.5px;font-weight:900;color:#2B2620;}
+  #titleBar .tp{margin-left:auto;font-size:11.5px;font-weight:700;color:#8A6A1A;}
+  #titleBar .bar{height:7px;border-radius:999px;background:#EFE7D6;border:1.5px solid #2B2620;overflow:hidden;flex:1;max-width:110px;}
+  #titleBar .bar i{display:block;height:100%;background:#B08A3A;}
 </style>
 </head>
 <body>
@@ -240,6 +247,7 @@
   <div id="achPanel">
     <div id="achSheet">
       <div class="hd"><span class="t">업적</span><span class="c" id="achCount"></span></div>
+      <div id="titleBar"></div>
       <div id="achList"></div>
       <button class="footBtn" id="achClose">닫기</button>
     </div>
@@ -427,6 +435,29 @@ document.getElementById('wkOpen').addEventListener('click', ()=>{ document.getEl
 document.getElementById('wkClose').addEventListener('click', ()=> document.getElementById('wkPanel').classList.remove('on'));
 document.getElementById('wkPanel').addEventListener('click', e=>{ if(e.target.id==='wkPanel') e.currentTarget.classList.remove('on'); });
 document.getElementById('profChip').addEventListener('click', ()=>{ document.getElementById('achOpen').click(); });
+</script>
+
+
+<script>
+// 누적 도토리로 열리는 칭호 — 도토리를 마을 공용 재화로 쓰는 첫 장치
+const TITLES = [
+  {at:0,    n:'첫 방문'},
+  {at:50,   n:'마을 새내기'},
+  {at:300,  n:'골목 단골'},
+  {at:1000, n:'도토리 창고지기'},
+  {at:2000, n:'은행나무 지킴이'},
+];
+function renderTitleBar(){
+  const el=document.getElementById('titleBar'); if(!el) return;
+  const coins=(statsLoad().coins)||0;
+  let cur=TITLES[0], next=null;
+  for(const t of TITLES){ if(coins>=t.at) cur=t; else { next=t; break; } }
+  const pct = next ? Math.min(100, Math.round((coins-cur.at)/(next.at-cur.at)*100)) : 100;
+  el.innerHTML = '<span class="tn">'+cur.n+'</span>'
+    + '<span class="bar"><i style="width:'+pct+'%"></i></span>'
+    + '<span class="tp">'+(next ? '다음 '+next.n+'까지 🌰'+(next.at-coins) : '🌰'+coins+' · 최고 칭호')+'</span>';
+}
+document.getElementById('achOpen').addEventListener('click', renderTitleBar);
 </script>
 
 </body>
