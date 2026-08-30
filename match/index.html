@@ -62,7 +62,8 @@
   #partnerImg { width:42px; height:42px; object-fit:contain; }
   #partnerSay { font-size:11px; color:#7a6a5a; font-weight:700; max-width:130px; background:#fff; border:1.5px solid #222; border-radius:8px; padding:3px 7px; opacity:0; transition:opacity .25s; }
   #partnerSay.on { opacity:1; }
-  #board { display:grid; gap:7px; width:100%; flex:1 1 auto; min-height:0; grid-auto-rows:1fr; }
+  #board { display:grid; gap:7px; width:100%; flex:1 1 auto; min-height:0; grid-auto-rows:1fr;
+           align-content:center; justify-content:center; margin:0 auto; }
   .mcard { position:relative; min-height:0; cursor:pointer; perspective:600px; }
   .mcard .inner { position:absolute; inset:0; transition:transform .35s; transform-style:preserve-3d; }
   .mcard.open .inner, .mcard.peek .inner { transform:rotateY(180deg); }
@@ -150,31 +151,31 @@
   #pauseWrap{position:absolute;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
     background:rgba(43,38,32,.44);padding:20px;}
   #pauseWrap.on{display:flex;}
-  #pauseCard{background:#FDFBF5;border:2.5px solid #2B2620;border-radius:24px;padding:22px 24px;display:flex;
+  #pauseCard{background:#2B2620;border-radius:22px;padding:22px 24px;display:flex;
     flex-direction:column;gap:14px;align-items:center;min-width:210px;
     box-shadow:0 6px 0 -1px #E4D9C0, 0 18px 28px -16px rgba(74,52,26,.55);}
-  #pauseCard .pt{font-size:19px;font-weight:800;color:#2B2620;}
-  #pauseCard .ps{font-size:12.5px;color:#7A6A5A;margin-top:-6px;}
+  #pauseCard .pt{font-family:'Black Han Sans',sans-serif;font-size:20px;font-weight:400;color:#F2C14B;}
+  #pauseCard .ps{font-size:12px;color:#A9A08C;margin-top:-4px;}
   #pauseCard .prow{display:flex;gap:9px;}
-  #pauseCard button{border:2.5px solid #2B2620;border-radius:16px;padding:10px 18px;font-size:14px;font-weight:700;
-    font-family:inherit;cursor:pointer;background:#FDFBF5;color:#2B2620;box-shadow:0 3px 0 -1px #E4D9C0;}
-  #pauseCard button.pri{background:#E0A83A;box-shadow:0 3px 0 -1px #A8781F;}
-  #pauseCard button:active{transform:translateY(2px);box-shadow:none;}
+  #pauseCard button{border:0;border-radius:15px;padding:11px 18px;font-size:14px;font-weight:800;background:rgba(255,255,255,.10);color:#EFE7D6;
+    font-family:inherit;cursor:pointer;}
+  #pauseCard button.pri{background:#F2C14B;color:#221E18;}
+  #pauseCard button:active{transform:translateY(1px);filter:brightness(.94);}
 
   /* 조작 안내 (Phase 1) — 낙엽피하기와 같은 패턴 */
   .howto { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-top:2px; }
-  .howto .pill { font-size:11px; font-weight:700; color:#5a4a3a; background:#f3ede2;
-    border:1.5px solid #e2d8c4; border-radius:20px; padding:4px 12px; white-space:nowrap; }
+  .howto .pill { font-size:11px; font-weight:700; color:#CFC5B0; background:rgba(255,255,255,.08);
+    border:0; border-radius:999px; padding:5px 12px; white-space:nowrap; }
 
   /* 업적 (Phase 2) */
   #achToast{position:absolute;top:14px;left:50%;transform:translateX(-50%) translateY(-140%);z-index:95;
-    background:#FDFBF5;border:2.5px solid #2B2620;border-radius:18px;padding:9px 16px;display:flex;align-items:center;gap:10px;
-    box-shadow:0 5px 0 -1px #E4D9C0, 0 14px 22px -14px rgba(74,52,26,.5);transition:transform .45s cubic-bezier(.2,.8,.3,1);
+    background:#2B2620;border-radius:17px;padding:10px 16px;display:flex;align-items:center;gap:10px;
+    box-shadow:0 16px 26px -16px rgba(0,0,0,.75);transition:transform .45s cubic-bezier(.2,.8,.3,1);
     font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;white-space:nowrap;pointer-events:none;}
   #achToast.on{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible;}
   #achToast .ai{font-size:20px;}
-  #achToast .at{font-size:11px;font-weight:800;color:#B08A3A;letter-spacing:.06em;}
-  #achToast .an{font-size:14px;font-weight:800;color:#2B2620;}
+  #achToast .at{font-size:11px;font-weight:800;color:#F2C14B;letter-spacing:.06em;}
+  #achToast .an{font-size:14px;font-weight:800;color:#EFE7D6;}
 
   /* ═══ B안 스킨 — 게임 화면(DOM)을 허브와 같은 톤으로. 캔버스 게임플레이는 밝게 유지 ═══ */
   body{background:#221E18;color:#EFE7D6;}
@@ -186,6 +187,10 @@
     text-shadow:0 3px 14px rgba(0,0,0,.6);font-weight:400;}
   #titleSub,#logoSub,#fsHint{color:#E6DCC6;text-shadow:0 2px 8px rgba(0,0,0,.7);}
   #titleBg,#introImg{filter:brightness(.72) saturate(.92);}
+  /* title_bg_match.png은 위쪽 37%가 표준편차 0.5의 빈 회색 벽이다.
+     아이폰 세로(0.46)에서는 세로가 전부 보여 그 띠가 화면 절반을 먹었다.
+     아래를 기준으로 그림을 키워 빈 띠만 화면 밖으로 밀어낸다. */
+  #titleBg{top:auto;bottom:0;height:172%;object-position:center bottom;}
 
   button{background:rgba(255,255,255,.10);border:none;border-radius:14px;color:#EFE7D6;
     box-shadow:none;font-family:inherit;}
@@ -250,6 +255,11 @@
   .dexhead .cnt{color:#F2C14B;}
   .dexSpecial{background:rgba(255,255,255,.06);color:#A9A08C;}
   .mcard .front{background-color:#EFE7D6;}
+  /* 카드는 작가 그림을 담는 액자라 면은 밝게 두되, 검은 테두리는 B안대로 걷어낸다.
+     맞춤/틀림 표시도 테두리 색 대신 링(box-shadow)으로 바꿔 두께가 흔들리지 않게 한다. */
+  .mcard .face{border:none;border-radius:12px;box-shadow:0 6px 14px -8px rgba(0,0,0,.6);}
+  .mcard.solved .face{border:none;box-shadow:0 0 0 2.5px #6F9152, 0 6px 14px -8px rgba(0,0,0,.6);}
+  .mcard.wrong .face{border:none;box-shadow:0 0 0 2.5px #D2452A, 0 6px 14px -8px rgba(0,0,0,.6);}
   #ruleModal .rm{background:#2B2620;color:#EFE7D6;border:none;}
 
   /* ═══ 아이폰 최적화 — 노치·홈 인디케이터·주소창 대응 ═══ */
@@ -284,7 +294,7 @@
     <img id="titleBg" src="../assets/title_bg_match.png" onerror="this.onerror=null;this.src='../assets/title_main.png';" alt="카드가 깔린 테이블">
     <img class="titleChar" src="../assets/sd_boneul_t.png" alt="보늘" style="position:absolute;right:6px;bottom:92px;width:120px;height:auto;z-index:1;pointer-events:none;filter:drop-shadow(0 4px 5px rgba(90,74,58,.22));">
     <div id="titleTop">
-      <h1 id="titleLogo">🃏 솜솜시티: 짝꿍을 찾아라!</h1>
+      <h1 id="titleLogo">솜솜시티: 짝꿍을 찾아라!</h1>
       <div id="titleSub">뒤집힌 카드 속, 솜솜 친구들의 하루를 맞춰봐!</div>
     </div>
     <button id="startBtn" onclick="ui.toSetup()">시작하기</button>
@@ -509,6 +519,32 @@ function buildDeck(key, rng) {
 
 const $ = id => document.getElementById(id);
 
+
+// 카드가 세로로 길게 늘어나지 않도록 판 자체의 최대 크기를 카드 비율(3:4)에 맞춰 잡는다.
+// ※ 예전엔 grid-auto-rows:1fr이 남는 높이를 전부 카드에 나눠줘, 아이폰 세로에서
+//    거의 정사각형인 캐릭터 컷이 2.4:1 카드 안에 갇혀 여백만 커졌다.
+const CARD_RATIO = 3 / 4;                                    // 가로:세로
+function fitBoard(c) {
+  const board = $('board');
+  board.style.maxWidth = board.style.maxHeight = '';          // 먼저 풀어야 남은 공간을 제대로 잰다
+  const availW = board.clientWidth, availH = board.clientHeight;
+  if (!availW || !availH) return;
+  const N = c.pairs * 2, gap = 7;
+  const cell = C => {                                         // C열로 깔았을 때 카드 한 장의 가로
+    const R = Math.ceil(N / C);
+    return Math.min((availW - gap * (C - 1)) / C, ((availH - gap * (R - 1)) / R) * CARD_RATIO);
+  };
+  // 열 수는 남은 공간이 정한다. c.cols로 고정하면 가로 화면에서 6줄이 되어
+  // 12쌍 카드가 30×40까지 줄어들었다(그림이 안 보인다).
+  let C = c.cols;
+  for (let k = 2; k <= N; k++) if (cell(k) > cell(C)) C = k;
+  const R = Math.ceil(N / C), cellW = cell(C);
+  board.style.gridTemplateColumns = `repeat(${C},1fr)`;
+  board.style.maxWidth  = Math.floor(cellW * C + gap * (C - 1)) + 'px';
+  board.style.maxHeight = Math.floor(cellW / CARD_RATIO * R + gap * (R - 1)) + 'px';
+}
+addEventListener('resize', () => { if (g && !g.done) fitBoard(CHARS[curChar]); });
+
 function startGame(daily) {
   curDaily = !!daily;
   const c = CHARS[curChar];
@@ -541,6 +577,8 @@ function startGame(daily) {
     card.el = el;
     board.appendChild(el);
   });
+  fitBoard(c);                     // 카드를 다 넣은 뒤 판 크기를 카드 비율에 맞춘다
+  requestAnimationFrame(() => fitBoard(c));   // 화면 전환 직후엔 아직 크기가 0일 수 있어 한 번 더
   setPartnerFace('sd');
   say(c.rule === 'hint' ? '기억나는 것만 알려줄게, 그래~' : c.name + '의 하루예요. 위치를 외워두세요...', 1.4);
   $('hTime').textContent = '0.0'; $('hTry').textContent = '0';

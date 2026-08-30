@@ -16,7 +16,19 @@
   body { background:#0e0e0e; font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; display:flex; justify-content:center; align-items:center; }
   #app { width:100vw; height:100dvh; height:100dvh; position:relative; user-select:none; }
   canvas { display:block; width:100%; height:100%; background:#fdfbf5; touch-action:none; }
-  #rotate { position:fixed; inset:0; z-index:99; background:#fdfbf5; display:none; flex-direction:column; align-items:center; justify-content:center; gap:12px; font-size:20px; font-weight:800; color:#5a4a3a; text-align:center; padding:24px; }
+  /* 아이폰 세로로 열면 이 화면이 가장 먼저 보인다 — 허브에서 넘어온 톤을 그대로 잇는다 */
+  #rotate { position:fixed; inset:0; z-index:99; background:#221E18; display:none; flex-direction:column;
+    align-items:center; justify-content:center; gap:10px; text-align:center; padding:24px;
+    padding-bottom:calc(24px + env(safe-area-inset-bottom)); }
+  #rotate .rTitle { font-family:'Black Han Sans',sans-serif; font-size:23px; color:#F2C14B; }
+  #rotate .rSub { font-size:13px; color:#A9A08C; }
+  #rotate .rIcon { width:38px; height:62px; border:2.5px solid #CFC5B0; border-radius:8px;
+    position:relative; margin-bottom:6px; animation:rTilt 1.8s ease-in-out infinite; }
+  #rotate .rIcon::after { content:''; position:absolute; left:50%; bottom:4px; transform:translateX(-50%);
+    width:12px; height:2.5px; border-radius:2px; background:#CFC5B0; }
+  @keyframes rTilt { 0%,40%{transform:rotate(0);} 60%,100%{transform:rotate(-90deg);} }
+  #rotate .rHome { margin-top:14px; background:rgba(255,255,255,.10); color:#EFE7D6; border-radius:14px;
+    padding:10px 20px; font-size:13px; font-weight:800; text-decoration:none; }
   @media (orientation:portrait) { #rotate { display:flex; } }
   .screen { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:10px 18px; text-align:center; overflow-y:auto; }
   .hidden { display:none; }
@@ -81,37 +93,36 @@
   #pauseWrap{position:absolute;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
     background:rgba(43,38,32,.44);padding:20px;}
   #pauseWrap.on{display:flex;}
-  #pauseCard{background:#FDFBF5;border:2.5px solid #2B2620;border-radius:24px;padding:22px 24px;display:flex;
+  #pauseCard{background:#2B2620;border-radius:22px;padding:22px 24px;display:flex;
     flex-direction:column;gap:14px;align-items:center;min-width:210px;
     box-shadow:0 6px 0 -1px #E4D9C0, 0 18px 28px -16px rgba(74,52,26,.55);}
-  #pauseCard .pt{font-size:19px;font-weight:800;color:#2B2620;}
-  #pauseCard .ps{font-size:12.5px;color:#7A6A5A;margin-top:-6px;}
+  #pauseCard .pt{font-family:'Black Han Sans',sans-serif;font-size:20px;font-weight:400;color:#F2C14B;}
+  #pauseCard .ps{font-size:12px;color:#A9A08C;margin-top:-4px;}
   #pauseCard .prow{display:flex;gap:9px;}
-  #pauseCard button{border:2.5px solid #2B2620;border-radius:16px;padding:10px 18px;font-size:14px;font-weight:700;
-    font-family:inherit;cursor:pointer;background:#FDFBF5;color:#2B2620;box-shadow:0 3px 0 -1px #E4D9C0;}
-  #pauseCard button.pri{background:#E0A83A;box-shadow:0 3px 0 -1px #A8781F;}
-  #pauseCard button:active{transform:translateY(2px);box-shadow:none;}
+  #pauseCard button{border:0;border-radius:15px;padding:11px 18px;font-size:14px;font-weight:800;background:rgba(255,255,255,.10);color:#EFE7D6;
+    font-family:inherit;cursor:pointer;}
+  #pauseCard button.pri{background:#F2C14B;color:#221E18;}
+  #pauseCard button:active{transform:translateY(1px);filter:brightness(.94);}
 
   /* 조작 안내 (Phase 1) — 낙엽피하기와 같은 패턴 */
   .howto { display:flex; gap:5px; justify-content:center; flex-wrap:wrap; margin-top:0; }
-  .howto .pill { font-size:11px; font-weight:700; color:#5a4a3a; background:#f3ede2;
-    border:1.5px solid #e2d8c4; border-radius:20px; padding:4px 12px; white-space:nowrap; }
+  .howto .pill { font-size:11px; font-weight:700; color:#CFC5B0; background:rgba(255,255,255,.08);
+    border:0; border-radius:999px; padding:5px 12px; white-space:nowrap; }
 
   /* 업적 (Phase 2) */
   #achToast{position:absolute;top:14px;left:50%;transform:translateX(-50%) translateY(-140%);z-index:95;
-    background:#FDFBF5;border:2.5px solid #2B2620;border-radius:18px;padding:9px 16px;display:flex;align-items:center;gap:10px;
-    box-shadow:0 5px 0 -1px #E4D9C0, 0 14px 22px -14px rgba(74,52,26,.5);opacity:0;visibility:hidden;transition:transform .45s cubic-bezier(.2,.8,.3,1),opacity .3s;
+    background:#2B2620;border-radius:17px;padding:10px 16px;display:flex;align-items:center;gap:10px;
+    box-shadow:0 16px 26px -16px rgba(0,0,0,.75);opacity:0;visibility:hidden;transition:transform .45s cubic-bezier(.2,.8,.3,1),opacity .3s;
     font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;white-space:nowrap;pointer-events:none;}
   #achToast.on{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible;}
   #achToast .ai{font-size:20px;}
-  #achToast .at{font-size:11px;font-weight:800;color:#B08A3A;letter-spacing:.06em;}
-  #achToast .an{font-size:14px;font-weight:800;color:#2B2620;}
+  #achToast .at{font-size:11px;font-weight:800;color:#F2C14B;letter-spacing:.06em;}
+  #achToast .an{font-size:14px;font-weight:800;color:#EFE7D6;}
 
   #dailyRow{display:flex;justify-content:center;}
-  #dailyBtn2{background:#F6EED8;border:2.5px solid #2B2620;border-radius:16px;padding:9px 18px;
-    font-size:13.5px;font-weight:800;color:#2B2620;cursor:pointer;font-family:inherit;
-    box-shadow:0 3px 0 -1px #C9B98F;}
-  #dailyBtn2:active{transform:translateY(2px);box-shadow:none;}
+  #dailyBtn2{background:#F2C14B;border:0;border-radius:15px;padding:11px 18px;
+    font-size:13.5px;font-weight:800;color:#221E18;cursor:pointer;font-family:inherit;}
+  #dailyBtn2:active{transform:translateY(1px);filter:brightness(.94);}
 
   /* ═══ B안 스킨 — 게임 화면(DOM)을 허브와 같은 톤으로. 캔버스 게임플레이는 밝게 유지 ═══ */
   body{background:#221E18;color:#EFE7D6;}
@@ -206,7 +217,7 @@
 </style>
 </head>
 <body>
-<div id="rotate">📱 가로로 돌려주세요!<div style="font-size:13px;font-weight:600;color:#7a6a5a;">마감 질주는 가로 화면 전용이에요</div></div>
+<div id="rotate"><div class="rIcon"></div><div class="rTitle">가로로 돌려주세요</div><div class="rSub">마감 질주는 가로 화면 전용이에요</div><a class="rHome" href="../">← 솜솜시티로</a></div>
 <div id="app">
   <div id="achToast"><span class="ai">🏅</span><span><span class="at">업적 달성</span><br><span class="an"></span></span></div>
   <button id="pauseBtn" class="pauseBtn" title="일시정지">❙❙</button>
@@ -239,7 +250,7 @@
     <div class="sub">함께 달릴 친구를 골라보세요 · 속도 · 점프 · 회피가 캐릭터마다 달라요</div>
     <div class="howto">
       <span class="pill">👆 탭 = 점프</span>
-      <span class="pill">공중에서 한 번 더</span>
+      <span class="pill">친구마다 공중 조작이 달라요</span>
       <span class="pill">🌰 도토리 모으기</span>
       <span class="pill">아슬아슬 넘으면 보너스</span>
       <span class="pill">⚠ 떨어지는 은행 주의</span>
@@ -287,27 +298,29 @@
 // shield:첫충돌 무효 횟수  magnet:도토리 자석 범위  coinx:도토리 점수배수
 const CHARS = {
   kkito:      { name:'끼토',  spr:'../assets/run_kkito_t.png',  sd:'../assets/sd_kkito_t.png',  dw:80, spd:1.0,  jv:800, djv:720, grav:2500, shield:0, magnet:0,   coinx:1, glide:0.36,
-    trait:'점프 장인 — 가장 높은 점프 + 더블점프 (만능 기본)', intro:'마감이다! 달려, 끼토!' },
+    intro:'마감이다! 달려, 끼토!' },
   migae:      { name:'미개',  spr:'../assets/run_migae_t.png',  sd:'../assets/sd_migae_t.png',  dw:24, spd:1.0, jv:700, djv:600, grav:2350, shield:0, magnet:0, coinx:1, jumps:3,
-    trait:'삼단 점프 — 6다리로 공중에서 두 번 더! 작아서 잘 안 맞음', intro:'뽈뽈뽈—! 따라와!' },
+    intro:'뽈뽈뽈—! 따라와!' },
   ramda:      { name:'람다',  spr:'../assets/run_ramda_t.png',  sd:'../assets/sd_ramda_t.png',  dw:58, spd:1.0,  jv:770, djv:700, grav:2500, shield:0, magnet:135, coinx:1,
-    trait:'수집형 — 도토리 자석 (주변 도토리가 끌려옴)', intro:'도토리는 다 내 거야!' },
+    intro:'도토리는 다 내 거야!' },
   boneul:     { name:'보늘',  spr:'../assets/run_boneul_t.png', sd:'../assets/sd_boneul_t.png', dw:74, spd:0.82, jv:715, djv:650, grav:2700, shield:1, magnet:0,   coinx:1, zone:150, distx:1.75,
-    trait:'탱커형 — 첫 충돌 1회 무효 (느리지만 든든)', intro:'천천히 가도 안 죽어~' },
+    intro:'천천히 가도 안 죽어~' },
   bookgeo:    { name:'북거씨', spr:'../assets/run_bookgeo_t.png', sd:'../assets/sd_bookgeo_t.png', dw:49, spd:0.85, jv:720, djv:660, grav:1750, shield:0, magnet:0, coinx:1, jumps:1, slam:true,
-    trait:'플로팅형 — 천천히 떨어져 타이밍이 관대 (쉬움)', intro:'서두르지 않아도 돼요.' },
+    intro:'서두르지 않아도 돼요.' },
   lachilchin: { name:'라칠친 할머니', spr:'../assets/run_lachilchin_t.png', sd:'../assets/sd_lachilchin_t.png', dw:35, spd:0.9, jv:760, djv:690, grav:2500, shield:0, magnet:0, coinx:2,
-    trait:'알뜰형 — 도토리 점수 2배 (느린 시작)', intro:'아이구, 천천히 줍자 그래~' },
+    intro:'아이구, 천천히 줍자 그래~' },
 };
 
 // ================= 캐릭터 카드 표시용 (타입·특기·스탯) =================
 // st: [속도, 점프, 회피] 0~5
+// 캐릭터 선택 카드에 보이는 표시용 정보. 능력 수치는 여기가 아니라 CHARS에만 둔다
+// — 여기에 넣으면 게임은 읽지 않고 조용히 무시한다.
 const CARD = {
-  kkito:      { type:'만능', col:'#4a78c0', abil: '길게 누르면 귀 활강',    st:[3,5,4], glide:0.36 },
+  kkito:      { type:'만능', col:'#4a78c0', abil: '길게 누르면 귀 활강',    st:[3,5,4] },
   migae:      { type:'기동', col:'#8a6fb0', abil: '삼단 점프 · 작은 몸',    st:[3,4,5] },
   ramda:      { type:'수집', col:'#d08a3a', abil: '도토리 자석',          st:[3,3,3] },
-  boneul:     { type:'탱커', col:'#5a9a5a', abil: '위험하면 세상이 느려짐', st:[1,2,5], zone:150, distx:1.75 },
-  bookgeo:    { type:'파괴', col:'#3a9a9a', abil: '공중 탭 = 등껍질 슬램',   st:[2,2,4], jumps:1, slam:true },
+  boneul:     { type:'탱커', col:'#5a9a5a', abil: '위험하면 세상이 느려짐', st:[1,2,5] },
+  bookgeo:    { type:'파괴', col:'#3a9a9a', abil: '공중 탭 = 등껍질 슬램',   st:[2,2,4] },
   lachilchin: { type:'알뜰', col:'#c87a9a', abil: '도토리 점수 2배',      st:[2,3,3] },
 };
 
@@ -384,13 +397,14 @@ function newState(key){
   const c=CHARS[key];
   return { key, c, dist:0, speed:195*c.spd, base:195*c.spd, cap:560*c.spd, coins:0, coinPts:0,
     y:0, vy:0, spin:0, airJumps:0, onGround:true, jumps:(c.jumps||2), run:0, shield:c.shield, inv:0, introT:1.8, recordShown:false,
-    hold:false, slamming:false, slams:0, slowT:0,
+    hold:false, slamming:false, slams:0, slowT:0, glideD:0, glideT:0, glideCut:0,
     obs:[], gems:[], parts:[], floats:[], nextObs:540, nextGem:260, drops:[], nextDrop:1100,
     combo:0, comboT:0, bestCombo:0, marks:[], nextMark:700,
     over:false, overAt:0, shake:0, hitstop:0, last:performance.now(),
     best:+(localStorage.getItem('runner_best_'+key)||0) };
 }
-function scoreOf(s){ return Math.floor(s.dist/12*(s.c.distx||1)) + s.coinPts; }
+const GLIDE_MAX = 0.6;   // 활강 최대 지속(초)
+function scoreOf(s){ return Math.floor(s.dist/12*(s.c.distx||1)) + Math.floor((s.glideD||0)/12*0.45) + s.coinPts; }
 function jump(){ const s=S; if(!s||s.over||paused)return;
   if(s.c.slam && !s.onGround && !s.slamming){ s.slamming=true; s.vy=1750; s.spin=0; sfx('dj'); return; }   // 북거씨: 등껍질 슬램
   if(s.jumps<=0)return; const dj=!s.onGround; s.jumps--; if(dj)s.airJumps=(s.airJumps||0)+1; else s.airJumps=0;
@@ -434,11 +448,32 @@ function loop(now){
 
   // ── 시그니처: 길게 누르기 ──
   if(!s.over){
-    if(s.c.glide && s.hold && !s.onGround && s.vy>0) s.vy += s.c.grav*(s.c.glide-1)*dt;   // 끼토: 귀 활강(하강만 느리게)
+    // 끼토: 귀 활강(하강만 느리게). GLIDE_MAX초까지, 그리고 착지 지점이 위험하면 스스로 접는다.
+    // ※ 화면을 계속 누르는 건 가장 자연스러운 조작인데, 예전엔 그게 곧 사망이었다 —
+    //   활강으로 착지가 늦어져 착지점이 다음 장애물 '위'로 밀렸다(1136m 점프→1294m 장애물에 착지).
+    //   그래서 활강을 유지했을 때의 미래 높이를 미리 재고, 장애물 윗면보다 낮아질 것 같으면
+    //   활강을 끊어 온전한 중력으로 장애물 '앞'에 떨어지게 한다.
+    if(s.c.glide && s.hold && !s.onGround && s.vy>0 && s.glideT<GLIDE_MAX){
+      let risky=false;
+      for(const o of s.obs){
+        if(o.x+o.w < PX-20) continue;
+        const tt=(o.x-PX)/Math.max(1,s.speed);                                            // 장애물이 내 앞에 올 때까지
+        if(tt<0 || tt>0.9) continue;
+        const yAt = s.y + s.vy*tt + 0.5*s.c.grav*s.c.glide*tt*tt;                         // 활강 유지 시 그때 높이
+        if(yAt > -o.h){ risky=true; break; }                                              // 장애물 윗면보다 낮다 → 박는다
+      }
+      if(risky){ s.glideCut=0.5; }                                                        // 귀를 접는 표시
+      else {
+        s.vy += s.c.grav*(s.c.glide-1)*dt;
+        s.glideT += dt;
+        s.glideD += s.speed*dt;                                                           // 활강한 거리는 보너스 점수
+      }
+    }
+    if(s.glideCut>0) s.glideCut-=dt;
   }
 
     if(s.y>=0){ if(s.slamming){ slamLand(s); }
-      if(!s.onGround){ sfx('land'); for(let i=0;i<5;i++)s.parts.push({x:PX,y:GROUND,vx:(Math.random()-.3)*80,vy:-15,g:300,life:.3,max:.3,size:3,col:'#d8c8a8'}); } s.y=0; s.vy=0; s.onGround=true; s.jumps=(s.c.jumps||2); s.airJumps=0; }
+      if(!s.onGround){ sfx('land'); for(let i=0;i<5;i++)s.parts.push({x:PX,y:GROUND,vx:(Math.random()-.3)*80,vy:-15,g:300,life:.3,max:.3,size:3,col:'#d8c8a8'}); } s.y=0; s.vy=0; s.onGround=true; s.jumps=(s.c.jumps||2); s.airJumps=0; s.glideT=0; }
     if(s.onGround&&Math.random()<.25)s.parts.push({x:PX-15,y:GROUND-2,vx:-55,vy:-8,g:120,life:.3,max:.3,size:2.5,col:'rgba(180,160,120,.5)'});
     s.nextObs-=s.speed*dt; if(s.nextObs<=0){ spawnObstacle(s); s.nextObs=420+Math.random()*300; }
     s.nextGem-=s.speed*dt; if(s.nextGem<=0){ spawnGems(s); s.nextGem=360+Math.random()*260; }
@@ -449,7 +484,11 @@ function loop(now){
 
   const _set=sprites[s.key], _fa=(_set&&_set.length)?_set[0]:null;
   const drawW=_fa?s.c.dw*((_fa.width||_fa.naturalWidth)/(_fa.height||_fa.naturalHeight)):s.c.dw*0.7;
-  const half=Math.max(10,Math.min(24,drawW*0.30)), py=GROUND+s.y, cx=PX, cy=py-s.c.dw*0.45;
+  // 히트박스는 그림 크기에 비례하되 폭을 좁게 묶는다.
+  // ※ 예전엔 drawW*0.30(10~24)이라 끼토 24 : 미개 10 — 아무도 설계하지 않은 2.4배 차이가
+  //   캐릭터 성능을 통째로 갈랐다. 이제 14~19로 압축해 차이는 스탯으로만 난다.
+  const half=Math.max(12,Math.min(19,12+drawW*0.10)), py=GROUND+s.y, cx=PX, cy=py-s.c.dw*0.45;
+  const bodyH=Math.max(34,Math.min(64,s.c.dw*0.9));   // 낙하 은행에 맞는 세로 판정도 같은 이유로 제한
   for(const o of s.obs){
     o.x-=s.speed*dt;
     const ovX = cx+half>o.x+6 && cx-half<o.x+o.w-6;                       // 가로로 겹치는 중
@@ -486,7 +525,7 @@ function loop(now){
       d.y+=1500*dt;
       if(d.y>=GROUND-14){ d.y=GROUND-14; d.ph=2; d.t=0; s.shake=Math.max(s.shake,.18); sfx('thud');
         for(let i=0;i<7;i++)s.parts.push({x:d.x,y:GROUND,vx:(Math.random()-.5)*140,vy:-30-Math.random()*60,g:340,life:.4,max:.4,size:3,col:'#8a8a3a'}); }
-      if(!s.over && s.inv<=0 && Math.abs(d.x-cx)<half+9 && d.y+13>py-s.c.dw*0.9 && d.y-13<py) dropHit();
+      if(!s.over && s.inv<=0 && Math.abs(d.x-cx)<half+9 && d.y+13>py-bodyH && d.y-13<py) dropHit();
     }
     else if(d.ph===2){
       if(!s.over && s.inv<=0 && cx+half>d.x-11 && cx-half<d.x+11 && py>GROUND-27) dropHit();
@@ -608,8 +647,15 @@ function draw(s,now,score){
   if(s.c.slam && !s.onGround && !s.slamming){          // 슬램 안내
     ctx.fillStyle='#2a7a7a'; ctx.font='800 12px sans-serif'; ctx.textAlign='right'; ctx.fillText('탭 = 슬램',W-14,52); }
   if(s.slams>0){ ctx.fillStyle='#2a7a7a'; ctx.font='800 12px sans-serif'; ctx.textAlign='right'; ctx.fillText('부순 장애물 '+s.slams,W-14,68); }
-  if(s.c.glide && s.hold && !s.onGround && s.vy>0){    // 활강 중
-    ctx.fillStyle='#b06a9a'; ctx.font='800 12px sans-serif'; ctx.textAlign='right'; ctx.fillText('활강 중',W-14,52); }
+  if(s.c.glide && !s.onGround && s.glideT<GLIDE_MAX){  // 남은 활강을 막대로
+    const gw=54, gx=W-14-gw, gy=46;
+    ctx.fillStyle='rgba(43,38,32,.55)'; ctx.beginPath(); ctx.roundRect(gx,gy,gw,6,3); ctx.fill();
+    ctx.fillStyle='#b06a9a'; ctx.beginPath(); ctx.roundRect(gx,gy,gw*(1-s.glideT/GLIDE_MAX),6,3); ctx.fill();
+    ctx.font='800 10px sans-serif'; ctx.textAlign='right';
+    ctx.fillText(s.glideCut>0?'귀 접음!':'활강',W-14,42); }
+  if(s.c.glide && s.glideD>60){
+    ctx.fillStyle='#b06a9a'; ctx.font='800 11px sans-serif'; ctx.textAlign='right';
+    ctx.fillText('활강 보너스 '+Math.floor(s.glideD/12*0.45),W-14,68); }
   ctx.restore();
 }
 
@@ -624,6 +670,8 @@ function endGame(score){
   $('resScore').textContent=score+' m';
   $('resDetail').textContent=c.name+' · 도토리 '+s.coins+'개'
     +(s.bestCombo>=2?' · 최고 '+s.bestCombo+'콤보':'')
+    +(s.glideD>60?' · 활강 보너스 '+Math.floor(s.glideD/12*0.45):'')
+    +(s.slams?' · 부순 장애물 '+s.slams:'')
     +(s.nears?' · 아슬아슬 '+s.nears+'회'+(s.tights?' (완벽 '+s.tights+')':''):'');
   $('resBest').textContent=c.name+' 최고기록: '+best+' m';
   lastResult={key,score,coins:s.coins,best,isNew};
