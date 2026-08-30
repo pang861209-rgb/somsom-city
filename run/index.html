@@ -695,7 +695,8 @@ function achShowNext(){
 function achReport(ev){
   const st = achStats();
   st.played = st.played || {}; st.played[ev.g] = (st.played[ev.g]||0) + 1;
-  st.chars  = st.chars  || {}; if(ev.key) st.chars[ev.key] = 1;
+  st.chars  = st.chars  || {}; if(ev.key) st.chars[ev.key] = (st.chars[ev.key]||0) + 1;   // 대표 캐릭터 산출용
+  if(ev.key) st.last = ev.key;
   st.coins  = (st.coins||0) + (ev.coins||0);
   try{ localStorage.setItem('somsom_stats', JSON.stringify(st)); }catch(e){}
   if(ev.g==='leaf'){
@@ -723,6 +724,12 @@ function achReport(ev){
   if(p.leaf && p.run && p.match) achUnlock('all_three');
   if(Object.keys(st.chars||{}).length >= 6) achUnlock('all_chars');
   if((st.coins||0) >= 500) achUnlock('coins_500');
+
+  const ms = missionSpec();
+  if(ev.g==='leaf'  && (ev.score||0) >= ms.leaf.goal)  missionDone('leaf');
+  if(ev.g==='run'   && (ev.dist||0)  >= ms.run.goal)   missionDone('run');
+  if(ev.g==='match' && ev.cleared && (ev.misses||0) <= ms.match.goal) missionDone('match');
+
 }
 
 // ── 도감 (Phase 2) — 게임에서 만난 것을 모아 허브에서 봅니다 ──
@@ -761,6 +768,28 @@ const DAILY_CHAR_ID = DAILY_ORDER[(Math.imul(dayKey(), 2654435761) >>> 0) % DAIL
   b.textContent='📅 오늘의 도전 — '+c.name;
   b.addEventListener('click', ()=> ui.showIntro(DAILY_CHAR_ID));
 })();
+
+// ── 오늘의 미션 (Phase 3) — 날짜 씨앗으로 세 게임에 하나씩 ──
+function missionSpec(){
+  const r = (Math.imul(dayKey(), 2246822519) >>> 0);
+  return {
+    leaf:  {goal: [300, 600, 1000][r % 3],        label:'낙엽피하기 '+[300,600,1000][r%3]+'점 넘기'},
+    run:   {goal: [500, 1000, 1500][(r>>3) % 3],  label:'달리기 '+[500,1000,1500][(r>>3)%3]+'m 달리기'},
+    match: {goal: [0, 1, 2][(r>>6) % 3],          label:'짝맞추기 실수 '+[0,1,2][(r>>6)%3]+'회 이하로 클리어'},
+  };
+}
+function missionLoad(){ try{ return JSON.parse(localStorage.getItem('somsom_missions')||'{}'); }catch(e){ return {}; } }
+function missionDone(g){
+  const k = String(dayKey()), all = missionLoad();
+  all[k] = all[k] || {}; if(all[k][g]) return false;
+  all[k][g] = 1; try{ localStorage.setItem('somsom_missions', JSON.stringify(all)); }catch(e){}
+  const el = document.getElementById('achToast');
+  if(el){ el.querySelector('.at').textContent='오늘의 미션'; el.querySelector('.an').textContent='완료!';
+    el.classList.add('on'); try{ if(typeof sfx==='function') sfx('record'); }catch(e){}
+    setTimeout(()=>{ el.classList.remove('on');
+      setTimeout(()=>{ el.querySelector('.at').textContent='업적 달성'; }, 500); }, 2000); }
+  return true;
+}
 </script>
 </body>
 </html>

@@ -123,15 +123,51 @@
   .cutRow{display:flex;align-items:center;gap:10px;padding:8px 11px;border:2px solid #E4D9C0;border-radius:14px;background:#fff;}
   .cutRow .nm{flex:1;font-size:13px;font-weight:800;color:#5A4A3A;}
   .cutRow .pg{font-size:12px;font-weight:700;color:#B08A3A;}
+
+  /* 프로필 · 미션 (Phase 3) */
+  header{display:flex;align-items:center;gap:10px;text-align:left;}
+  .hTitle{display:flex;flex-direction:column;gap:2px;}
+  #profChip{margin-left:auto;display:flex;align-items:center;gap:8px;background:rgba(253,251,245,.94);
+    border:2.5px solid #2B2620;border-radius:999px;padding:4px 12px 4px 5px;box-shadow:0 3px 0 -1px #E4D9C0;
+    cursor:pointer;flex:none;}
+  #profChip img{width:26px;height:26px;border-radius:50%;object-fit:contain;background:#F6EED8;border:2px solid #2B2620;}
+  #profChip .pn{font-size:12.5px;font-weight:800;color:#2B2620;max-width:78px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  #profChip .pc{font-size:11.5px;font-weight:700;color:#B08A3A;}
+  #missionBox{flex:none;background:#F6EED8;border:2.5px solid #2B2620;border-radius:18px;padding:9px 12px;
+    display:flex;flex-direction:column;gap:6px;box-shadow:0 4px 0 -1px #C9B98F;}
+  #missionBox .mh{display:flex;align-items:center;gap:7px;}
+  #missionBox .mh .lb{font-size:10px;font-weight:800;letter-spacing:.12em;color:#8A6A1A;
+    border:2px solid #8A6A1A;border-radius:999px;padding:1px 8px;}
+  #missionBox .mh .pg{margin-left:auto;font-size:12px;font-weight:800;color:#B08A3A;}
+  .mRow{display:flex;align-items:center;gap:8px;font-size:12px;color:#5A4A3A;}
+  .mRow .bx{width:15px;height:15px;border-radius:5px;border:2px solid #2B2620;background:#FDFBF5;flex:none;
+    display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#2B2620;}
+  .mRow.ok .bx{background:#6F9152;color:#fff;border-color:#2B2620;}
+  .mRow.ok{color:#9A8B7A;text-decoration:line-through;}
+  .wkRow{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:14px;border:2px solid #E4D9C0;background:#fff;}
+  .wkRow.me{background:#F6EED8;border-color:#2B2620;}
+  .wkRow .rk{width:26px;font-weight:800;font-size:12.5px;color:#5A4A3A;}
+  .wkRow .nm{flex:1;font-size:13.5px;font-weight:800;color:#2B2620;}
+  .wkRow .sc{font-size:13px;font-weight:800;color:#B08A3A;}
+  .wkRow .br{display:flex;gap:3px;margin-left:6px;}
+  .wkRow .br i{width:7px;height:14px;border-radius:2px;background:#E4D9C0;display:block;}
 </style>
 </head>
 <body>
 <div id="app">
 
   <header>
-    <div class="logo"><span class="lf">🍂</span> 솜솜시티</div>
-    <div class="tag">오늘은 어떤 놀이? 골라서 바로 시작!</div>
+    <div class="hTitle">
+      <div class="logo"><span class="lf">🍂</span> 솜솜시티</div>
+      <div class="tag">오늘은 어떤 놀이?</div>
+    </div>
+    <div id="profChip"><img id="profAv" src="assets/sd_kkito_t.png" alt=""><span><span class="pn" id="profName">솜솜이</span><br><span class="pc" id="profCoin">🌰 0</span></span></div>
   </header>
+
+  <div id="missionBox">
+    <div class="mh"><span class="lb">오늘의 미션</span><span id="missionChar"></span><span class="pg" id="missionPg">0/3</span></div>
+    <div id="missionList"></div>
+  </div>
 
   <div class="picker">
 
@@ -182,6 +218,7 @@
   <div class="footRow">
     <button class="footBtn" id="achOpen">🏅 업적</button>
     <button class="footBtn" id="dexOpen">📖 도감</button>
+    <button class="footBtn" id="wkOpen">🏆 주간</button>
   </div>
 
 
@@ -192,6 +229,14 @@
       <button class="footBtn" id="dexClose">닫기</button>
     </div>
   </div>
+  <div id="wkPanel" class="sheetWrap">
+    <div class="sheet">
+      <div class="hd"><span class="t">이번 주 통합 랭킹</span><span class="c" id="wkNote"></span></div>
+      <div id="wkList"></div>
+      <button class="footBtn" id="wkClose">닫기</button>
+    </div>
+  </div>
+
   <div id="achPanel">
     <div id="achSheet">
       <div class="hd"><span class="t">업적</span><span class="c" id="achCount"></span></div>
@@ -291,6 +336,97 @@ function renderDex(){
 document.getElementById('dexOpen').addEventListener('click', ()=>{ renderDex(); document.getElementById('dexPanel').classList.add('on'); });
 document.getElementById('dexClose').addEventListener('click', ()=> document.getElementById('dexPanel').classList.remove('on'));
 document.getElementById('dexPanel').addEventListener('click', e=>{ if(e.target.id==='dexPanel') e.currentTarget.classList.remove('on'); });
+</script>
+
+
+<script>
+// ── 프로필 · 오늘의 미션 · 주간 통합 랭킹 (Phase 3) ──
+const CH_NAME = {kkito:'끼토', boneul:'보늘', migae:'미개', ramda:'람다', bookgeo:'북거씨', lachilchin:'라칠친 할머니'};
+const CH_AV   = {kkito:'assets/sd_kkito_t.png', boneul:'assets/sd_boneul_t.png', migae:'assets/sd_migae.png',
+                 ramda:'assets/sd_ramda.png', bookgeo:'assets/sd_bookgeo.png', lachilchin:'assets/sd_lachilchin.png'};
+const DAILY_ORDER = ['kkito','boneul','migae','ramda','bookgeo','lachilchin'];
+function dayKey(){ const d=new Date(); return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate(); }
+const DAILY_CHAR_ID = DAILY_ORDER[(Math.imul(dayKey(),2654435761)>>>0)%DAILY_ORDER.length];
+function statsLoad(){ try{ return JSON.parse(localStorage.getItem('somsom_stats')||'{}'); }catch(e){ return {}; } }
+function missionLoad(){ try{ return JSON.parse(localStorage.getItem('somsom_missions')||'{}'); }catch(e){ return {}; } }
+function missionSpec(){
+  const r=(Math.imul(dayKey(),2246822519)>>>0);
+  return {leaf:{label:'낙엽피하기 '+[300,600,1000][r%3]+'점 넘기'},
+          run:{label:'달리기 '+[500,1000,1500][(r>>3)%3]+'m 달리기'},
+          match:{label:'짝맞추기 실수 '+[0,1,2][(r>>6)%3]+'회 이하로 클리어'}};
+}
+function titleFor(coins){
+  if(coins>=2000) return '은행나무 지킴이';
+  if(coins>=1000) return '도토리 창고지기';
+  if(coins>=300)  return '골목 단골';
+  if(coins>=50)   return '마을 새내기';
+  return '첫 방문';
+}
+function renderProfile(){
+  const st=statsLoad(), nm=localStorage.getItem('somsom_name')||'솜솜이';
+  const chars=st.chars||{};
+  let top=st.last||'kkito', best=-1;
+  for(const k in chars){ if(chars[k]>best){ best=chars[k]; top=k; } }
+  document.getElementById('profName').textContent=nm;
+  document.getElementById('profCoin').textContent='🌰 '+(st.coins||0);
+  const av=document.getElementById('profAv'); av.src=CH_AV[top]||CH_AV.kkito; av.alt=CH_NAME[top]||'';
+  document.getElementById('profChip').title=nm+' · '+titleFor(st.coins||0)+' · 대표 '+(CH_NAME[top]||'');
+}
+function renderMissions(){
+  const sp=missionSpec(), done=(missionLoad()[String(dayKey())])||{};
+  document.getElementById('missionChar').innerHTML='<span style="font-size:11.5px;font-weight:700;color:#8A6A1A;">오늘의 친구 '+CH_NAME[DAILY_CHAR_ID]+'</span>';
+  const list=document.getElementById('missionList'); list.innerHTML='';
+  let n=0;
+  for(const g of ['leaf','run','match']){
+    const ok=!!done[g]; if(ok) n++;
+    const r=document.createElement('div'); r.className='mRow'+(ok?' ok':'');
+    r.innerHTML='<span class="bx">'+(ok?'✓':'')+'</span><span>'+sp[g].label+'</span>';
+    list.appendChild(r);
+  }
+  document.getElementById('missionPg').textContent=n+'/3';
+}
+// 주간 통합 랭킹 — 세 게임 점수를 각 게임 주간 최고 대비 100점으로 환산해 합산
+const FB_KEY='AIzaSyBfld7SRrVTxDG0nE_6Z3Mw5kSRTo5bIGY';
+const FB_DOCS='https://firestore.googleapis.com/v1/projects/somsom-city/databases/(default)/documents';
+async function fetchCol(col){
+  try{
+    const r=await fetch(FB_DOCS+':runQuery?key='+FB_KEY,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({structuredQuery:{from:[{collectionId:col}],orderBy:[{field:{fieldPath:'s'},direction:'DESCENDING'}],limit:200}})});
+    const j=await r.json(); if(!Array.isArray(j)) return [];
+    return j.filter(d=>d.document).map(d=>{const f=d.document.fields||{};
+      return {n:(f.n&&f.n.stringValue)||'?', s:+((f.s&&f.s.integerValue)||0), t:+((f.t&&f.t.integerValue)||0)};});
+  }catch(e){ return []; }
+}
+async function renderWeekly(){
+  const list=document.getElementById('wkList');
+  list.innerHTML='<div class="mRow" style="padding:14px;">불러오는 중…</div>';
+  const since=Date.now()-7*24*3600*1000;
+  const cols=await Promise.all([fetchCol('scores'),fetchCol('runner_scores'),fetchCol('memory_scores')]);
+  const per=cols.map(rows=>{
+    const best={}; for(const e of rows){ if(e.t<since) continue; if(!best[e.n]||e.s>best[e.n]) best[e.n]=e.s; }
+    const max=Math.max(1,...Object.values(best));
+    return {best,max};
+  });
+  const tot={};
+  per.forEach((p,gi)=>{ for(const n in p.best){ tot[n]=tot[n]||{n, parts:[0,0,0], sum:0};
+    const v=Math.round(p.best[n]/p.max*100); tot[n].parts[gi]=v; tot[n].sum+=v; } });
+  const rows=Object.values(tot).sort((a,b)=>b.sum-a.sum).slice(0,12);
+  const me=localStorage.getItem('somsom_name')||'';
+  document.getElementById('wkNote').textContent=rows.length?'최근 7일 · 300점 만점':'';
+  if(!rows.length){ list.innerHTML='<div class="mRow" style="padding:14px;">이번 주 기록이 아직 없어요.</div>'; return; }
+  list.innerHTML='';
+  rows.forEach((r,i)=>{
+    const d=document.createElement('div'); d.className='wkRow'+(r.n===me?' me':'');
+    const bars=r.parts.map(v=>'<i style="height:'+Math.max(4,Math.round(v*0.14))+'px;background:'+(v?'#B08A3A':'#E4D9C0')+'"></i>').join('');
+    d.innerHTML='<span class="rk">'+(i<3?['🥇','🥈','🥉'][i]:(i+1)+'위')+'</span><span class="nm">'+String(r.n).slice(0,10).replace(/[<>&]/g,'')+'</span><span class="br">'+bars+'</span><span class="sc">'+r.sum+'</span>';
+    list.appendChild(d);
+  });
+}
+renderProfile(); renderMissions();
+document.getElementById('wkOpen').addEventListener('click', ()=>{ document.getElementById('wkPanel').classList.add('on'); renderWeekly(); });
+document.getElementById('wkClose').addEventListener('click', ()=> document.getElementById('wkPanel').classList.remove('on'));
+document.getElementById('wkPanel').addEventListener('click', e=>{ if(e.target.id==='wkPanel') e.currentTarget.classList.remove('on'); });
+document.getElementById('profChip').addEventListener('click', ()=>{ document.getElementById('achOpen').click(); });
 </script>
 
 </body>
