@@ -139,10 +139,38 @@
   .dexSpecial.locked { background:#f3ede2; color:#b0a48e; font-weight:700; font-size:12px; padding:14px; }
   .homeBtn{position:absolute;top:8px;left:8px;z-index:60;background:rgba(255,255,255,.88);border:2px solid #222;border-radius:8px;padding:4px 11px;font:700 13px "Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#222;text-decoration:none;box-shadow:2px 2px 0 #222;}
   .homeBtn:active{transform:translate(2px,2px);box-shadow:none;}
+
+  #hud{padding-left:62px;}   /* 허브 빌드의 좌상단 홈 버튼 자리 확보 */
+  /* ── 일시정지 (Phase 1) ── */
+  .pauseBtn{position:static;flex:none;background:rgba(255,251,244,.94);border:2.5px solid #2B2620;
+    border-radius:14px;padding:4px 12px;font:700 14px 'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#2B2620;
+    box-shadow:0 3px 0 -1px #E4D9C0;cursor:pointer;display:none;line-height:1.2;}
+  .pauseBtn:active{transform:translateY(2px);box-shadow:none;}
+  #pauseWrap{position:absolute;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
+    background:rgba(43,38,32,.44);padding:20px;}
+  #pauseWrap.on{display:flex;}
+  #pauseCard{background:#FDFBF5;border:2.5px solid #2B2620;border-radius:24px;padding:22px 24px;display:flex;
+    flex-direction:column;gap:14px;align-items:center;min-width:210px;
+    box-shadow:0 6px 0 -1px #E4D9C0, 0 18px 28px -16px rgba(74,52,26,.55);}
+  #pauseCard .pt{font-size:19px;font-weight:800;color:#2B2620;}
+  #pauseCard .ps{font-size:12.5px;color:#7A6A5A;margin-top:-6px;}
+  #pauseCard .prow{display:flex;gap:9px;}
+  #pauseCard button{border:2.5px solid #2B2620;border-radius:16px;padding:10px 18px;font-size:14px;font-weight:700;
+    font-family:inherit;cursor:pointer;background:#FDFBF5;color:#2B2620;box-shadow:0 3px 0 -1px #E4D9C0;}
+  #pauseCard button.pri{background:#E0A83A;box-shadow:0 3px 0 -1px #A8781F;}
+  #pauseCard button:active{transform:translateY(2px);box-shadow:none;}
 </style>
 </head>
 <body>
 <div id="app">
+  <div id="pauseWrap"><div id="pauseCard">
+    <div class="pt">잠깐 쉬는 중</div>
+    <div class="ps">기록은 그대로 있어요</div>
+    <div class="prow">
+      <button class="pri" id="pauseResume">이어하기</button>
+      <button id="pauseQuit">그만두기</button>
+    </div>
+  </div></div>
   <a href="../" class="homeBtn" title="솜솜시티 홈">← 홈</a>
 
   <div id="title" class="screen">
@@ -177,6 +205,7 @@
 
   <div id="game" class="screen hidden">
     <div id="hud">
+      <button id="pauseBtn" class="pauseBtn" title="일시정지">❙❙</button>
       <span class="box">⏱ <span id="hTime">0.0</span></span>
       <span class="box">시도 <span id="hTry">0</span></span>
       <span class="box" id="combo">콤보 ×0</span>
@@ -466,13 +495,14 @@ function antSwap() {
 }
 
 function tickTimer() {
-  if (!g || g.done) return;
+  if (!g || g.done || paused) return;   // 정지 중엔 기록이 흐르지 않음
   g.elapsed = (performance.now() - g.t0) / 1000;
   $('hTime').textContent = g.elapsed.toFixed(1);
   timerRaf = requestAnimationFrame(tickTimer);
 }
 
 function tapCard(idx) {
+  if (paused) return;
   if (!g || g.lock || g.done) return;
   const card = g.deck[idx];
   if (card.solvedFlag || g.open.includes(idx)) return;
@@ -634,7 +664,7 @@ function showResult(score, timeBonus, effBonus, perfect) {
 // ---------- UI ----------
 let curRankTab = 'all', rankCache = null;
 const ui = {
-  show(id) { for (const sc of ['title','setup','intro','game','result','ranking','dex']) $(sc).classList.toggle('hidden', sc !== id); },
+  show(id) { for (const sc of ['title','setup','intro','game','result','ranking','dex']) $(sc).classList.toggle('hidden', sc !== id); showPauseBtn(id === 'game'); },
   toSetup() {
     if (g) { g.done = true; cancelAnimationFrame(timerRaf); clearInterval(sleepTimer); g = null; }
     clearTimeout(introTimer); introPending = null;
@@ -841,6 +871,23 @@ async function shareCard() {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob); a.download = 'somsom_memory.png'; a.click();
 }
+
+// ── 일시정지 (Phase 1) : 전화·알림으로 화면을 벗어나도 기록이 흐르지 않게 ──
+let paused=false, pauseLock=false;
+function canPause(){ return !!(g && !g.done && !$('game').classList.contains('hidden')); }
+function pauseGame(){ if(paused||!canPause())return; paused=true; pauseLock=g.lock; g.lock=true;
+  cancelAnimationFrame(timerRaf); clearInterval(sleepTimer); sleepTimer=null;
+  $('pauseWrap').classList.add('on'); }
+function resumeGame(){ if(!paused)return; paused=false; $('pauseWrap').classList.remove('on');
+  if(g && !g.done){ g.t0 = performance.now() - g.elapsed*1000; g.lock = pauseLock; tickTimer();
+    if(CHARS[g.key] && CHARS[g.key].rule==='sleepy') startSleepy(); } }
+function showPauseBtn(v){ $('pauseBtn').style.display = v ? 'block' : 'none'; if(!v){ paused=false; $('pauseWrap').classList.remove('on'); } }
+$('pauseBtn').addEventListener('click', e=>{ e.stopPropagation(); pauseGame(); });
+$('pauseResume').addEventListener('click', e=>{ e.stopPropagation(); resumeGame(); });
+$('pauseQuit').addEventListener('click', e=>{ e.stopPropagation(); paused=false; $('pauseWrap').classList.remove('on'); ui.show('setup'); });
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden) pauseGame(); });
+addEventListener('blur', ()=>pauseGame());
+addEventListener('keydown', e=>{ if(e.key==='Escape'){ paused?resumeGame():pauseGame(); } });
 </script>
 </body>
 </html>

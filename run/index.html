@@ -71,11 +71,39 @@
     #introBox .ihint{font-size:9px;} }
   .homeBtn{position:absolute;top:8px;left:8px;z-index:60;background:rgba(255,255,255,.88);border:2px solid #222;border-radius:8px;padding:4px 11px;font:700 13px "Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#222;text-decoration:none;box-shadow:2px 2px 0 #222;}
   .homeBtn:active{transform:translate(2px,2px);box-shadow:none;}
+
+  /* ── 일시정지 (Phase 1) ── */
+  .pauseBtn{position:absolute;top:8px;left:76px;z-index:60;background:rgba(255,251,244,.94);border:2.5px solid #2B2620;
+    border-radius:14px;padding:4px 12px;font:700 14px 'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#2B2620;
+    box-shadow:0 3px 0 -1px #E4D9C0;cursor:pointer;display:none;line-height:1.2;}
+  .pauseBtn:active{transform:translateY(2px);box-shadow:none;}
+  #pauseWrap{position:absolute;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
+    background:rgba(43,38,32,.44);padding:20px;}
+  #pauseWrap.on{display:flex;}
+  #pauseCard{background:#FDFBF5;border:2.5px solid #2B2620;border-radius:24px;padding:22px 24px;display:flex;
+    flex-direction:column;gap:14px;align-items:center;min-width:210px;
+    box-shadow:0 6px 0 -1px #E4D9C0, 0 18px 28px -16px rgba(74,52,26,.55);}
+  #pauseCard .pt{font-size:19px;font-weight:800;color:#2B2620;}
+  #pauseCard .ps{font-size:12.5px;color:#7A6A5A;margin-top:-6px;}
+  #pauseCard .prow{display:flex;gap:9px;}
+  #pauseCard button{border:2.5px solid #2B2620;border-radius:16px;padding:10px 18px;font-size:14px;font-weight:700;
+    font-family:inherit;cursor:pointer;background:#FDFBF5;color:#2B2620;box-shadow:0 3px 0 -1px #E4D9C0;}
+  #pauseCard button.pri{background:#E0A83A;box-shadow:0 3px 0 -1px #A8781F;}
+  #pauseCard button:active{transform:translateY(2px);box-shadow:none;}
 </style>
 </head>
 <body>
 <div id="rotate">📱 가로로 돌려주세요!<div style="font-size:13px;font-weight:600;color:#7a6a5a;">마감 질주는 가로 화면 전용이에요</div></div>
 <div id="app">
+  <button id="pauseBtn" class="pauseBtn" title="일시정지">❙❙</button>
+  <div id="pauseWrap"><div id="pauseCard">
+    <div class="pt">잠깐 쉬는 중</div>
+    <div class="ps">기록은 그대로 있어요</div>
+    <div class="prow">
+      <button class="pri" id="pauseResume">이어하기</button>
+      <button id="pauseQuit">그만두기</button>
+    </div>
+  </div></div>
   <a href="../" class="homeBtn" title="솜솜시티 홈">← 홈</a>
   <canvas id="cv" width="760" height="420"></canvas>
 
@@ -239,7 +267,7 @@ function newState(key){
     best:+(localStorage.getItem('runner_best_'+key)||0) };
 }
 function scoreOf(s){ return Math.floor(s.dist/12) + s.coinPts; }
-function jump(){ const s=S; if(!s||s.over||s.jumps<=0)return; const dj=!s.onGround; s.jumps--; if(dj)s.airJumps=(s.airJumps||0)+1; else s.airJumps=0;
+function jump(){ const s=S; if(!s||s.over||paused||s.jumps<=0)return; const dj=!s.onGround; s.jumps--; if(dj)s.airJumps=(s.airJumps||0)+1; else s.airJumps=0;
   s.vy = dj ? -s.c.djv : -s.c.jv;
   s.onGround=false; if(dj)s.spin=1; sfx(dj?'dj':'jump'); for(let i=0;i<6;i++)s.parts.push({x:PX-10,y:GROUND,vx:-60-Math.random()*60,vy:-20-Math.random()*30,g:300,life:.4,max:.4,size:3,col:'#d8c8a8'}); }
 
@@ -258,7 +286,7 @@ function spawnGems(s){
 
 // ================= 루프 =================
 function loop(now){
-  const s=S; if(!s)return;
+  const s=S; if(!s||paused)return;   // 정지 중엔 프레임을 진행하지 않음
   if(H>W){ s.last=performance.now(); raf=requestAnimationFrame(loop); return; }   // 세로 화면 = 일시정지
   let dt=Math.min(.05,(now-s.last)/1000); s.last=now;
   if(s.over)dt*=.25; if(s.hitstop>0){ s.hitstop-=dt; dt=0; }
@@ -418,7 +446,7 @@ function draw(s,now,score){
   // 인트로
   if(s.introT>0){ ctx.globalAlpha=Math.min(1,s.introT/.4); ctx.font='800 18px sans-serif'; ctx.textAlign='center'; ctx.fillStyle='#5a4a3a'; ctx.strokeStyle='#fff'; ctx.lineWidth=4; ctx.strokeText(s.c.intro,W/2,80); ctx.fillText(s.c.intro,W/2,80); ctx.globalAlpha=1; }
   // HUD
-  ctx.fillStyle='#5a4a3a'; ctx.font='800 22px sans-serif'; ctx.textAlign='left'; ctx.fillText(score+' m',88,36);   // 88: 좌상단 '← 홈' 버튼과 겹치지 않게
+  ctx.fillStyle='#5a4a3a'; ctx.font='800 22px sans-serif'; ctx.textAlign='left'; ctx.fillText(score+' m',150,36);   // 88: 좌상단 '← 홈' 버튼과 겹치지 않게
   ctx.font='800 15px sans-serif'; ctx.textAlign='right'; ctx.fillText('🌰 '+s.coins,W-14,30);
   if(s.shield>0){ ctx.fillStyle='#3a7a5a'; ctx.font='800 13px sans-serif'; ctx.fillText('🛡 보호막',W-14,50); }
   ctx.restore();
@@ -514,7 +542,7 @@ const INTRO={
 };
 let introTimer=null, introPending=null;
 const ui={
-  show(id){ for(const s of ['title','select','intro','ranking','result']) $(s).classList.toggle('hidden',s!==id); },
+  show(id){ for(const s of ['title','select','intro','ranking','result']) $(s).classList.toggle('hidden',s!==id); showPauseBtn(id === 'none'); },
   showIntro(key){
     clearTimeout(introTimer);
     introPending=key;
@@ -557,10 +585,25 @@ function goFullscreen(){
 }
 
 // ================= 입력 =================
-function press(e){ if(e&&e.cancelable)e.preventDefault(); if(S&&!S.over)jump(); }
-addEventListener('keydown',e=>{ if(e.key===' '||e.key==='ArrowUp'){ e.preventDefault(); if(S&&!S.over)jump(); } });
+function press(e){ if(e&&e.cancelable)e.preventDefault(); if(paused)return; if(S&&!S.over)jump(); }
+addEventListener('keydown',e=>{ if(e.key===' '||e.key==='ArrowUp'){ e.preventDefault(); if(paused)return; if(S&&!S.over)jump(); } });
 cv.addEventListener('mousedown',press);
 cv.addEventListener('touchstart',press,{passive:false});
+
+// ── 일시정지 (Phase 1) : 전화·알림으로 화면을 벗어나도 죽지 않게 ──
+let paused=false;
+function canPause(){ return !!(S && !S.over); }
+function pauseGame(){ if(paused||!canPause())return; paused=true; cancelAnimationFrame(raf); stopBgm();
+  $('pauseWrap').classList.add('on'); }
+function resumeGame(){ if(!paused)return; paused=false; $('pauseWrap').classList.remove('on');
+  if(S && !S.over){ S.last=performance.now(); raf=requestAnimationFrame(loop); startBgm(); } }
+function showPauseBtn(v){ $('pauseBtn').style.display = v ? 'block' : 'none'; if(!v){ paused=false; $('pauseWrap').classList.remove('on'); } }
+$('pauseBtn').addEventListener('click', e=>{ e.stopPropagation(); pauseGame(); });
+$('pauseResume').addEventListener('click', e=>{ e.stopPropagation(); resumeGame(); });
+$('pauseQuit').addEventListener('click', e=>{ e.stopPropagation(); paused=false; $('pauseWrap').classList.remove('on'); ui.toSelect(); });
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden) pauseGame(); });
+addEventListener('blur', ()=>pauseGame());
+addEventListener('keydown', e=>{ if(e.key==='Escape'){ paused?resumeGame():pauseGame(); } });
 </script>
 </body>
 </html>

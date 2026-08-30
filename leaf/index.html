@@ -64,10 +64,38 @@
     #introBox .ihint{font-size:9px;} }
   .homeBtn{position:absolute;top:8px;left:8px;z-index:60;background:rgba(255,255,255,.88);border:2px solid #222;border-radius:8px;padding:4px 11px;font:700 13px "Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#222;text-decoration:none;box-shadow:2px 2px 0 #222;}
   .homeBtn:active{transform:translate(2px,2px);box-shadow:none;}
+
+  /* ── 일시정지 (Phase 1) ── */
+  .pauseBtn{position:absolute;top:8px;left:76px;z-index:60;background:rgba(255,251,244,.94);border:2.5px solid #2B2620;
+    border-radius:14px;padding:4px 12px;font:700 14px 'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#2B2620;
+    box-shadow:0 3px 0 -1px #E4D9C0;cursor:pointer;display:none;line-height:1.2;}
+  .pauseBtn:active{transform:translateY(2px);box-shadow:none;}
+  #pauseWrap{position:absolute;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
+    background:rgba(43,38,32,.44);padding:20px;}
+  #pauseWrap.on{display:flex;}
+  #pauseCard{background:#FDFBF5;border:2.5px solid #2B2620;border-radius:24px;padding:22px 24px;display:flex;
+    flex-direction:column;gap:14px;align-items:center;min-width:210px;
+    box-shadow:0 6px 0 -1px #E4D9C0, 0 18px 28px -16px rgba(74,52,26,.55);}
+  #pauseCard .pt{font-size:19px;font-weight:800;color:#2B2620;}
+  #pauseCard .ps{font-size:12.5px;color:#7A6A5A;margin-top:-6px;}
+  #pauseCard .prow{display:flex;gap:9px;}
+  #pauseCard button{border:2.5px solid #2B2620;border-radius:16px;padding:10px 18px;font-size:14px;font-weight:700;
+    font-family:inherit;cursor:pointer;background:#FDFBF5;color:#2B2620;box-shadow:0 3px 0 -1px #E4D9C0;}
+  #pauseCard button.pri{background:#E0A83A;box-shadow:0 3px 0 -1px #A8781F;}
+  #pauseCard button:active{transform:translateY(2px);box-shadow:none;}
 </style>
 </head>
 <body>
 <div id="app">
+  <button id="pauseBtn" class="pauseBtn" title="일시정지">❙❙</button>
+  <div id="pauseWrap"><div id="pauseCard">
+    <div class="pt">잠깐 쉬는 중</div>
+    <div class="ps">기록은 그대로 있어요</div>
+    <div class="prow">
+      <button class="pri" id="pauseResume">이어하기</button>
+      <button id="pauseQuit">그만두기</button>
+    </div>
+  </div></div>
   <a href="../" class="homeBtn" title="솜솜시티 홈">← 홈</a>
   <canvas id="cv" width="420" height="680"></canvas>
   <button id="actionBtn">🐢 쉘터</button>
@@ -266,7 +294,8 @@ function newState(key) {
   };
 }
 
-function action() { const s = state; if (!s || s.over) return; if (s.c.shell) useShell(); else if (s.c.slow) useSlow(); }
+function action() {
+  if (paused) return; const s = state; if (!s || s.over) return; if (s.c.shell) useShell(); else if (s.c.slow) useSlow(); }
 
 // ---------- audio (WebAudio 합성 — 파일 없이 8bit풍 효과음) ----------
 let AC = null, muted = localStorage.getItem('somsom_muted') === '1', bgmTimer = null, bgmStep = 0;
@@ -392,7 +421,7 @@ function drawLeaf(x, y, r, a) {
 
 // ---------- loop ----------
 function loop(now) {
-  const s = state; if (!s) return;
+  const s = state; if (!s || paused) return;   // 정지 중엔 프레임을 진행하지 않음
   let dt = Math.min(0.05, (now - s.last) / 1000); s.last = now;
   if (s.over) dt *= 0.18;                                        // 게임오버 슬로모
   if (s.hitstop > 0) { s.hitstop -= dt; dt = 0; }
@@ -624,7 +653,7 @@ function draw(s, now, shell) {
   ctx.fillStyle = '#5a4a3a'; ctx.textAlign = 'left';
   ctx.font = `800 ${Math.round(19*pop)}px sans-serif`;
   ctx.strokeText('점수 ' + Math.floor(s.score), 14, 31);
-  ctx.fillText('점수 ' + Math.floor(s.score), 14, 31);
+  ctx.fillText('점수 ' + Math.floor(s.score), 150, 31);   // 홈·일시정지 버튼과 겹치지 않게
   ctx.font = '800 19px sans-serif'; ctx.textAlign = 'right';
   const hearts = '❤'.repeat(Math.max(0,s.lives));
   ctx.strokeText(hearts, W-14, 31); ctx.fillText(hearts, W-14, 31);
@@ -697,7 +726,7 @@ const INTRO = {
 };
 let introTimer = null, introPending = null;
 const ui = {
-  show(id) { for (const sc of ['title','select','intro','result','ranking']) $(sc).classList.toggle('hidden', sc !== id); },
+  show(id) { for (const sc of ['title','select','intro','result','ranking']) $(sc).classList.toggle('hidden', sc !== id); showPauseBtn(id === 'none'); },
   showIntro(key) {
     clearTimeout(introTimer);
     introPending = key;
@@ -908,6 +937,21 @@ $('muteBtn').addEventListener('click', () => {
   $('muteBtn').textContent = muted ? '🔇' : '🔊';
   if (muted) stopBgm(); else if (state && !state.over) startBgm();
 });
+
+// ── 일시정지 (Phase 1) : 전화·알림으로 화면을 벗어나도 죽지 않게 ──
+let paused=false;
+function canPause(){ return !!(state && !state.over); }
+function pauseGame(){ if(paused||!canPause())return; paused=true; cancelAnimationFrame(raf); stopBgm();
+  $('pauseWrap').classList.add('on'); }
+function resumeGame(){ if(!paused)return; paused=false; $('pauseWrap').classList.remove('on');
+  if(state && !state.over){ state.last=performance.now(); raf=requestAnimationFrame(loop); startBgm(); } }
+function showPauseBtn(v){ $('pauseBtn').style.display = v ? 'block' : 'none'; if(!v){ paused=false; $('pauseWrap').classList.remove('on'); } }
+$('pauseBtn').addEventListener('click', e=>{ e.stopPropagation(); pauseGame(); });
+$('pauseResume').addEventListener('click', e=>{ e.stopPropagation(); resumeGame(); });
+$('pauseQuit').addEventListener('click', e=>{ e.stopPropagation(); paused=false; $('pauseWrap').classList.remove('on'); ui.toSelect(); });
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden) pauseGame(); });
+addEventListener('blur', ()=>pauseGame());
+addEventListener('keydown', e=>{ if(e.key==='Escape'){ paused?resumeGame():pauseGame(); } });
 </script>
 </body>
 </html>
