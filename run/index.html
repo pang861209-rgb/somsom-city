@@ -14,7 +14,7 @@
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body { height:100%; overflow:hidden; }
   body { background:#0e0e0e; font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; display:flex; justify-content:center; align-items:center; }
-  #app { width:100vw; height:100vh; height:100dvh; position:relative; user-select:none; }
+  #app { width:100vw; height:100dvh; height:100dvh; position:relative; user-select:none; }
   canvas { display:block; width:100%; height:100%; background:#fdfbf5; touch-action:none; }
   #rotate { position:fixed; inset:0; z-index:99; background:#fdfbf5; display:none; flex-direction:column; align-items:center; justify-content:center; gap:12px; font-size:20px; font-weight:800; color:#5a4a3a; text-align:center; padding:24px; }
   @media (orientation:portrait) { #rotate { display:flex; } }
@@ -59,7 +59,7 @@
   .row { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center; }
   /* 캐릭터 인트로 삽화 (가로) */
   #intro { padding:0; overflow:hidden; justify-content:flex-end; cursor:pointer; }
-  #introImg { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; object-position:center; background:#f3ede2; z-index:0; }   /* contain: 삽화 잘림 방지 */
+  #introImg { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; object-position:center; background:#221E18; z-index:0; }   /* contain: 삽화 잘림 방지 */
   #introBox { position:relative; z-index:1; margin:0 14px 12px 14px; max-width:min(400px,54%); width:auto; align-self:flex-start; background:rgba(253,251,245,.92); border:2.5px solid #222; border-radius:14px; box-shadow:3px 3px 0 rgba(34,34,34,.75); padding:8px 12px; text-align:left; animation:introUp .5s ease-out; }   /* introBox 축소·좌하단 */   /* introBox 축소·좌하단 정렬 (캐릭터 가림 방지) */
   #introBox .iname { font-weight:800; font-size:14px; color:#b08a3a; margin-bottom:4px; }
   #introBox .itext { font-size:13px; color:#5a4a3a; line-height:1.55; }
@@ -70,14 +70,14 @@
   @media (max-height:430px){ #introBox{max-width:min(360px,52%); padding:7px 11px; margin-bottom:10px;}
     #introBox .iname{font-size:12px;} #introBox .itext{font-size:11.5px; line-height:1.4;}
     #introBox .ihint{font-size:9px;} }
-  .homeBtn{position:absolute;top:8px;left:8px;z-index:60;background:rgba(255,255,255,.88);border:2px solid #222;border-radius:8px;padding:4px 11px;font:700 13px "Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#222;text-decoration:none;box-shadow:2px 2px 0 #222;}
-  .homeBtn:active{transform:translate(2px,2px);box-shadow:none;}
+  .homeBtn{position:absolute;top:8px;left:8px;z-index:60;background:rgba(43,38,32,.86);border:none;border-radius:13px;padding:6px 13px;font:700 13px "Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#EFE7D6;text-decoration:none;box-shadow:0 4px 14px -6px rgba(0,0,0,.8);backdrop-filter:blur(3px);}
+  .homeBtn:active{background:rgba(43,38,32,.96);transform:translateY(1px);}
 
   /* ── 일시정지 (Phase 1) ── */
-  .pauseBtn{position:absolute;top:8px;left:76px;z-index:60;background:rgba(255,251,244,.94);border:2.5px solid #2B2620;
-    border-radius:14px;padding:4px 12px;font:700 14px 'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#2B2620;
-    box-shadow:0 3px 0 -1px #E4D9C0;cursor:pointer;display:none;line-height:1.2;}
-  .pauseBtn:active{transform:translateY(2px);box-shadow:none;}
+  .pauseBtn{position:absolute;top:8px;left:76px;z-index:60;background:rgba(43,38,32,.86);border:none;
+    border-radius:13px;padding:6px 13px;font:700 14px 'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#EFE7D6;
+    box-shadow:0 4px 14px -6px rgba(0,0,0,.8);cursor:pointer;display:none;line-height:1.2;backdrop-filter:blur(3px);}
+  .pauseBtn:active{background:rgba(43,38,32,.96);transform:translateY(1px);}
   #pauseWrap{position:absolute;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
     background:rgba(43,38,32,.44);padding:20px;}
   #pauseWrap.on{display:flex;}
@@ -189,6 +189,19 @@
   .mcard .front{background:#EFE7D6;}
   .mcard .back{background:#3A342A;}
   #ruleModal .rm{background:#2B2620;color:#EFE7D6;border:none;}
+
+  /* ═══ 아이폰 최적화 — 노치·홈 인디케이터·주소창 대응 ═══ */
+  html,body{height:100%;}
+  body{min-height:100dvh;}
+  #app{ padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right); }
+  .screen{
+    padding-top:calc(14px + env(safe-area-inset-top));
+    padding-bottom:calc(14px + env(safe-area-inset-bottom));
+  }
+  .homeBtn{ top:calc(8px + env(safe-area-inset-top)) !important;
+            left:calc(8px + env(safe-area-inset-left)) !important; }
+  .pauseBtn{ top:calc(8px + env(safe-area-inset-top)); }
+  #achToast{ top:calc(14px + env(safe-area-inset-top)); }
 </style>
 </head>
 <body>
@@ -272,15 +285,15 @@
 // spd:기본속도배수  jv/djv:점프력/더블점프력  grav:중력  dw:그리기/히트박스 크기
 // shield:첫충돌 무효 횟수  magnet:도토리 자석 범위  coinx:도토리 점수배수
 const CHARS = {
-  kkito:      { name:'끼토',  spr:'../assets/run_kkito_t.png',  sd:'../assets/sd_kkito_t.png',  dw:80, spd:1.0,  jv:800, djv:720, grav:2500, shield:0, magnet:0,   coinx:1,
+  kkito:      { name:'끼토',  spr:'../assets/run_kkito_t.png',  sd:'../assets/sd_kkito_t.png',  dw:80, spd:1.0,  jv:800, djv:720, grav:2500, shield:0, magnet:0,   coinx:1, glide:0.36,
     trait:'점프 장인 — 가장 높은 점프 + 더블점프 (만능 기본)', intro:'마감이다! 달려, 끼토!' },
   migae:      { name:'미개',  spr:'../assets/run_migae_t.png',  sd:'../assets/sd_migae_t.png',  dw:24, spd:1.0, jv:700, djv:600, grav:2350, shield:0, magnet:0, coinx:1, jumps:3,
     trait:'삼단 점프 — 6다리로 공중에서 두 번 더! 작아서 잘 안 맞음', intro:'뽈뽈뽈—! 따라와!' },
   ramda:      { name:'람다',  spr:'../assets/run_ramda_t.png',  sd:'../assets/sd_ramda_t.png',  dw:58, spd:1.0,  jv:770, djv:700, grav:2500, shield:0, magnet:135, coinx:1,
     trait:'수집형 — 도토리 자석 (주변 도토리가 끌려옴)', intro:'도토리는 다 내 거야!' },
-  boneul:     { name:'보늘',  spr:'../assets/run_boneul_t.png', sd:'../assets/sd_boneul_t.png', dw:74, spd:0.82, jv:715, djv:650, grav:2700, shield:1, magnet:0,   coinx:1,
+  boneul:     { name:'보늘',  spr:'../assets/run_boneul_t.png', sd:'../assets/sd_boneul_t.png', dw:74, spd:0.82, jv:715, djv:650, grav:2700, shield:1, magnet:0,   coinx:1, zone:150, distx:1.75,
     trait:'탱커형 — 첫 충돌 1회 무효 (느리지만 든든)', intro:'천천히 가도 안 죽어~' },
-  bookgeo:    { name:'북거씨', spr:'../assets/run_bookgeo_t.png', sd:'../assets/sd_bookgeo_t.png', dw:49, spd:0.85, jv:720, djv:660, grav:1750, shield:0, magnet:0, coinx:1,
+  bookgeo:    { name:'북거씨', spr:'../assets/run_bookgeo_t.png', sd:'../assets/sd_bookgeo_t.png', dw:49, spd:0.85, jv:720, djv:660, grav:1750, shield:0, magnet:0, coinx:1, jumps:1, slam:true,
     trait:'플로팅형 — 천천히 떨어져 타이밍이 관대 (쉬움)', intro:'서두르지 않아도 돼요.' },
   lachilchin: { name:'라칠친 할머니', spr:'../assets/run_lachilchin_t.png', sd:'../assets/sd_lachilchin_t.png', dw:35, spd:0.9, jv:760, djv:690, grav:2500, shield:0, magnet:0, coinx:2,
     trait:'알뜰형 — 도토리 점수 2배 (느린 시작)', intro:'아이구, 천천히 줍자 그래~' },
@@ -289,11 +302,11 @@ const CHARS = {
 // ================= 캐릭터 카드 표시용 (타입·특기·스탯) =================
 // st: [속도, 점프, 회피] 0~5
 const CARD = {
-  kkito:      { type:'만능', col:'#4a78c0', abil: '최고 점프 + 더블점프',  st:[3,5,3] },
+  kkito:      { type:'만능', col:'#4a78c0', abil: '길게 누르면 귀 활강',    st:[3,5,4], glide:0.36 },
   migae:      { type:'기동', col:'#8a6fb0', abil: '삼단 점프 · 작은 몸',    st:[3,4,5] },
   ramda:      { type:'수집', col:'#d08a3a', abil: '도토리 자석',          st:[3,3,3] },
-  boneul:     { type:'탱커', col:'#5a9a5a', abil: '첫 충돌 1회 무효',      st:[1,2,5] },
-  bookgeo:    { type:'안정', col:'#3a9a9a', abil: '느린 낙하 (쉬움)',      st:[2,2,4] },
+  boneul:     { type:'탱커', col:'#5a9a5a', abil: '위험하면 세상이 느려짐', st:[1,2,5], zone:150, distx:1.75 },
+  bookgeo:    { type:'파괴', col:'#3a9a9a', abil: '공중 탭 = 등껍질 슬램',   st:[2,2,4], jumps:1, slam:true },
   lachilchin: { type:'알뜰', col:'#c87a9a', abil: '도토리 점수 2배',      st:[2,3,3] },
 };
 
@@ -370,13 +383,16 @@ function newState(key){
   const c=CHARS[key];
   return { key, c, dist:0, speed:195*c.spd, base:195*c.spd, cap:560*c.spd, coins:0, coinPts:0,
     y:0, vy:0, spin:0, airJumps:0, onGround:true, jumps:(c.jumps||2), run:0, shield:c.shield, inv:0, introT:1.8, recordShown:false,
+    hold:false, slamming:false, slams:0, slowT:0,
     obs:[], gems:[], parts:[], floats:[], nextObs:540, nextGem:260, drops:[], nextDrop:1100,
     combo:0, comboT:0, bestCombo:0, marks:[], nextMark:700,
     over:false, overAt:0, shake:0, hitstop:0, last:performance.now(),
     best:+(localStorage.getItem('runner_best_'+key)||0) };
 }
-function scoreOf(s){ return Math.floor(s.dist/12) + s.coinPts; }
-function jump(){ const s=S; if(!s||s.over||paused||s.jumps<=0)return; const dj=!s.onGround; s.jumps--; if(dj)s.airJumps=(s.airJumps||0)+1; else s.airJumps=0;
+function scoreOf(s){ return Math.floor(s.dist/12*(s.c.distx||1)) + s.coinPts; }
+function jump(){ const s=S; if(!s||s.over||paused)return;
+  if(s.c.slam && !s.onGround && !s.slamming){ s.slamming=true; s.vy=1750; s.spin=0; sfx('dj'); return; }   // 북거씨: 등껍질 슬램
+  if(s.jumps<=0)return; const dj=!s.onGround; s.jumps--; if(dj)s.airJumps=(s.airJumps||0)+1; else s.airJumps=0;
   s.vy = dj ? -s.c.djv : -s.c.jv;
   s.onGround=false; if(dj)s.spin=1; sfx(dj?'dj':'jump'); for(let i=0;i<6;i++)s.parts.push({x:PX-10,y:GROUND,vx:-60-Math.random()*60,vy:-20-Math.random()*30,g:300,life:.4,max:.4,size:3,col:'#d8c8a8'}); }
 
@@ -399,6 +415,14 @@ function loop(now){
   if(H>W){ s.last=performance.now(); raf=requestAnimationFrame(loop); return; }   // 세로 화면 = 일시정지
   let dt=Math.min(.05,(now-s.last)/1000); s.last=now;
   if(s.over)dt*=.25; if(s.hitstop>0){ s.hitstop-=dt; dt=0; }
+  if(s.c.zone && !s.over){                                  // 보늘: 위험이 가까우면 세상이 느려짐
+    let near=1e9;
+    for(const o of s.obs) if(o.x>PX-20) near=Math.min(near,o.x-PX);
+    for(const d of s.drops) if(d.ph<2 && d.x>PX-20) near=Math.min(near,d.x-PX);
+    const want = near<s.c.zone ? 0.55 : 1;
+    s.slowT += ((want===1?0:1)-s.slowT)*Math.min(1,dt*8);
+    dt *= 1-(1-0.55)*s.slowT;
+  }
   if(s.introT>0)s.introT-=dt;
   if(s.inv>0)s.inv-=dt;
 
@@ -406,7 +430,14 @@ function loop(now){
     s.speed=Math.min(s.cap, s.speed+4.2*s.c.spd*dt);
     s.dist+=s.speed*dt; s.run+=s.speed*dt;
     s.vy+=s.c.grav*dt; s.y+=s.vy*dt;
-    if(s.y>=0){ if(!s.onGround){ sfx('land'); for(let i=0;i<5;i++)s.parts.push({x:PX,y:GROUND,vx:(Math.random()-.3)*80,vy:-15,g:300,life:.3,max:.3,size:3,col:'#d8c8a8'}); } s.y=0; s.vy=0; s.onGround=true; s.jumps=(s.c.jumps||2); s.airJumps=0; }
+
+  // ── 시그니처: 길게 누르기 ──
+  if(!s.over){
+    if(s.c.glide && s.hold && !s.onGround && s.vy>0) s.vy += s.c.grav*(s.c.glide-1)*dt;   // 끼토: 귀 활강(하강만 느리게)
+  }
+
+    if(s.y>=0){ if(s.slamming){ slamLand(s); }
+      if(!s.onGround){ sfx('land'); for(let i=0;i<5;i++)s.parts.push({x:PX,y:GROUND,vx:(Math.random()-.3)*80,vy:-15,g:300,life:.3,max:.3,size:3,col:'#d8c8a8'}); } s.y=0; s.vy=0; s.onGround=true; s.jumps=(s.c.jumps||2); s.airJumps=0; }
     if(s.onGround&&Math.random()<.25)s.parts.push({x:PX-15,y:GROUND-2,vx:-55,vy:-8,g:120,life:.3,max:.3,size:2.5,col:'rgba(180,160,120,.5)'});
     s.nextObs-=s.speed*dt; if(s.nextObs<=0){ spawnObstacle(s); s.nextObs=420+Math.random()*300; }
     s.nextGem-=s.speed*dt; if(s.nextGem<=0){ spawnGems(s); s.nextGem=360+Math.random()*260; }
@@ -421,7 +452,7 @@ function loop(now){
   for(const o of s.obs){
     o.x-=s.speed*dt;
     const ovX = cx+half>o.x+6 && cx-half<o.x+o.w-6;                       // 가로로 겹치는 중
-    if(!s.over && s.inv<=0 && ovX && py>GROUND-o.h+6){
+    if(!s.over && s.inv<=0 && !s.slamming && ovX && py>GROUND-o.h+6){
       if(s.shield>0){ s.shield--; s.inv=1.1; s.shake=.35; s.combo=0; s.comboT=0; sfx('block'); s.floats.push({x:PX,y:py-70,txt:'막았다!',col:'#3a7a5a',life:1.1}); }
       else { s.over=true; s.overAt=now; s.shake=.5; s.hitstop=.12; sfx('hit'); sfx('over'); stopBgm(); }
     }
@@ -573,6 +604,11 @@ function draw(s,now,score){
     ctx.fillStyle='#d2452a'; ctx.font='800 14px sans-serif'; ctx.textAlign='right';
     ctx.fillText('🔥 '+s.combo+'콤보 ×'+Math.min(5,s.combo),W-14,68); ctx.globalAlpha=1; ctx.fillStyle='#5a4a3a'; }
   if(s.shield>0){ ctx.fillStyle='#3a7a5a'; ctx.font='800 13px sans-serif'; ctx.fillText('🛡 보호막',W-14,50); }
+  if(s.c.slam && !s.onGround && !s.slamming){          // 슬램 안내
+    ctx.fillStyle='#2a7a7a'; ctx.font='800 12px sans-serif'; ctx.textAlign='right'; ctx.fillText('탭 = 슬램',W-14,52); }
+  if(s.slams>0){ ctx.fillStyle='#2a7a7a'; ctx.font='800 12px sans-serif'; ctx.textAlign='right'; ctx.fillText('부순 장애물 '+s.slams,W-14,68); }
+  if(s.c.glide && s.hold && !s.onGround && s.vy>0){    // 활강 중
+    ctx.fillStyle='#b06a9a'; ctx.font='800 12px sans-serif'; ctx.textAlign='right'; ctx.fillText('활강 중',W-14,52); }
   ctx.restore();
 }
 
@@ -711,8 +747,12 @@ function goFullscreen(){
 }
 
 // ================= 입력 =================
-function press(e){ if(e&&e.cancelable)e.preventDefault(); if(paused)return; if(S&&!S.over)jump(); }
-addEventListener('keydown',e=>{ if(e.key===' '||e.key==='ArrowUp'){ e.preventDefault(); if(paused)return; if(S&&!S.over)jump(); } });
+function press(e){ if(e&&e.cancelable)e.preventDefault(); if(paused)return; if(S)S.hold=true; if(S&&!S.over)jump(); }
+function release(){ if(S)S.hold=false; }
+cv.addEventListener('mouseup',release); cv.addEventListener('mouseleave',release);
+cv.addEventListener('touchend',release); cv.addEventListener('touchcancel',release);
+addEventListener('keydown',e=>{ if(e.key===' '||e.key==='ArrowUp'){ e.preventDefault(); if(paused)return; if(S)S.hold=true; if(S&&!S.over)jump(); } });
+addEventListener('keyup',e=>{ if(e.key===' '||e.key==='ArrowUp') release(); });
 cv.addEventListener('mousedown',press);
 cv.addEventListener('touchstart',press,{passive:false});
 
@@ -867,6 +907,26 @@ function missionDone(g){
     setTimeout(()=>{ el.classList.remove('on');
       setTimeout(()=>{ el.querySelector('.at').textContent='업적 달성'; }, 500); }, 2000); }
   return true;
+}
+
+// ── 북거씨 등껍질 슬램: 착지하며 앞쪽 장애물을 부순다 ──
+function slamLand(s){
+  s.slamming=false; s.shake=Math.max(s.shake,.5); s.hitstop=.08; sfx('thud');
+  let broke=0;
+  for(const o of s.obs){
+    if(o.x > PX-40 && o.x < PX+165){ o.broken=true; broke++;
+      for(let i=0;i<10;i++)s.parts.push({x:o.x+o.w/2,y:GROUND-o.h/2,
+        vx:(Math.random()-.2)*220, vy:-40-Math.random()*160, g:520, life:.5,max:.5,size:3,col:'#a8834e'});
+    }
+  }
+  s.obs = s.obs.filter(o=>!o.broken);
+  for(let i=0;i<14;i++)s.parts.push({x:PX,y:GROUND,vx:(Math.random()-.5)*300,vy:-30-Math.random()*90,
+    g:480,life:.45,max:.45,size:3,col:'#d8c8a8'});
+  if(broke){
+    s.slams=(s.slams||0)+broke;
+    const pts=60*broke; s.coinPts+=pts;
+    s.floats.push({x:PX+40,y:GROUND-90,txt:'쾅! +'+pts,col:'#2a7a7a',life:1.1});
+  }
 }
 </script>
 </body>

@@ -2,12 +2,12 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>솜솜시티: 은행 주의보 (프로토타입 M0.5)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { background:#f3ede2; font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; display:flex; justify-content:center; align-items:center; min-height:100vh; }
+  body { background:#f3ede2; font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; display:flex; justify-content:center; align-items:center; min-height:100dvh; }
   #app { width:min(420px,100vw); position:relative; }
   canvas { display:block; width:100%; background:#fdfbf5; border-radius:12px; }
   .screen { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; background:#fdfbf5; border-radius:12px; padding:20px; text-align:center; }
@@ -52,7 +52,7 @@
   @keyframes confFall { to { transform:translateY(760px) rotate(560deg); opacity:.15; } }
   /* 캐릭터 인트로 삽화 */
   #intro { padding:0; overflow:hidden; justify-content:flex-end; cursor:pointer; }
-  #introImg { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; object-position:center; background:#f3ede2; z-index:0; }   /* contain: 삽화 잘림 방지 */
+  #introImg { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; object-position:center; background:#221E18; z-index:0; }   /* contain: 삽화 잘림 방지 */
   #introBox { position:relative; z-index:1; margin:0 14px 12px 14px; max-width:min(400px,54%); width:auto; align-self:flex-start; background:rgba(253,251,245,.92); border:2.5px solid #222; border-radius:14px; box-shadow:3px 3px 0 rgba(34,34,34,.75); padding:8px 12px; text-align:left; animation:introUp .5s ease-out; }   /* introBox 축소·좌하단 */   /* introBox 축소·좌하단 정렬 (캐릭터 가림 방지) */
   #introBox .iname { font-weight:800; font-size:15px; color:#b08a3a; margin-bottom:5px; }
   #introBox .itext { font-size:13.5px; color:#5a4a3a; line-height:1.6; }
@@ -63,14 +63,14 @@
   @media (max-height:430px){ #introBox{max-width:min(360px,52%); padding:7px 11px; margin-bottom:10px;}
     #introBox .iname{font-size:12px;} #introBox .itext{font-size:11.5px; line-height:1.4;}
     #introBox .ihint{font-size:9px;} }
-  .homeBtn{position:absolute;top:8px;left:8px;z-index:60;background:rgba(255,255,255,.88);border:2px solid #222;border-radius:8px;padding:4px 11px;font:700 13px "Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#222;text-decoration:none;box-shadow:2px 2px 0 #222;}
-  .homeBtn:active{transform:translate(2px,2px);box-shadow:none;}
+  .homeBtn{position:absolute;top:8px;left:8px;z-index:60;background:rgba(43,38,32,.86);border:none;border-radius:13px;padding:6px 13px;font:700 13px "Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#EFE7D6;text-decoration:none;box-shadow:0 4px 14px -6px rgba(0,0,0,.8);backdrop-filter:blur(3px);}
+  .homeBtn:active{background:rgba(43,38,32,.96);transform:translateY(1px);}
 
   /* ── 일시정지 (Phase 1) ── */
-  .pauseBtn{position:absolute;top:8px;left:76px;z-index:60;background:rgba(255,251,244,.94);border:2.5px solid #2B2620;
-    border-radius:14px;padding:4px 12px;font:700 14px 'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#2B2620;
-    box-shadow:0 3px 0 -1px #E4D9C0;cursor:pointer;display:none;line-height:1.2;}
-  .pauseBtn:active{transform:translateY(2px);box-shadow:none;}
+  .pauseBtn{position:absolute;top:8px;left:76px;z-index:60;background:rgba(43,38,32,.86);border:none;
+    border-radius:13px;padding:6px 13px;font:700 14px 'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#EFE7D6;
+    box-shadow:0 4px 14px -6px rgba(0,0,0,.8);cursor:pointer;display:none;line-height:1.2;backdrop-filter:blur(3px);}
+  .pauseBtn:active{background:rgba(43,38,32,.96);transform:translateY(1px);}
   #pauseWrap{position:absolute;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
     background:rgba(43,38,32,.44);padding:20px;}
   #pauseWrap.on{display:flex;}
@@ -177,6 +177,19 @@
   .mcard .front{background:#EFE7D6;}
   .mcard .back{background:#3A342A;}
   #ruleModal .rm{background:#2B2620;color:#EFE7D6;border:none;}
+
+  /* ═══ 아이폰 최적화 — 노치·홈 인디케이터·주소창 대응 ═══ */
+  html,body{height:100%;}
+  body{min-height:100dvh;}
+  #app{ padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right); }
+  .screen{
+    padding-top:calc(14px + env(safe-area-inset-top));
+    padding-bottom:calc(14px + env(safe-area-inset-bottom));
+  }
+  .homeBtn{ top:calc(8px + env(safe-area-inset-top)) !important;
+            left:calc(8px + env(safe-area-inset-left)) !important; }
+  .pauseBtn{ top:calc(8px + env(safe-area-inset-top)); }
+  #achToast{ top:calc(14px + env(safe-area-inset-top)); }
 </style>
 </head>
 <body>
