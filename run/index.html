@@ -294,20 +294,20 @@
 
 <script>
 // ================= 캐릭터 (밸런스) =================
-// spd:기본속도배수  jv/djv:점프력/더블점프력  grav:중력  dw:그리기/히트박스 크기
+// spd:기본속도배수  jv/djv:점프력/더블점프력  grav:중력  dw:그리기 높이(라인업 비율)  hb:히트박스 기준(기존 dw — 판정 불변)
 // shield:첫충돌 무효 횟수  magnet:도토리 자석 범위  coinx:도토리 점수배수
 const CHARS = {
-  kkito:      { name:'끼토',  spr:'../assets/run_kkito_t.png',  sd:'../assets/sd_kkito_t.png',  dw:80, spd:1.0,  jv:800, djv:720, grav:2500, shield:0, magnet:0,   coinx:1, glide:0.36,
+  kkito:      { name:'끼토',  spr:'../assets/run_kkito_t.png',  sd:'../assets/sd_kkito_t.png',  dw:80, hb:80, spd:1.0,  jv:800, djv:720, grav:2500, shield:0, magnet:0,   coinx:1, glide:0.36,
     intro:'마감이다! 달려, 끼토!' },
-  migae:      { name:'미개',  spr:'../assets/run_migae_t.png',  sd:'../assets/sd_migae_t.png',  dw:24, spd:1.0, jv:700, djv:600, grav:2350, shield:0, magnet:0, coinx:1, jumps:3,
+  migae:      { name:'미개',  spr:'../assets/run_migae_t.png',  sd:'../assets/sd_migae_t.png',  dw:32, hb:24, spd:1.0, jv:700, djv:600, grav:2350, shield:0, magnet:0, coinx:1, jumps:3,
     intro:'뽈뽈뽈—! 따라와!' },
-  ramda:      { name:'람다',  spr:'../assets/run_ramda_t.png',  sd:'../assets/sd_ramda_t.png',  dw:58, spd:1.0,  jv:770, djv:700, grav:2500, shield:0, magnet:135, coinx:1,
+  ramda:      { name:'람다',  spr:'../assets/run_ramda_t.png',  sd:'../assets/sd_ramda_t.png',  dw:53, hb:58, spd:1.0,  jv:770, djv:700, grav:2500, shield:0, magnet:135, coinx:1,
     intro:'도토리는 다 내 거야!' },
-  boneul:     { name:'보늘',  spr:'../assets/run_boneul_t.png', sd:'../assets/sd_boneul_t.png', dw:74, spd:0.82, jv:715, djv:650, grav:2700, shield:1, magnet:0,   coinx:1, zone:150, distx:1.75,
+  boneul:     { name:'보늘',  spr:'../assets/run_boneul_t.png', sd:'../assets/sd_boneul_t.png', dw:88, hb:74, spd:0.82, jv:715, djv:650, grav:2700, shield:1, magnet:0,   coinx:1, zone:150, distx:1.75,
     intro:'천천히 가도 안 죽어~' },
-  bookgeo:    { name:'북거씨', spr:'../assets/run_bookgeo_t.png', sd:'../assets/sd_bookgeo_t.png', dw:49, spd:0.85, jv:720, djv:660, grav:1750, shield:0, magnet:0, coinx:1, jumps:1, slam:true,
+  bookgeo:    { name:'북거씨', spr:'../assets/run_bookgeo_t.png', sd:'../assets/sd_bookgeo_t.png', dw:38, hb:49, spd:0.85, jv:720, djv:660, grav:1750, shield:0, magnet:0, coinx:1, jumps:1, slam:true,
     intro:'서두르지 않아도 돼요.' },
-  lachilchin: { name:'라칠친 할머니', spr:'../assets/run_lachilchin_t.png', sd:'../assets/sd_lachilchin_t.png', dw:35, spd:0.9, jv:760, djv:690, grav:2500, shield:0, magnet:0, coinx:2,
+  lachilchin: { name:'라칠친 할머니', spr:'../assets/run_lachilchin_t.png', sd:'../assets/sd_lachilchin_t.png', dw:46, hb:35, spd:0.9, jv:760, djv:690, grav:2500, shield:0, magnet:0, coinx:2,
     intro:'아이구, 천천히 줍자 그래~' },
 };
 
@@ -355,11 +355,18 @@ function loadAB(k,target){   // 폴백: 기존 단일/2프레임
   };
   set(0,c.spr,c.sd); set(1,'../assets/run_'+k+'_b.png',null);
 }
+function alphaArea(c){ try{ if(!c.getContext){ const t=document.createElement('canvas'); t.width=c.naturalWidth||c.width; t.height=c.naturalHeight||c.height; t.getContext('2d').drawImage(c,0,0); c=t; } // 축소 안 된 원본 Image도 측정
+  const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data; let n=0; for(let i=3;i<d.length;i+=4)if(d[i]>10)n++; return n; }catch(e){ return 0; } }
+function fixFrameScale(k){ // 구운 프레임은 포즈마다 같은 높이로 늘려져 있음(웅크린 프레임이 부풀음) → 실루엣 면적은 포즈와 무관하게 거의 일정하므로 면적으로 배율 복원
+  const fr=sprites[k]; if(!fr||fr.length<2)return;
+  const areas=fr.map(alphaArea); if(areas.some(a=>!a))return;
+  const med=areas.slice().sort((a,b)=>a-b)[Math.floor(areas.length/2)];
+  fr.forEach((f,i)=>{ f.kfix=Math.sqrt(med/areas[i]); }); }
 function loadFrames(k){
-  const target=CHARS[k].dw*DPR*1.7, out=[null,null,null,null]; let errs=0;
+  const target=Math.max(CHARS[k].dw,CHARS[k].hb||0)*DPR*1.7, out=[null,null,null,null]; let errs=0;
   for(let i=0;i<4;i++){ (function(i){
     const im=new Image(); im.src='../assets/frame_'+k+'_'+i+'.png';
-    im.onload=()=>{ try{ out[i]=downscale(im,target); }catch(e){ out[i]=im; } sprites[k]=out.filter(Boolean); };
+    im.onload=()=>{ try{ out[i]=downscale(im,target); }catch(e){ out[i]=im; } sprites[k]=out.filter(Boolean); if(sprites[k].length===4)fixFrameScale(k); };
     im.onerror=()=>{ if(++errs===4 && !sprites[k]) loadAB(k,target); };
   })(i); }
 }
@@ -483,12 +490,12 @@ function loop(now){
   }
 
   const _set=sprites[s.key], _fa=(_set&&_set.length)?_set[0]:null;
-  const drawW=_fa?s.c.dw*((_fa.width||_fa.naturalWidth)/(_fa.height||_fa.naturalHeight)):s.c.dw*0.7;
+  const hbH=s.c.hb||s.c.dw, drawW=_fa?hbH*((_fa.width||_fa.naturalWidth)/(_fa.height||_fa.naturalHeight)):hbH*0.7;
   // 히트박스는 그림 크기에 비례하되 폭을 좁게 묶는다.
   // ※ 예전엔 drawW*0.30(10~24)이라 끼토 24 : 미개 10 — 아무도 설계하지 않은 2.4배 차이가
   //   캐릭터 성능을 통째로 갈랐다. 이제 14~19로 압축해 차이는 스탯으로만 난다.
-  const half=Math.max(12,Math.min(19,12+drawW*0.10)), py=GROUND+s.y, cx=PX, cy=py-s.c.dw*0.45;
-  const bodyH=Math.max(34,Math.min(64,s.c.dw*0.9));   // 낙하 은행에 맞는 세로 판정도 같은 이유로 제한
+  const half=Math.max(12,Math.min(19,12+drawW*0.10)), py=GROUND+s.y, cx=PX, cy=py-hbH*0.45;
+  const bodyH=Math.max(34,Math.min(64,hbH*0.9));   // 낙하 은행에 맞는 세로 판정도 같은 이유로 제한
   for(const o of s.obs){
     o.x-=s.speed*dt;
     const ovX = cx+half>o.x+6 && cx-half<o.x+o.w-6;                       // 가로로 겹치는 중
@@ -630,7 +637,7 @@ function draw(s,now,score){
   const sa=Math.max(.1,.3-(-s.y)/600); ctx.globalAlpha=sa; ctx.fillStyle='#000'; ctx.beginPath(); ctx.ellipse(PX,GROUND+4,Math.max(1.5,s.c.dw*0.3-(-s.y)/28),Math.max(1.5,5.5-(-s.y)/300),0,0,7); ctx.fill(); ctx.globalAlpha=1;
   ctx.save(); ctx.translate(PX,py+bob); if(!s.onGround)ctx.rotate((s.vy<0?-0.12:0.12)-(s.spin||0)*Math.PI*2);
   if(s.inv>0 && Math.floor(now/70)%2===0)ctx.globalAlpha=0.4;
-  if(im){ const sw=im.width||im.naturalWidth, sh=im.height||im.naturalHeight, dh=s.c.dw, dw=dh*sw/sh; ctx.drawImage(im,-dw/2,-dh,dw,dh); }
+  if(im){ const sw=im.width||im.naturalWidth, sh=im.height||im.naturalHeight, dh=s.c.dw*(im.kfix||1), dw=dh*sw/sh; ctx.drawImage(im,-dw/2,-dh,dw,dh); }
   ctx.globalAlpha=1; ctx.restore();
   // 플로터
   for(const f of s.floats){ ctx.globalAlpha=Math.min(1,f.life/.4); ctx.font='800 16px sans-serif'; ctx.textAlign='center'; ctx.strokeStyle='#fff'; ctx.lineWidth=3; ctx.strokeText(f.txt,f.x,f.y); ctx.fillStyle=f.col; ctx.fillText(f.txt,f.x,f.y); } ctx.globalAlpha=1;
