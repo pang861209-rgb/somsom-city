@@ -336,13 +336,21 @@ function keyOutWhiteBg(im) {
   x.putImageData(d, 0, 0);
   return c;
 }
+function trimCanvas(c) {   // 투명 여백 제거 — 1024 정사각 안에 작게 있던 캐릭터가 박스를 제대로 채우게
+  const x = c.getContext('2d'), w = c.width, h = c.height, d = x.getImageData(0, 0, w, h).data;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) if (d[(yy*w + xx)*4 + 3] > 10) { if (xx < x0) x0 = xx; if (xx > x1) x1 = xx; if (yy < y0) y0 = yy; if (yy > y1) y1 = yy; }
+  if (x1 < x0) return c;
+  const nw = x1 - x0 + 1, nh = y1 - y0 + 1, o = document.createElement('canvas'); o.width = nw; o.height = nh;
+  o.getContext('2d').drawImage(c, x0, y0, nw, nh, 0, 0, nw, nh); return o;
+}
 for (const k in CHARS) {
   const sd = new Image(); sd.src = CHARS[k].sd;
   const target = CHARS[k].w * 1.7 * DPR * 1.4;            // 실제 표시 크기에 맞춰 축소 캐시
-  sd.onload = () => { try { sprites[k] = downscale(keyOutWhiteBg(sd), target); } catch(e) { sprites[k] = sd; } };
+  sd.onload = () => { try { sprites[k] = downscale(trimCanvas(keyOutWhiteBg(sd)), target); } catch(e) { sprites[k] = sd; } };
   sd.onerror = () => {
     const im = new Image(); im.src = CHARS[k].img;
-    im.onload = () => { try { sprites[k] = downscale(keyOutWhiteBg(im), target); } catch(e) { sprites[k] = im; } };
+    im.onload = () => { try { sprites[k] = downscale(trimCanvas(keyOutWhiteBg(im)), target); } catch(e) { sprites[k] = im; } };
   };
   fallbacks[k] = sd;
 }
@@ -353,7 +361,7 @@ for (const k in CHARS) {
   for (const f of ['hit', 'win']) {
     const im = new Image(); im.src = `../assets/sd_${k}_${f}.png`;
     const target = CHARS[k].w * 1.7 * DPR * 1.4;
-    im.onload = () => { try { spritesFace[f][k] = downscale(keyOutWhiteBg(im), target); } catch(e) { spritesFace[f][k] = im; } };
+    im.onload = () => { try { spritesFace[f][k] = downscale(trimCanvas(keyOutWhiteBg(im)), target); } catch(e) { spritesFace[f][k] = im; } };
   }
 }
 
@@ -740,7 +748,12 @@ function draw(s, now, shell) {
   const im = (face && spritesFace[face][s.key]) || sprites[s.key] || fallbacks[s.key];
   const bob = s.dir !== 0 ? Math.sin(s.moveT*16) * 2.5 : 0;
   const sq = 1 - s.squash*0.5;
-  const dw = s.c.w * 1.7, dh = s.c.h * 1.7 * sq;
+  let dw = s.c.w * 1.7, dh = s.c.h * 1.7;                       // 캐릭터 박스
+  if (im && (im.width || im.naturalWidth)) {                      // 이미지 종횡비 보존(contain) — 눌림/늘어남 방지
+    const iw = im.width || im.naturalWidth, ih = im.height || im.naturalHeight, k = Math.min(dw / iw, dh / ih);
+    dw = iw * k; dh = ih * k;
+  }
+  dh *= sq;
   ctx.save();
   ctx.translate(s.x, GROUND - 4 + bob);
   ctx.rotate(s.dir * 0.12);
