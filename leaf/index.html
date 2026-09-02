@@ -319,7 +319,7 @@ const CHARS = {
                 intro:'떨어지는 도토리, 전부 내 거야!', hit:'앗 따가! 방금 거 환불해줘!', record:'이 기록 완전 희귀템이야!', lose:'방금 그 도토리 완전 희귀템이었는데!' },
   lachilchin: { name:'라칠친 할머니', img:'../assets/06_lachilchin.png', sd:'../assets/sd_lachilchin_t.png', speed:3.8, lives:1, w:50, h:58, tag:'반전형', color:'#b0608a', diff:3, skill:'🔄 룰 반전', desc:'은행=점수! 나뭇가지 주의', flip:true,
                 intro:'아이구, 은행 줍기엔 내가 선수지. 그래~', hit:'아이구야! 참말로~', record:'아이구, 늙은이가 또 해냈네 그래~', lose:'아이구, 그래~ 오늘은 이만 줍자.' },
-  bookgeo:    { name:'북거씨',      img:'../assets/07_bookgeo.png',    sd:'../assets/sd_bookgeo_t.png',    speed:2.8, lives:1, w:70, h:52, hitScale:0.85, tag:'방어형', color:'#3a8a7a', diff:1, skill:'🐢 등딱지 쉘터', desc:'더블터치로 잠깐 무적', shell:true,
+  bookgeo:    { name:'북거씨',      img:'../assets/07_bookgeo.png',    sd:'../assets/sd_bookgeo_t.png',    speed:2.8, lives:1, w:70, h:52, hitScale:0.68, tag:'방어형', color:'#3a8a7a', diff:1, skill:'🐢 등딱지 쉘터', desc:'더블터치로 잠깐 무적', shell:true,
                 intro:'서두르지 않아도, 이길 수 있어요.', hit:'음... 다음엔 등딱지로 막죠.', record:'천천히 왔는데, 어느새 신기록이네요.', lose:'천천히, 천천히... 다시 해봅시다.' },
 };
 
@@ -846,6 +846,7 @@ function draw(s, now, shell) {
     const iw = im.width || im.naturalWidth, ih = im.height || im.naturalHeight, k = Math.min(dw / iw, dh / ih);
     dw = iw * k; dh = ih * k;
   }
+  dw *= 0.78; dh *= 0.78;                                        // 표시 크기 — 트림 후 커진 몸집을 6월 체감(=피탄 범위와 일치)으로 복원
   dh *= sq;
   ctx.save();
   ctx.translate(s.x, GROUND - 4 + bob);
