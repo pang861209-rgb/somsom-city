@@ -337,6 +337,9 @@ function achUnlock(id){ const a=achLoad(); if(a[id]) return false; a[id]=Date.no
 function dexAdd(id){ try{ const d=JSON.parse(localStorage.getItem('somsom_dex')||'{}'); if(d[id]) return false; d[id]=Date.now(); localStorage.setItem('somsom_dex',JSON.stringify(d)); return true; }catch(e){ return false; } }
 function report(key, coins){ const st=statsLoad(); st.played=st.played||{}; st.played.day=(st.played.day||0)+1; st.chars=st.chars||{}; if(key){ st.chars[key]=(st.chars[key]||0)+1; st.last=key; } st.coins=Math.max(0,(st.coins||0)+(coins||0)); try{ localStorage.setItem('somsom_stats',JSON.stringify(st)); }catch(e){} return st; }
 function coinsNow(){ return statsLoad().coins||0; }
+// 허브 '오늘의 미션'과 같은 날짜 키·저장 위치를 쓴다 (somsom_missions[YYYYMMDD].day)
+function dayKey(){ const d=new Date(); return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate(); }
+function missionDone(g){ try{ const all=JSON.parse(localStorage.getItem('somsom_missions')||'{}'); const k=String(dayKey()); all[k]=all[k]||{}; if(all[k][g]) return false; all[k][g]=1; localStorage.setItem('somsom_missions',JSON.stringify(all)); toast('오늘의 미션','완료!'); return true; }catch(e){ return false; } }
 
 // ====================== 진행 상태 ======================
 let S = load();           // 영구
@@ -437,7 +440,7 @@ function evening(){
   const firstTime=!S.endings[end.id]; S.endings[end.id]=(S.endings[end.id]||0)+1; S.days++;
   const gain=10+(firstTime?20:0)+D.coins; D.gain=gain;
   save(S); dexAdd('day_'+end.id); report(end.key, gain);
-  achUnlock('day_first');
+  achUnlock('day_first'); missionDone('day');
   if(['boneul','ramda','bookgeo','lachil','migae'].every(k=>S.met[k])) achUnlock('day_all_friends');
   if(Object.keys(S.endings).length>=5) achUnlock('day_ending5');
   // 결말 장면

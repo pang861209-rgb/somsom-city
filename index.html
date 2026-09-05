@@ -323,7 +323,8 @@ function missionSpec(){
           run:  {goal:runGoal,  label:'달리기 '+runGoal+'m 달리기'},
           match:{goal:missGoal, label:'짝맞추기 '+(missGoal===0 ? '실수 없이 클리어'
                                                               : '실수 '+missGoal+'회 이하로 클리어')},
-          defense:{goal:defGoal, label:'방범대 '+defGoal+'★로 스테이지 클리어'}};
+          defense:{goal:defGoal, label:'방범대 '+defGoal+'★로 스테이지 클리어'},
+          day:  {goal:1, label:'끼토의 하루 한 번 살아보기'}};
 }
 function titleFor(coins){
   if(coins>=2000) return '은행나무 지킴이';
@@ -347,13 +348,13 @@ function renderMissions(){
   document.getElementById('missionChar').innerHTML='<span style="font-size:11.5px;font-weight:700;color:#8A6A1A;">오늘의 친구 '+CH_NAME[DAILY_CHAR_ID]+'</span>';
   const list=document.getElementById('missionList'); list.innerHTML='';
   let n=0;
-  for(const g of ['leaf','run','match','defense']){
+  for(const g of ['leaf','run','match','defense','day']){
     const ok=!!done[g]; if(ok) n++;
     const r=document.createElement('div'); r.className='mRow'+(ok?' ok':'');
     r.innerHTML='<span class="bx">'+(ok?'✓':'')+'</span><span>'+sp[g].label+'</span>';
     list.appendChild(r);
   }
-  document.getElementById('missionPg').textContent=n+'/4';
+  document.getElementById('missionPg').textContent=n+'/5';
 }
 // 주간 통합 랭킹 — 세 게임 점수를 각 게임 주간 최고 대비 100점으로 환산해 합산
 const FB_KEY='AIzaSyBfld7SRrVTxDG0nE_6Z3Mw5kSRTo5bIGY';
