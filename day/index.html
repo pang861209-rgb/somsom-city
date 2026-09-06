@@ -995,7 +995,7 @@ function friendScene(k){
   else if(CH().arcNoon(k)) sc=Object.assign({},CH().arcNoon(k));
   else if(k==='boneul'&&(f.bon_cold||(f.bon_leak_day&&S.dayNo<=f.bon_leak_day+3))) sc=Object.assign({},FS.boneul[0],{text:'대나무숲 빌라 앞. 보늘이 문에 기대 과자를 먹는다. 끼토를 보고 봉지를 접었다. <q>...왔냐.</q> 지난번 일이 봉지 소리에 섞여 있었다.'});
   else if(v&&v.who===k) sc=Object.assign({},v);
-  else { const idx=k==='bookgeo'?STAGE_IDX.bookgeo(S.learn):STAGE_IDX[k](S.rel[k]); sc=Object.assign({},FS[k][idx]); }
+  else { const idx=k==='bookgeo'?STAGE_IDX.bookgeo(S.learn):STAGE_IDX[k](S.rel[k]); const T=(CH().fs&&CH().fs[k])||FS[k]; sc=Object.assign({},T[idx]||FS[k][idx]); }
   sc.choices=[...sc.choices];
   if(k==='ramda'&&f.gm_cart&&!f.gm_wheels&&S.sulk<2) sc.choices.push({t:'할머니 수레 바퀴를 산다',label:'수레',cost:6,direct:{flag:{gm_wheels:1}},line:'람다: <q>할머니 거지? 바퀴 하나는 내가 낼게.</q> 도토리 여덟 개. 여섯만 받았다.',face:'ok'});
   if(k==='ramda'&&f.gm_cart&&!f.gm_wheels&&S.sulk>=2) sc.choices.push({t:'할머니 수레 바퀴를 산다',label:'수레',cost:8,direct:{flag:{gm_wheels:1}},line:'람다는 바퀴 두 개를 말없이 내놓았다. 도토리 여덟 개. 거스름돈도 말없이.',face:'bad'});
@@ -1211,6 +1211,176 @@ function newSeason(){
   S.stage={boneul:STAGE_IDX.boneul(S.rel.boneul),ramda:STAGE_IDX.ramda(S.rel.ramda),lachil:STAGE_IDX.lachil(S.rel.lachil),bookgeo:STAGE_IDX.bookgeo(S.learn)};
   if(n===1&&year.bk_label_0) S.flags.pieces={fall:1};
   save(); renderTitle(); }
+// ====================== 계절별 낮 만남 장면 ======================
+// 겨울
+const FS_W={
+  boneul:[
+    {cut:'w_v_mat',bg:'bg_day_bamboo_entry.png',text:'대나무숲 빌라 앞. 눈. 보늘이 문틈으로만 얼굴을 내민다. <q>...춥잖아.</q> 문은 안 닫는다.',
+      choices:[{t:'문 앞에 서서 얘기한다',tag:'느긋',eff:{ing:'bamboo'},line:'십 분. 둘 다 입김만 나왔다. 보늘이 결국 <q>...들어와.</q>',face:'ok'},
+        {t:'"눈 쓸었어. 너희 쪽도"',direct:{boneul:2},line:'보늘: <q>...누가 시켰냐.</q> 그러고는 문을 더 열었다.',face:'ok'},
+        {t:'인사만 하고 간다',tag:'부지런',direct:{boneul:-1},line:'문이 닫혔다. 눈 위에 발자국 한 줄만 남았다.',face:'bad'}]},
+    {cut:'w_bon_cough',bg:'bg_day_boneul_home.png',text:'보늘네 소파. 담요 두 장. 보늘이 한 장을 밀어 준다. <q>덮어.</q> 보일러 소리.',
+      choices:[{t:'같이 담요를 덮는다',tag:'느긋',eff:{ing:'bamboo'},line:'담요 밑에서 발끝만 부딪혔다. 둘 다 안 치웠다.',face:'ok'},
+        {t:'"겨울엔 원고가 안 써져"',direct:{boneul:2,worry:-3,seed:'heart'},line:'보늘: <q>겨울엔 아무것도 안 써져. 나도 대본 못 써.</q> 대본을 쓰는 줄은 몰랐다.',face:'ok'},
+        {t:'"바빠, 다음에"',tag:'부지런',direct:{boneul:-1},line:'보늘: <q>어. 가.</q> 담요를 다시 접었다.',face:'bad'},
+        {t:'소금빵을 내민다',tag:'나눔',bread:1,line:'보늘: <q>...식었네.</q> 그래도 다 먹었다.',face:'ok'}]},
+    {cut:'w_bon_live',bg:'bg_day_boneul_home.png',text:'링라이트가 켜져 있다. 보늘이 소파를 두드린다. <q>겨울 편. 앉아.</q> 무릎 담요까지 준비돼 있다.',
+      choices:[{t:'같이 찍는다',direct:{boneul:1,seed:'pizza',ing:'bamboo'},line:'댓글: "옆에 분 귀 왜 서요". 보늘: <q>원래 그래요.</q>',face:'ok'},
+        {t:'카메라 뒤에서 담요만',tag:'느긋',line:'화면 밖에서 담요를 덮고 봤다. 보늘이 가끔 카메라 밖을 봤다.',face:'ok'},
+        {t:'창피해서 도망',tag:'대담',line:'문 밖. <q>게스트가 추워서 갔습니다.</q> 안 추웠다.',face:'bad'}]}],
+  ramda:[
+    {cut:'w_lam_shop',bg:'bg_day_acorn_shop.png',text:'상점. 난로 앞에 의자가 두 개다. 하나는 비어 있다. 람다: <q>겨울엔 손님이 없어서 의자를 하나 더 놨어.</q>',
+      choices:[{t:'빈 의자에 앉는다',direct:{ramda:2},line:'난로 소리. 람다가 아무 말도 안 하고 삼십 분을 있었다. 처음 있는 일이다.',face:'ok'},
+        {t:'"오늘 한 줄, 뭐라고 쓸까?"',direct:{ramda:1,seed:'button'},line:'〈난로는 항상 켜져 있습니다.〉 람다가 그 밑에 작게 썼다. "의자도."',face:'ok'},
+        {t:'"손님 없으면 일찍 닫아"',direct:{ramda:-2,sulk:1},line:'람다: <q>...그래. 생각해볼게.</q> 난로만 탔다.',face:'bad'}]},
+    {cut:'w_lam_box',bg:'bg_day_acorn_shop.png',text:'상점 창고. 람다가 겨울 상자를 꺼낸다. 목도리, 장갑, 낡은 손난로. <q>다 3년 넘었어. 나이테존 행.</q>',
+      choices:[{t:'목도리를 하나 산다',tag:'알뜰',direct:{coins:-3,ramda:2},line:'도토리 세 개. 람다가 직접 둘러 줬다. <q>4년 된 목도리 첫 손님!</q>',face:'ok'},
+        {t:'같이 먼지를 턴다',direct:{ramda:1},line:'먼지가 난로 불빛에 반짝였다. 람다가 재채기를 여섯 번 했다.',face:'ok'},
+        {t:'"이건 그냥 버려"',direct:{ramda:-2,sulk:1},line:'람다가 상자를 조용히 닫았다.',face:'bad'}]},
+    {cut:'w_lam_lantern',bg:'bg_day_acorn_shop.png',text:'상점. 람다가 유리병에 초를 넣고 있다. <q>등불 밤 거. 나이테존 물건으로 만들면 팔리는 거 아니잖아. 그래도 켜지잖아.</q>',
+      choices:[{t:'같이 만든다',direct:{ramda:2,seed:'fest'},line:'등 여섯 개. 마지막 등에 끼토 이름이 붙었다.',face:'ok'},
+        {t:'"이거 팔면 잘 팔리겠는데"',tag:'알뜰',direct:{ramda:1},line:'람다: <q>...팔까? 아니야. 켤 거야.</q>',face:'ok'},
+        {t:'원고 얘기만 하고 간다',tag:'부지런',direct:{ms:1,ramda:-1},line:'상점 불이 늦게까지 켜져 있었다.',face:'bad'}]}],
+  bookgeo:[
+    {cut:'w_v_bkslow',bg:'bg_day_perfume_atelier.png',text:'공방. 문을 여니 따뜻하다. 북거씨가 난로 위 주전자를 본다. <q>겨울엔 향이 천천히 퍼져요. 그게 좋아요.</q>',
+      choices:[{t:'주전자 옆에 앉는다',direct:{learn:2,worry:-2},line:'물 끓는 소리. 향이 천천히 왔다. 걱정도 천천히 갔다.',face:'ok'},
+        {t:'"바다향은 정말 안 만드세요?"',direct:{learn:1},line:'북거씨: <q>...올해는요.</q> 주전자가 울었다.',face:'ok'},
+        {t:'추워서 금방 나온다',tag:'부지런',direct:{},line:'문을 닫자 향이 문틈으로 따라 나왔다.',face:'ok'}]},
+    {cut:'w_bk_oldbottle',bg:'bg_day_perfume_atelier.png',text:'공방. 선반 맨 뒤에서 병을 하나 꺼내신다. 라벨이 없다. <q>이건 겨울에만 열어요. 이유는 있는데, 말은 나중에요.</q>',
+      choices:[{t:'냄새를 맡는다',fn:()=>{ addPiece('leaf'); return {eff:{learn:2},line:'젖은 은행잎. 비 오는 날 냄새. 서른 해 전 어느 하루가 병 안에 있었다.',face:'ok'}; }},
+        {t:'"언제 만드신 거예요?"',direct:{learn:1,story:1},line:'북거씨가 병을 닦았다.',face:'ok'},
+        {t:'조용히 옆에 있는다',tag:'느긋',direct:{learn:1,worry:-2},line:'삼십 분. 병은 다시 선반 맨 뒤로 갔다.',face:'ok'}]},
+    {cut:'w_bk_blend',bg:'bg_day_perfume_atelier.png',text:'공방. 작업대에 빈 병이 여럿. <q>끼토 씨. 올겨울 골목에서 뭘 맡았어요? 그게 재료예요.</q>',
+      choices:[{t:'"눈 냄새요"',direct:{learn:2,ing:'snow'},line:'북거씨: <q>눈은 냄새가 없어요. 그런데 있죠. 맞아요.</q>',face:'ok'},
+        {t:'"고구마 냄새요"',direct:{learn:2,lachil:1},line:'북거씨가 처음으로 소리 내어 웃었다. <q>5층이군요.</q>',face:'ok'},
+        {t:'"모르겠어요"',direct:{learn:1,worry:-1},line:'북거씨: <q>천천히요. 겨울은 기니까요.</q>',face:'ok'}]}],
+  lachil:[
+    {cut:'w_v_snack',bg:'bg_day_grandma_room.png',text:'5층. 문을 여니 김이 확 나온다. 할머니: <q>아이구, 얼굴이 빨갛다 그래~ 들어와, 들어와.</q>',
+      choices:[{t:'들어가서 손을 녹인다',direct:{lachil:2,worry:-2},line:'따뜻한 물수건. 손끝이 아팠다가 괜찮아졌다.',face:'ok'},
+        {t:'복도 전등을 갈아 드린다',tag:'부지런',direct:{lachil:1},line:'복도가 밝아졌다. 할머니: <q>이제 계단이 보인다, 그래~</q>',face:'ok'},
+        {t:'인사만 하고 간다',tag:'부지런',direct:{},line:'문이 닫히는데 김이 복도까지 따라왔다.',face:'ok'}]},
+    {cut:'w_gm_kimchi',bg:'bg_day_grandma_room.png',text:'5층. 할머니가 창문을 조금 열고 김치통을 내놓으신다. <q>겨울엔 여기가 냉장고야, 그래~</q>',
+      choices:[{t:'통을 들어 옮겨 드린다',tag:'나눔',fn:()=>{ addPiece('salt'); return {eff:{lachil:2},line:'소금 냄새가 손에 배었다. 어디서 맡은 냄새인데.',face:'ok'}; }},
+        {t:'"창문 닫으면 안 추워요?"',direct:{lachil:1},line:'<q>추워야 김치가 맛있지, 그래~</q>',face:'ok'},
+        {t:'통만 보고 간다',tag:'부지런',direct:{ms:1},line:'저녁에 문 앞에 김치 한 통이 있었다.',face:'ok'}]},
+    {cut:'w_gm_album',bg:'bg_day_grandma_room.png',text:'5층. 할머니가 사진첩을 펴신다. 젊은 할머니 옆에 젊은 거북이. <q>이때는 노래를 좋아하던 애였지, 그래~</q>',
+      choices:[{t:'"이분, 북거씨예요?"',direct:{lachil:2,learn:1,flag:{gm_story:1}},line:'<q>그래~ 등딱지가 반질반질했어.</q> 북거씨의 겨울이 조금 열렸다.',face:'ok'},
+        {t:'사진을 그려 드린다',direct:{lachil:2,ms:1},line:'연필로 한 장. 할머니가 사진첩 옆에 끼우셨다.',face:'ok'},
+        {t:'옆에서 존다',tag:'느긋',direct:{worry:-2},line:'할머니도 주무셨다. 사진첩이 펼쳐진 채였다.',face:'ok'}]}],
+};
+// 봄
+const FS_P={
+  boneul:[
+    {cut:'p_v_sign',bg:'bg_day_bamboo_entry.png',text:'대나무숲 빌라 앞. 꽃잎이 문 앞에 쌓였다. 보늘이 빗자루를 들고 있는데 안 쓸고 있다. <q>...예쁘잖아.</q>',
+      choices:[{t:'같이 안 쓸고 본다',tag:'느긋',eff:{ing:'bamboo'},line:'십 분. 꽃잎이 더 쌓였다. 보늘: <q>이제 쓸어야겠다.</q> 안 쓸었다.',face:'ok'},
+        {t:'대신 쓸어 준다',direct:{boneul:2},line:'보늘: <q>...누가 쓸래.</q> 빗자루를 뺏겼다. 결국 둘이 쓸었다.',face:'ok'},
+        {t:'인사만 하고 간다',tag:'부지런',direct:{boneul:-1},line:'꽃잎이 발자국 위로 다시 덮였다.',face:'bad'}]},
+    {cut:'p_bon_signoff',bg:'bg_day_boneul_home.png',text:'보늘네 소파. 창문이 열려 있고 꽃잎이 들어온다. 보늘이 토스트 접시를 밀어 준다. <q>봄 메뉴.</q> 위에 꽃잎이 하나 얹혀 있다.',
+      choices:[{t:'꽃잎째 먹는다',tag:'느긋',eff:{ing:'bamboo'},line:'보늘: <q>...그거 장식인데.</q> 맛은 없었다. 둘 다 웃었다.',face:'ok'},
+        {t:'"봄엔 좀 나아. 걱정이"',direct:{boneul:2,worry:-3,seed:'heart'},line:'보늘: <q>나도. 겨울엔 아무것도 하기 싫었어.</q> 처음 듣는 말이었다.',face:'ok'},
+        {t:'"바빠, 다음에"',tag:'부지런',direct:{boneul:-1},line:'보늘: <q>어. 가.</q> 창문을 닫았다.',face:'bad'},
+        {t:'소금빵을 내민다',tag:'나눔',bread:1,line:'보늘: <q>...봄엔 이게 맞지.</q>',face:'ok'}]},
+    {cut:'p_bon_photo',bg:'bg_day_boneul_home.png',text:'보늘이 카메라를 창밖으로 돌려 놨다. <q>오늘은 먹방 말고 꽃 찍는 날. 게스트는 앉아 있기만 해.</q>',
+      choices:[{t:'앉아서 같이 창밖을 본다',direct:{boneul:1,seed:'pizza'},line:'사십 분짜리 영상에 둘의 뒤통수만 나왔다. 조회수가 제일 높았다.',face:'ok'},
+        {t:'카메라를 대신 잡아 준다',tag:'느긋',direct:{boneul:1},line:'보늘이 처음으로 화면 안에서 웃었다. 편집에서 안 잘랐다.',face:'ok'},
+        {t:'창피해서 도망',tag:'대담',line:'문 밖. <q>게스트가 꽃 알레르기랍니다.</q> 없다.',face:'bad'}]}],
+  ramda:[
+    {cut:'p_v_shop',bg:'bg_day_acorn_shop.png',text:'상점. 문을 활짝 열어 놨다. 람다: <q>봄엔 문을 열어 둬야 물건도 숨을 쉬어.</q> 나이테존 물건이 햇빛에 널려 있다.',
+      choices:[{t:'같이 볕에 널어 준다',direct:{ramda:2},line:'물건 열두 개. 람다가 하나마다 몇 년 됐는지 말했다. 다 기억하고 있었다.',face:'ok'},
+        {t:'"오늘 한 줄, 뭐라고 쓸까?"',direct:{ramda:1,seed:'button'},line:'〈오래된 것에도 봄이 옵니다.〉 람다가 세 번 고쳐 썼다.',face:'ok'},
+        {t:'"문 열어 두면 먼지 들어와"',direct:{ramda:-2,sulk:1},line:'람다가 문을 반만 닫았다.',face:'bad'}]},
+    {cut:'p_lam_items',bg:'bg_day_acorn_shop.png',text:'상점. 람다가 봄 물건을 정리한다. 우산 하나, 장화 한 켤레, 이름표 없는 열쇠. <q>이 열쇠 주인 찾으면 소원이 없겠다.</q>',
+      choices:[{t:'열쇠를 같이 본다',direct:{ramda:2,flag:{key_curious:1}},line:'녹이 슬었지만 이가 멀쩡했다. 어딘가에는 맞는 문이 있다.',face:'ok'},
+        {t:'장화를 하나 산다',tag:'알뜰',direct:{coins:-3,ramda:1,seed:'boots'},line:'미개 발에 맞는 크기였다. 람다가 그걸 알고 꺼내 놨다.',face:'ok'},
+        {t:'"열쇠는 그냥 버려"',direct:{ramda:-2,sulk:1},line:'람다: <q>...3년 뒀는데 오늘 버리라고?</q>',face:'bad'}]},
+    {cut:'p_lam_poster',bg:'bg_day_acorn_shop.png',text:'상점. 람다가 도화지를 폈다. <q>벼룩장 포스터. 너 그림 그리잖아. 나 글씨 쓰잖아. 우리 잘 맞잖아.</q>',
+      choices:[{t:'같이 그린다',direct:{ramda:2,ms:1,seed:'fest'},line:'그림은 끼토, 글씨는 람다. 마지막 줄은 같이 정했다. 〈주인 찾습니다〉',face:'ok'},
+        {t:'"글씨만 좀 작게"',direct:{ramda:1},line:'람다: <q>작게? 이게 작은 건데?</q> 결국 그대로 갔다.',face:'ok'},
+        {t:'원고 얘기만 하고 간다',tag:'부지런',direct:{ms:1,ramda:-1},line:'포스터는 다음 날 혼자 완성돼 있었다. 글씨가 컸다.',face:'bad'}]}],
+  bookgeo:[
+    {cut:'p_v_bkdry',bg:'bg_day_perfume_atelier.png',text:'공방. 창문이 열려 있다. 북거씨가 시향지를 한 장씩 넌다. <q>봄엔 냄새가 자꾸 섞여요. 그게 봄이에요.</q>',
+      choices:[{t:'같이 넌다',direct:{learn:2,worry:-1},line:'스무 장. 한 장에 십 초. 북거씨 속도로.',face:'ok'},
+        {t:'"섞이면 안 좋은 거 아니에요?"',direct:{learn:1},line:'북거씨: <q>골목도 섞여 있잖아요. 그래서 좋은 거고요.</q>',face:'ok'},
+        {t:'향만 맡고 나온다',tag:'부지런',direct:{},line:'문밖까지 봄 냄새가 따라 나왔다.',face:'ok'}]},
+    {cut:'p_bk_paper',bg:'bg_day_perfume_atelier.png',text:'공방. 북거씨가 겨울 병을 선반 뒤로 넣는다. <q>겨울 향은 봄에 안 팔려요. 그래도 안 버려요.</q>',
+      choices:[{t:'"왜 안 버리세요?"',direct:{learn:2,story:1},line:'북거씨가 병을 한 번 더 닦고 넣었다.',face:'ok'},
+        {t:'선반 정리를 돕는다',direct:{learn:2},line:'병 마흔 개. 순서가 다 정해져 있었다. 계절 순이었다.',face:'ok'},
+        {t:'"봄 향 하나 사고 싶어요"',tag:'알뜰',direct:{coins:-3,learn:1,ing:'sun'},line:'북거씨: <q>이건 햇빛이에요. 이름은 아직요.</q>',face:'ok'}]},
+    {cut:'p_v_bkdry',bg:'bg_day_perfume_atelier.png',text:'공방. 작업대에 빈 병 하나. <q>끼토 씨. 올봄에 뭘 맡았어요?</q> 이제 이 질문이 익숙하다.',
+      choices:[{t:'"꽃잎이요"',direct:{learn:2,ing:'sun'},line:'북거씨: <q>꽃잎은 향이 거의 없어요. 그런데 봄이라고 하면 다들 꽃잎을 말하죠.</q>',face:'ok'},
+        {t:'"흙 냄새요"',direct:{learn:2},line:'북거씨: <q>맞아요. 봄은 밑에서 와요.</q>',face:'ok'},
+        {t:'"쑥이요"',direct:{learn:2,lachil:1},line:'북거씨: <q>5층이군요. 또.</q> 둘 다 웃었다.',face:'ok'}]}],
+  lachil:[
+    {cut:'p_v_snack',bg:'bg_day_grandma_room.png',text:'5층. 창문이 활짝 열려 있다. 할머니가 창턱에 앉아 골목을 보신다. <q>봄엔 여기가 제일 좋아, 그래~</q>',
+      choices:[{t:'옆에 앉아 같이 본다',direct:{lachil:2,worry:-2},line:'골목이 다 보였다. 빵집, 상점, 공방, 대나무숲 빌라. 할머니는 매일 이걸 보고 계셨다.',face:'ok'},
+        {t:'창문을 닦아 드린다',tag:'부지런',direct:{lachil:1},line:'닦고 나니 골목이 더 잘 보였다. <q>아이구, 공방이 저기 있었네 그래~</q>',face:'ok'},
+        {t:'인사만 하고 간다',tag:'부지런',direct:{},line:'계단을 내려가는데 위에서 <q>조심해, 그래~</q>',face:'ok'}]},
+    {cut:'p_gm_photo',bg:'bg_day_grandma_room.png',text:'5층. 할머니가 서랍을 정리하신다. 오래된 것들이 나온다. 단추, 열쇠고리, 사진 한 장.',
+      choices:[{t:'같이 정리한다',direct:{lachil:2,flag:{photo_seen:1}},line:'사진 한 장이 눈에 걸렸다. 높은 데서 찍은 것. 골목이 다 보이는 자리.',face:'ok'},
+        {t:'"이건 나이테존 가면 되겠어요"',tag:'알뜰',direct:{lachil:1,ramda:1},line:'<q>그래~ 그 다람쥐한테 갖다줘.</q> 나이테존 물건 중 반은 5층에서 왔다.',face:'ok'},
+        {t:'차만 마시고 간다',tag:'느긋',direct:{worry:-2},line:'서랍은 열린 채였다.',face:'ok'}]},
+    {cut:'p_gm_frame',bg:'bg_day_grandma_room.png',text:'5층. 할머니가 쑥을 다듬으며 흥얼거리신다. 노래인지 아닌지 애매한 소리.',
+      choices:[{t:'조용히 듣는다',tag:'느긋',direct:{lachil:2,worry:-2},line:'두 소절. 그리고 <q>아이구, 다 잊었네.</q> 안 잊으셨다.',face:'ok'},
+        {t:'쑥을 같이 다듬는다',tag:'나눔',direct:{lachil:2},line:'손톱이 초록이 됐다. 사흘 갔다.',face:'ok'},
+        {t:'"그 노래 뭐예요?"',direct:{lachil:1},line:'<q>옛날 거야. 옥상에서 부르던 거.</q> 옥상.',face:'ok'}]}],
+};
+// 여름
+const FS_U={
+  boneul:[
+    {cut:'u_v_tomato',bg:'bg_day_bamboo_entry.png',text:'대나무숲 빌라 앞. 그늘 한 칸. 보늘이 거기 서 있다. 그늘이 딱 한 명 크기다.',
+      choices:[{t:'그늘을 나눠 선다',tag:'느긋',eff:{ing:'bamboo'},line:'둘 다 반쪽씩 젖었다. 아무도 안 비켰다.',face:'ok'},
+        {t:'"우리 빌라 복도가 시원해"',direct:{boneul:2},line:'보늘이 따라왔다. 복도 선풍기 앞에 둘이 앉았다. 삼십 분.',face:'ok'},
+        {t:'인사만 하고 간다',tag:'부지런',direct:{boneul:-1},line:'그늘이 다시 한 명 크기가 됐다.',face:'bad'}]},
+    {cut:'u_bon_meeting',bg:'bg_day_boneul_home.png',text:'보늘네 소파. 선풍기가 둘 사이에서 돈다. 고개가 이쪽 갔다 저쪽 갔다. 보늘: <q>...공평하지.</q>',
+      choices:[{t:'선풍기를 보늘 쪽으로 돌린다',tag:'나눔',direct:{boneul:2},line:'보늘이 다시 가운데로 돌려놨다. 세 번 반복했다. 결국 가운데.',face:'ok'},
+        {t:'"여름엔 원고가 안 써져"',direct:{boneul:2,worry:-3,seed:'heart'},line:'보늘: <q>여름엔 씹는 것도 힘들어.</q> 진심이었다.',face:'ok'},
+        {t:'"바빠, 다음에"',tag:'부지런',direct:{boneul:-1},line:'보늘: <q>어. 더운데 뛰지 마.</q> 뛰었다.',face:'bad'},
+        {t:'소금빵을 내민다',tag:'나눔',bread:1,line:'보늘: <q>...여름엔 소금이 맞지.</q>',face:'ok'}]},
+    {cut:'u_bon_film',bg:'bg_day_boneul_home.png',text:'보늘이 카메라 두 대를 켜 놓고 소파를 두드린다. <q>여름 특집. 앉아.</q> 얼음이 산처럼 쌓여 있다.',
+      choices:[{t:'같이 찍는다',direct:{boneul:1,seed:'pizza',ing:'bamboo'},line:'얼음이 다 녹을 때까지 찍었다. 댓글: "이거 왜 힐링임".',face:'ok'},
+        {t:'선풍기 앞에서 구경만',tag:'느긋',line:'보늘이 카메라 밖으로 얼음 하나를 던져 줬다.',face:'ok'},
+        {t:'창피해서 도망',tag:'대담',line:'문 밖. <q>게스트가 더워서 갔습니다.</q> 맞는 말이었다.',face:'bad'}]}],
+  ramda:[
+    {cut:'u_v_fan',bg:'bg_day_acorn_shop.png',text:'상점. 선풍기 하나에 람다와 물건들이 다 몰려 있다. <q>그늘 무료야. 앉아.</q>',
+      choices:[{t:'그늘에 앉는다',direct:{ramda:2,worry:-2},line:'한 시간. 손님은 없었다. 둘 다 그게 편했다.',face:'ok'},
+        {t:'"오늘 한 줄, 뭐라고 쓸까?"',direct:{ramda:1,seed:'button'},line:'〈그늘 무료.〉 람다가 그 밑에 썼다. "물도."',face:'ok'},
+        {t:'"에어컨 하나 놔"',direct:{ramda:-1},line:'람다: <q>...선풍기가 나이테가 더 많아.</q>',face:'bad'}]},
+    {cut:'u_lam_projector',bg:'bg_day_acorn_shop.png',text:'상점 창고. 람다가 오래된 물건을 꺼낸다. 이번엔 영사기다. <q>이건 몇 년 됐는지도 몰라.</q>',
+      choices:[{t:'같이 닦는다',direct:{ramda:2},line:'렌즈에서 먼지가 한 겹 나왔다. 안쪽은 깨끗했다. 누가 잘 쓰던 물건이다.',face:'ok'},
+        {t:'"이거 켜지면 영화 볼 수 있겠는데"',direct:{ramda:2,seed:'fest'},line:'람다 꼬리가 섰다. <q>옥상! 옥상에서!</q>',face:'ok'},
+        {t:'원고 얘기만 하고 간다',tag:'부지런',direct:{ms:1,ramda:-1},line:'창고 불이 밤까지 켜져 있었다.',face:'bad'}]},
+    {cut:'u_lam_mc',bg:'bg_day_acorn_shop.png',text:'상점. 람다가 종이에 뭘 잔뜩 쓰고 있다. <q>영화제 순서표. 아직 영화도 안 정했는데 순서표부터 썼어.</q>',
+      choices:[{t:'같이 순서를 정한다',direct:{ramda:2,seed:'fest'},line:'네 줄. 마지막 줄은 〈영화〉. 그 옆에 물음표 세 개.',face:'ok'},
+        {t:'"순서표보다 의자가 먼저야"',direct:{ramda:1},line:'람다: <q>...맞네.</q> 순서표를 접어 주머니에 넣었다. 안 버렸다.',face:'ok'},
+        {t:'원고 얘기만 하고 간다',tag:'부지런',direct:{ms:1,ramda:-1},line:'순서표가 다음 날 상점 유리창에 붙어 있었다.',face:'bad'}]}],
+  bookgeo:[
+    {cut:'u_v_bkshade',bg:'bg_day_perfume_atelier.png',text:'공방 앞 그늘. 북거씨가 물을 뿌린 등딱지로 앉아 있다. <q>여름엔 아무것도 안 만들어요. 향이 도망가요.</q>',
+      choices:[{t:'옆 그늘에 앉는다',direct:{learn:2,worry:-2},line:'매미. 삼십 분. 아무 말도 안 했다. 그게 제일 시원했다.',face:'ok'},
+        {t:'등딱지에 물을 뿌려 드린다',tag:'나눔',direct:{learn:1},line:'김이 났다. 북거씨: <q>고마워요. 등딱지는 지붕이라 뜨거워요.</q>',face:'ok'},
+        {t:'더워서 금방 간다',tag:'부지런',direct:{},line:'북거씨는 그 자리에 그대로 있었다. 저녁까지.',face:'ok'}]},
+    {cut:'u_v_bkshade',bg:'bg_day_perfume_atelier.png',text:'공방 안. 선반의 병들이 다 뚜껑이 닫혀 있다. <q>여름엔 병을 안 열어요. 대신 이야기를 해요.</q>',
+      choices:[{t:'"들려주세요"',direct:{learn:2,story:1},line:'북거씨는 아주 천천히 말했다.',face:'ok'},
+        {t:'"저도 하나 할까요"',direct:{learn:2,worry:-2},line:'끼토가 가스 불 얘기를 했다. 북거씨가 끝까지 들었다. <q>...저도 그랬어요.</q>',face:'ok'},
+        {t:'조용히 앉아 있는다',tag:'느긋',direct:{learn:1,worry:-1},line:'매미 소리만. 그것도 이야기였다.',face:'ok'}]},
+    {cut:'u_mg_cool',bg:'bg_day_perfume_atelier.png',text:'공방 앞. 미개가 북거씨 등딱지 밑 그늘에 들어가 있다. 북거씨는 움직이지 않는다. <q>...두 시간째예요.</q>',
+      choices:[{t:'끝까지 기다린다',tag:'느긋',direct:{learn:2,worry:-2},line:'해가 기울 때까지. 미개가 나오자 북거씨가 처음으로 발을 폈다.',face:'ok'},
+        {t:'미개를 안아 온다',direct:{learn:1},line:'미개가 더듬이로 항의했다. 다시 들어갔다.',face:'ok'},
+        {t:'"안 무거우세요?"',direct:{learn:2},line:'북거씨: <q>등딱지 위에 얹는 건 다 가벼워요. 그러라고 있는 거예요.</q>',face:'ok'}]}],
+  lachil:[
+    {cut:'u_v_ice',bg:'bg_day_grandma_room.png',text:'5층. 문을 여니 시원하다. 할머니: <q>얼음 깨 놨어. 앉아, 그래~</q> 부엌에 얼음통이 있다.',
+      choices:[{t:'앉아서 얼음을 먹는다',direct:{lachil:2,worry:-2},line:'미숫가루에 얼음 다섯 개. 5층이 제일 시원한 이유는 창문이 둘이라서다.',face:'ok'},
+        {t:'얼음을 나눠 배달한다',tag:'나눔',direct:{lachil:2},line:'상점, 공방, 대나무숲 빌라. 세 집. 다 녹기 전에 도착했다.',face:'ok'},
+        {t:'인사만 하고 간다',tag:'부지런',direct:{},line:'저녁에 문 앞에 얼음물 한 병이 있었다.',face:'ok'}]},
+    {cut:'u_gm_plates',bg:'bg_day_grandma_room.png',text:'5층. 할머니가 창문 둘을 다 여신다. 바람이 통한다. <q>이걸 맞바람이라고 해, 그래~</q>',
+      choices:[{t:'맞바람 앞에 앉는다',direct:{lachil:2,worry:-2},line:'선풍기보다 시원했다. 할머니가 부채질까지 해 주셨다.',face:'ok'},
+        {t:'우리 집 창문도 그렇게 열어 본다',direct:{lachil:1,worry:-1,flag:{crosswind:1}},line:'901호도 시원해졌다. 삼 년 살면서 몰랐다.',face:'ok'},
+        {t:'"5층은 더울 줄 알았어요"',direct:{lachil:1},line:'<q>제일 위가 제일 시원해. 대신 계단이 길지, 그래~</q>',face:'ok'}]},
+    {cut:'u_n_fan',bg:'bg_day_grandma_room.png',text:'5층. 할머니가 옥상 쪽 계단을 올려다보신다. <q>옛날엔 저기서 영화도 봤는데, 그래~</q>',
+      choices:[{t:'"영화요?"',direct:{lachil:2,flag:{gm_movie:1}},line:'<q>이불 널던 줄에 하얀 천 걸고. 젊은 거북이가 영사기를 돌렸어.</q>',face:'ok'},
+        {t:'같이 계단을 올라가 본다',direct:{lachil:2,worry:-1},line:'문은 잠겨 있었다. 할머니: <q>언젠가 열리겠지, 그래~</q>',face:'ok'},
+        {t:'"위험해요. 여기 계세요"',direct:{lachil:-1},line:'<q>아이구, 그래~</q> 창문 쪽으로 돌아앉으셨다.',face:'bad'}]}],
+};
+
 // ====================== 시즌(챕터) 묶음 ======================
 const CHAPTERS=[
   {id:'fall',n:'가을 · 솜재페에 누가 오나',season:['','_ginkgo','_dusk','_winter'],themes:['부탁','비밀','위기','약속'],finaleBtn:'솜재페의 밤',until:'솜재페까지',outN:OUT_N,
@@ -1440,7 +1610,7 @@ function w_festival(){ const o=w_outcomes(); const hero=w_heroCut(o); S.outcome=
   if(hero) playCut({cut:hero,bg:AD+'bg_alley_night.jpg',name:'등불 밤 · '+CUTS[hero].n,text:{w_fest_sea:'등불이 켜지자 골목이 조용해졌다. 북거씨가 병을 열었다. 젖은 은행잎, 소금, 빨래, 노래, 골목 끝의 벽. 다 있었다. <q>이 골목이 바다였어요.</q> 5층 창문에서 노래가 내려왔다.',w_fest_alone:'등불 마흔 개. 끼토와 미개. 공방은 닫혀 있고, 대나무숲 빌라는 불이 꺼져 있고, 람다는 무대 뒤였다. 그래도 끼토 이름 등은 켜졌다.',w_fest_song:'등불 밑에서 다들 위를 봤다. 5층 창문. 할머니가 노래를 불렀다. 서른 해 전 그 노래. 북거씨가 목을 길게 뺐다.',w_fest_live:'보늘이 등불 밑에 서 있었다. 감기는 나았고, 카메라는 없었다. <q>...라이브에서 한 말, 진짜야.</q> 그러고는 토스트를 꺼냈다.',w_fest_lanterns:'골목 양쪽에 람다의 등. 3년 된 병, 5년 된 단추, 6년 된 시향지가 불을 담고 있었다. 나이테존이 처음으로 골목 전체가 됐다.'}[hero],migae:'미개가 목도리를 하고 등불을 올려다봤다.',btn:'결산 카드'},showCard); else showCard(); }
 const W_WEEK_TITLE=(w)=>{ const f=S.flags; if(w===0) return f.note_asked?'쪽지의 주':'첫눈의 주'; if(w===1) return pieces().leaf?'조각의 주':f.live==='yes'?'약속의 주':'눈 쌓인 주'; if(w===2) return f.soup?'죽 한 그릇의 주':pieces().road?'골목 끝의 주':'얼음의 주'; return '등불의 주'; };
 const W_PREVIEW=['다음 주 예고: 북거씨가 선반 맨 뒤에서 라벨 없는 병을 꺼낸다.','다음 주 예고: 보늘이 열이 난다. 라이브 사흘 전.','다음 주 예고: 동짓날 밤, 등불 마흔 개.'];
-CHAPTERS.push({id:'winter',n:'겨울 · 바다향의 비밀',season:['_winter','_winter','_winter','_night'],themes:['쪽지','조각','위기','등불'],finaleBtn:'등불 밤',until:'등불 밤까지',outN:W_OUT_N,festBg:'w_fest_bg',festBgFb:AD+'bg_alley_night.jpg',
+CHAPTERS.push({fs:FS_W,id:'winter',n:'겨울 · 바다향의 비밀',season:['_winter','_winter','_winter','_night'],themes:['쪽지','조각','위기','등불'],finaleBtn:'등불 밤',until:'등불 밤까지',outN:W_OUT_N,festBg:'w_fest_bg',festBgFb:AD+'bg_alley_night.jpg',
   arcDays:[1,5,13,16,17,18,19,20,26,27],arcMorning:w_arcMorning,arcNoon:w_arcNoon,arcForce:w_arcForce,weekTitle:W_WEEK_TITLE,preview:W_PREVIEW,types:W_TYPES,finaleStart:w_finaleStart,
   events:W_EVENTS,variant:W_VARIANT,eventEnd:W_EVENT_END,pool:{mon:['boneul','ramda'],tue:['bookgeo','lachil'],wed:['ramda','lachil'],thu:['boneul','bookgeo'],fri:['lachil','bookgeo'],sat:['ramda','bookgeo'],sun:['boneul','ramda','bookgeo','lachil'],sick:['bookgeo','lachil']},
   weather:(ev,sk,r)=> ev==='tue'?'snow': r<0.5?'snow': r<0.7?'wind':'sunny',
@@ -1709,7 +1879,7 @@ function sp_festival(){ const o=sp_outcomes(); const hero=sp_heroCut(o); S.outco
   else showCard(); }
 const SP_WEEK_TITLE=(w)=>{ const f=S.flags; if(w===0) return f.quest==='find'?'원정대의 주':f.quest==='sell'?'벼룩장의 주':'공고의 주'; if(w===1) return itemCount()>=2?'주인의 주':'벚꽃의 주'; if(w===2) return f.spoke==='kkito'?'말한 주':f.roof_open?'옥상의 주':'봄비의 주'; return '팻말의 주'; };
 const SP_PREVIEW=['다음 주 예고: 나이테존 물건 다섯이 하나씩 골목으로 나온다. 단추, 상자, 찻잔, 사진틀.','다음 주 예고: 미개가 꽃잎을 따라간다. 그리고 금요일, 시티청 창구.','다음 주 예고: 일요일, 봄 벼룩장. 팻말이 남는가.'];
-CHAPTERS.push({id:'spring',n:'봄 · 환불 원정대',season:['_spring','_petal','_may','_green'],themes:['공고','주인','창구','팻말'],finaleBtn:'봄 벼룩장',until:'벼룩장까지',outN:SP_OUT_N,festBg:'p_fest_bg',festBgFb:AD+'bg_alley_green.jpg',
+CHAPTERS.push({fs:FS_P,id:'spring',n:'봄 · 환불 원정대',season:['_spring','_petal','_may','_green'],themes:['공고','주인','창구','팻말'],finaleBtn:'봄 벼룩장',until:'벼룩장까지',outN:SP_OUT_N,festBg:'p_fest_bg',festBgFb:AD+'bg_alley_green.jpg',
   arcDays:[1,3,4,5,9,10,11,12,17,18,19,20,24,25,26,27],arcMorning:sp_arcMorning,arcNoon:sp_arcNoon,arcForce:sp_arcForce,weekTitle:SP_WEEK_TITLE,preview:SP_PREVIEW,types:SP_TYPES,finaleStart:sp_finaleStart,
   events:SP_EVENTS,variant:SP_VARIANT,eventEnd:SP_EVENT_END,pool:{mon:['boneul','ramda'],tue:['bookgeo','lachil'],wed:['ramda','lachil'],thu:['boneul','bookgeo'],fri:['lachil','bookgeo'],sat:['ramda','bookgeo'],sun:['boneul','ramda','bookgeo','lachil'],sick:['bookgeo','lachil']},
   weather:(ev,sk,r)=> ev==='tue'?'rain': sk==='_may'?(r<0.6?'rain':'sunny'): r<0.2?'rain': r<0.45?'wind':'sunny',
@@ -1967,7 +2137,7 @@ function u_festival(){ const o=u_outcomes(); const hero=u_heroCut(o); S.outcome=
   playCut({cut:hero,bg:AD+'bg_alley_night.jpg',name:'영화제의 밤 · '+CUTS[hero].n,text:{u_fest_full:'옥상. 의자 열두 개가 다 찼다. 람다가 영사기를 돌리고, 북거씨가 그 옆에서 렌즈를 봤고, 할머니는 맨 앞줄에서 얼음 쑥떡을 돌렸다. 스크린에 골목이 떴다. 끼토와 보늘은 맨 뒷줄. 나란히. 보늘: <q>...내년에도 해.</q> 절친이 된 밤.',u_fest_alone:'골목 벽에 빛. 의자 대신 벤치. 끼토와 미개. 람다는 상점 안에서 나오지 않았고, 대나무숲 빌라 창문은 어두웠다. 그래도 빛은 벽에 떴다. 골목이 잠깐 환했다.',u_fest_bff:'영화가 끝나고 다들 내려간 옥상. 난간에 끼토와 보늘. 골목에 불이 하나씩 꺼졌다. 보늘: <q>...김치 통.</q> 끼토: <q>...김치 통.</q> 둘 다 웃었다. 둘도 없는 절친이 된 밤.',u_fest_book:'스크린에 그림책 「골목 이야기」가 떴다. 한 장에 한 계절. 끼토가 읽었다. 목소리가 갈라졌다. 객석에서 누가 웃었다. 보늘이었다. 마지막 장은 오늘 밤이었다.',u_fest_screen:'옥상. 스크린에 빛이 떴다. 의자 열두 개. 두 빌라가 처음으로 같은 화면을 봤다. 매미가 그쳤다. 미개가 스크린 앞을 지나가서 그림자가 됐다. 다들 웃었다.',u_fest_window:'옥상은 못 썼다. 골목 벽에 빛. 5층 창문이 열리고 할머니가 내려다봤다. 벽에 뜬 빛이 창문까지 닿았다. 할머니가 손을 흔들었다. 끼토도, 미개도.',u_fest_wall:'골목 벽에 빛. 벤치 세 개. 람다가 빔을 돌렸다. 옥상은 아니었지만 골목이 잠깐 극장이 됐다. 북거씨가 계단 밑에서 봤다.'}[hero],migae:'미개가 스크린 앞을 지나갔다. 그림자가 제일 컸다.',btn:'결산 카드'},showCard); }
 const U_WEEK_TITLE=(w)=>{ const f=S.flags; if(w===0) return f.movie==='yes'?'두 반장의 주':f.movie==='solo'?'따로의 주':'더위의 주'; if(w===1) return f.mem2&&f.mem2!=='skip'?'회상의 주':f.projector==='ok'?'영사기의 주':'스크린의 주'; if(w===2) return f.migae_cool?'그늘의 주':f.permit_roof?'허가의 주':'폭염의 주'; return '영화제의 주'; };
 const U_PREVIEW=['다음 주 예고: 람다 창고에서 영사기가 나온다. 돌아갈까.','다음 주 예고: 미개가 더위를 먹는다. 그리고 시티청, 다시.','다음 주 예고: 전야, 옥상, 둘. 일요일 밤 영화제.'];
-CHAPTERS.push({id:'summer',n:'여름 · 두 반장 이야기',season:['_summer','_rain','_heat','_night'],themes:['더위','회상','폭염','영화제'],finaleBtn:'옥상 영화제',until:'영화제까지',outN:U_OUT_N,festBg:'u_fest_bg',festBgFb:AD+'bg_alley_night.jpg',
+CHAPTERS.push({fs:FS_U,id:'summer',n:'여름 · 두 반장 이야기',season:['_summer','_rain','_heat','_night'],themes:['더위','회상','폭염','영화제'],finaleBtn:'옥상 영화제',until:'영화제까지',outN:U_OUT_N,festBg:'u_fest_bg',festBgFb:AD+'bg_alley_night.jpg',
   arcDays:[1,4,6,10,11,13,17,18,19,20,24,25,26,27],arcMorning:u_arcMorning,arcNoon:u_arcNoon,arcForce:u_arcForce,weekTitle:U_WEEK_TITLE,preview:U_PREVIEW,types:U_TYPES,finaleStart:u_finaleStart,
   events:U_EVENTS,variant:U_VARIANT,eventEnd:U_EVENT_END,pool:{mon:['boneul','ramda'],tue:['bookgeo','lachil'],wed:['ramda','lachil'],thu:['boneul','bookgeo'],fri:['lachil','bookgeo'],sat:['ramda','bookgeo'],sun:['boneul','ramda','bookgeo','lachil'],sick:['bookgeo','lachil']},
   weather:(ev,sk,r)=> ev==='tue'?'rain': sk==='_rain'?(r<0.7?'rain':'sunny'): sk==='_heat'?(r<0.1?'wind':'sunny'): r<0.2?'rain': r<0.35?'wind':'sunny',
