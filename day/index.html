@@ -4,81 +4,76 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>솜솜시티: 끼토의 하루</title>
-<meta name="description" content="아침·낮·저녁 세 번의 선택으로 달라지는 끼토의 하루. 친구들과의 관계는 하루가 끝나도 남습니다.">
+<meta name="description" content="요일마다 다른 사건, 골목에서의 마주침, 며칠 뒤에 터지는 씨앗. 친구들과의 관계가 남는 끼토의 한 주.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&display=swap">
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
-  body{background:#221E18;color:#EFE7D6;font-family:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
-    display:flex;justify-content:center;word-break:keep-all;-webkit-font-smoothing:antialiased;}
+  body{background:#221E18;color:#EFE7D6;font-family:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif;display:flex;justify-content:center;word-break:keep-all;-webkit-font-smoothing:antialiased;}
   #app{width:min(470px,100vw);height:100dvh;position:relative;overflow:hidden;background:#221E18;}
   .screen{position:absolute;inset:0;display:none;flex-direction:column;}
   .screen.on{display:flex;}
   button{font-family:inherit;cursor:pointer;}
-
-  /* 상단 바 */
   .top{flex:none;display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top)) 12px 8px;z-index:5;}
   .top .home{background:rgba(255,255,255,.10);border:none;color:#EFE7D6;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;}
-  .top .slot{margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.14em;color:#F2C14B;}
+  .top .slot{margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.14em;color:#F2C14B;white-space:nowrap;}
   .top .worry{display:flex;align-items:center;gap:6px;font-size:10.5px;color:#A9A08C;}
   .top .worry i{display:block;width:54px;height:6px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;}
   .top .worry i b{display:block;height:100%;background:#E07A5F;transition:width .4s;}
-
-  /* 장면 */
-  .stage{flex:1 1 auto;min-height:0;position:relative;overflow:hidden;background:#2B2620;}
+  .stage{flex:1 1 auto;min-height:0;position:relative;overflow:hidden;background:#221E18;}
   .stage .bg{position:absolute;inset:0;}
   .stage .bg img{width:100%;height:100%;object-fit:contain;object-position:center center;background:#221E18;}
-  .stage .bg.contain img{object-fit:contain;background:#221E18;}
-  .stage .cast{position:absolute;left:0;right:0;bottom:0;height:46%;display:flex;align-items:flex-end;justify-content:space-between;padding:0 6px;pointer-events:none;}
+  .stage .cast{position:absolute;left:0;right:0;bottom:0;height:44%;display:flex;align-items:flex-end;justify-content:space-between;padding:0 6px;pointer-events:none;}
   .stage .cast img{height:100%;object-fit:contain;filter:drop-shadow(0 8px 12px rgba(0,0,0,.45));transition:transform .25s;}
-  .stage .cast img.friend{height:104%;}
-  .stage .cast img.migae{position:absolute;left:34%;bottom:0;height:22%;}
+  .stage .cast img.friend{height:100%;}
+  .stage .cast img.migae{position:absolute;left:38%;bottom:0;height:24%;}
   .stage .cast img.bump{transform:translateY(-10px);}
+  .stage .cast.hidden{display:none;}
   .stage .shade{position:absolute;left:0;right:0;bottom:0;height:22%;background:linear-gradient(to top,rgba(34,30,24,.55),transparent);pointer-events:none;}
-
-  /* 대화 상자 */
-  .dlg{flex:none;background:#FDFBF5;color:#3A2E24;margin:0 10px;border:2.5px solid #222;border-radius:16px;box-shadow:3px 3px 0 rgba(0,0,0,.6);
-    padding:12px 14px 12px;position:relative;z-index:6;transform:translateY(-14px);min-height:96px;}
+  .stage .badge{position:absolute;left:12px;top:10px;font-size:10.5px;font-weight:800;letter-spacing:.1em;color:#221E18;background:#F2C14B;border-radius:8px;padding:3px 8px;}
+  .dlg{flex:none;background:#FDFBF5;color:#3A2E24;margin:0 10px;border:2.5px solid #222;border-radius:16px;box-shadow:3px 3px 0 rgba(0,0,0,.6);padding:12px 14px 12px;position:relative;z-index:6;transform:translateY(-14px);min-height:96px;max-height:42vh;overflow-y:auto;}
   .dlg .nm{font-size:12px;font-weight:800;color:#B08A3A;margin-bottom:5px;letter-spacing:.02em;}
   .dlg .tx{font-size:14.5px;line-height:1.62;}
   .dlg .tx q{quotes:"“" "”";}
   .dlg .sub{margin-top:6px;font-size:12.5px;color:#7A6A5A;line-height:1.5;}
   .dlg .migaeLine{margin-top:8px;font-size:12px;color:#5A4A3A;display:flex;gap:6px;align-items:flex-start;}
   .dlg .migaeLine img{width:22px;height:22px;object-fit:contain;flex:none;}
-  .dlg .tap{position:absolute;right:14px;bottom:8px;font-size:11px;color:#B0A48E;animation:blink 1.2s infinite;}
-  @keyframes blink{50%{opacity:.25;}}
-
-  /* 선택지 */
   .choices{flex:none;display:flex;flex-direction:column;gap:7px;padding:0 10px calc(12px + env(safe-area-inset-bottom));z-index:6;}
   .choices button{background:#2B2620;color:#EFE7D6;border:1.5px solid rgba(255,255,255,.18);border-radius:13px;padding:11px 14px;text-align:left;font-size:13.5px;line-height:1.4;display:flex;gap:9px;align-items:center;}
   .choices button:active{background:#3A342B;}
   .choices button .tg{flex:none;font-size:10px;font-weight:800;letter-spacing:.06em;color:#221E18;background:#F2C14B;border-radius:6px;padding:2px 6px;}
   .choices button .tg.bread{background:#E9B7C6;}
   .choices button.next{justify-content:center;background:#F2C14B;color:#221E18;border-color:#F2C14B;font-weight:800;}
-
-  /* 반응 띠 */
   .react{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:8px;}
   .react .rc{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#7A6A5A;background:#F3ECDC;border-radius:10px;padding:5px 9px;min-width:64px;text-align:center;line-height:1.3;}
-  .react .rc b{font-size:11px;}
   .react .rc img{width:34px;height:34px;object-fit:contain;}
+  .react .rc b{font-size:11px;}
   .react .rc.up{background:#E6F0D6;color:#4E6A2A;} .react .rc.down{background:#F6DEDA;color:#8A3A2E;}
-
-  /* 타이틀 · 낮 선택 · 결과 공용 */
+  .seedTag{display:inline-block;margin-top:6px;font-size:11px;font-weight:800;color:#5F8348;background:#E6F0D6;border-radius:8px;padding:2px 8px;}
+  .worryTag{display:inline-block;margin-top:6px;margin-right:6px;font-size:11px;font-weight:800;border-radius:8px;padding:2px 8px;background:#F6DEDA;color:#8A3A2E;}
+  .worryTag.down{background:#E6F0D6;color:#4E6A2A;}
+  .worryPop{position:absolute;left:10px;right:10px;top:10px;z-index:8;background:rgba(43,38,32,.96);border-radius:14px;padding:10px 12px;font-size:12px;color:#EFE7D6;line-height:1.6;box-shadow:0 10px 30px rgba(0,0,0,.5);}
+  .worryPop .wh{font-size:10.5px;font-weight:800;letter-spacing:.1em;color:#F2C14B;margin-bottom:4px;}
+  .worryPop .wr{display:flex;gap:8px;} .worryPop .wr b{flex:none;width:34px;text-align:right;} .worryPop .wr b.up{color:#E07A5F;} .worryPop .wr b.dn{color:#9BC26B;}
+  .worryPop .wf{margin-top:6px;font-size:11px;color:#A9A08C;}
   .panel{flex:1 1 auto;min-height:0;overflow-y:auto;padding:0 16px calc(16px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;}
   .title{font-family:'Black Han Sans',sans-serif;font-size:30px;color:#F2C14B;line-height:1.05;}
   .title small{display:block;font-family:'Gowun Dodum',sans-serif;font-size:11px;letter-spacing:.2em;color:#A9A08C;margin-bottom:6px;}
   .lead{font-size:13px;color:#CFC5B0;line-height:1.6;}
-  .hero{position:relative;flex:none;aspect-ratio:3/4;max-height:52vh;width:auto;align-self:center;border-radius:18px;overflow:hidden;background:#2B2620;}
+  .hero{position:relative;flex:none;aspect-ratio:3/4;max-height:50vh;width:auto;align-self:center;border-radius:18px;overflow:hidden;background:#2B2620;}
   .hero img{width:100%;height:100%;object-fit:contain;display:block;}
   .big{background:#F2C14B;color:#221E18;border:none;border-radius:16px;padding:14px;font-size:16px;font-weight:800;}
   .row{display:flex;gap:8px;}
-  .ghost{flex:1;background:rgba(255,255,255,.08);border:none;border-radius:14px;padding:11px;font-size:12.5px;font-weight:700;color:#EFE7D6;}
+  .ghost{flex:1;background:rgba(255,255,255,.08);border:none;border-radius:14px;padding:11px;font-size:12.5px;font-weight:700;color:#EFE7D6;text-align:center;text-decoration:none;}
+  .cal{display:flex;gap:5px;justify-content:center;}
+  .cal i{width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-style:normal;color:#A9A08C;}
+  .cal i.done{background:rgba(242,193,75,.25);color:#F2C14B;} .cal i.today{background:#F2C14B;color:#221E18;font-weight:800;}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
-  .card{position:relative;border:none;border-radius:16px;padding:10px 10px 8px;text-align:left;color:#221E18;min-height:96px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;}
-  .card img{position:absolute;right:2px;top:2px;height:64px;object-fit:contain;filter:drop-shadow(-2px 4px 6px rgba(0,0,0,.35));}
+  .card{position:relative;border:none;border-radius:16px;padding:10px 10px 8px;text-align:left;color:#221E18;min-height:104px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;}
+  .card img{position:absolute;right:4px;top:4px;height:70px;object-fit:contain;filter:drop-shadow(-2px 4px 6px rgba(0,0,0,.35));}
   .card .cn{font-family:'Black Han Sans',sans-serif;font-size:17px;line-height:1.05;}
-  .card .cd{font-size:10.5px;opacity:.8;margin-top:3px;line-height:1.35;}
+  .card .cd{font-size:10.5px;opacity:.85;margin-top:3px;line-height:1.35;}
   .card .tier{position:absolute;left:10px;top:9px;font-size:9.5px;font-weight:800;letter-spacing:.06em;background:rgba(0,0,0,.18);border-radius:6px;padding:2px 6px;}
   .card:active{transform:scale(.975);}
   .rel{display:flex;flex-direction:column;gap:8px;}
@@ -89,416 +84,596 @@
   .relRow .dots{margin-left:auto;display:flex;gap:3px;flex:none;}
   .relRow .dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.14);}
   .relRow .dots i.on{background:#F2C14B;}
+  .letter{background:#FDFBF5;color:#3A2E24;border-radius:14px;padding:10px 12px;font-size:12.5px;line-height:1.55;border:2px solid #222;box-shadow:2px 2px 0 rgba(0,0,0,.5);}
+  .letter b{color:#B08A3A;}
+  .dexGrp{font-size:10px;font-weight:700;letter-spacing:.14em;color:#8A8271;margin-top:6px;}
   .dexGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
   .dexCell{background:rgba(255,255,255,.07);border-radius:12px;padding:6px;text-align:center;font-size:10.5px;color:#CFC5B0;}
-  .dexCell img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;filter:grayscale(1) brightness(.35);}
+  .dexCell img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;filter:grayscale(1) brightness(.3);}
   .dexCell.got img{filter:none;}
   .dexCell .n{display:block;margin-top:4px;line-height:1.3;}
-  .toast{position:absolute;top:calc(14px + env(safe-area-inset-top));left:50%;transform:translateX(-50%) translateY(-140%);z-index:95;background:#2B2620;color:#EFE7D6;
-    border-radius:14px;padding:9px 14px;display:flex;gap:9px;align-items:center;box-shadow:0 12px 30px -14px rgba(0,0,0,.85);transition:transform .35s,opacity .35s;opacity:0;visibility:hidden;}
+  .dexCell .h{display:block;margin-top:2px;font-size:9.5px;color:#8A8271;line-height:1.3;}
+  .viewer{position:absolute;inset:0;z-index:50;background:rgba(10,8,5,.92);display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;padding:20px;}
+  .viewer.on{display:flex;} .viewer img{max-width:100%;max-height:78vh;border-radius:14px;} .viewer .cap{font-size:13px;color:#EFE7D6;text-align:center;}
+  .toast{position:absolute;top:calc(14px + env(safe-area-inset-top));left:50%;transform:translateX(-50%) translateY(-140%);z-index:95;background:#2B2620;color:#EFE7D6;border-radius:14px;padding:9px 14px;display:flex;gap:9px;align-items:center;box-shadow:0 12px 30px -14px rgba(0,0,0,.85);transition:transform .35s,opacity .35s;opacity:0;visibility:hidden;}
   .toast.on{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible;}
   .toast .at{font-size:11px;font-weight:800;color:#F2C14B;letter-spacing:.06em;} .toast .an{font-size:14px;font-weight:800;}
-  .fade{animation:fadeIn .35s ease-out;} @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 </style>
 </head>
 <body>
 <div id="app">
-
-  <!-- 타이틀 -->
   <section id="sTitle" class="screen on">
     <div class="top"><a class="home" href="../" style="text-decoration:none;">← 마을</a><span class="slot" id="titleDays"></span></div>
     <div class="panel">
-      <div class="hero"><img src="../assets/ending_e5_leafpile.png" alt="" onerror="this.src='../assets/bg_alley.png'"></div>
+      <div class="hero"><img id="titleImg" src="" alt=""></div>
       <div class="title"><small>GAME 05</small>끼토의 하루</div>
-      <p class="lead">아침, 낮, 저녁. 세 번의 선택으로 하루가 달라집니다.<br>친구들과의 관계는 하루가 끝나도 남습니다. 미개는 언제나 옆에 있습니다.</p>
+      <div class="cal" id="cal"></div>
+      <p class="lead" id="titleLead">요일마다 다른 일이 생기고, 골목에서 누구를 만나느냐가 달라집니다.<br>오늘 고른 것은 며칠 뒤에 돌아옵니다. 미개는 언제나 옆에 있습니다.</p>
       <button class="big" id="btnStart">오늘 하루 시작</button>
-      <div class="row">
-        <button class="ghost" id="btnRel">친구들</button>
-        <button class="ghost" id="btnDex">결말 도감</button>
-      </div>
+      <div class="row"><button class="ghost" id="btnRel">친구들</button><button class="ghost" id="btnDex">그림 도감</button></div>
       <p class="lead" style="font-size:11px;color:#8A8271;" id="titleHint"></p>
     </div>
   </section>
 
-  <!-- 장면 (아침 · 낮 · 저녁 공용) -->
   <section id="sScene" class="screen">
-    <div class="top"><button class="home" id="sceneHome">← 마을</button>
-      <span class="worry">걱정 <i><b id="worryBar"></b></i></span><span class="slot" id="slotLabel">아침</span></div>
-    <div class="stage">
-      <div class="bg" id="bg"><img id="bgImg" src="" alt=""></div>
-      <div class="shade"></div>
-      <div class="cast" id="cast"></div>
-    </div>
-    <div class="dlg" id="dlg"><div class="nm" id="dNm"></div><div class="tx" id="dTx"></div><div id="dExtra"></div></div>
+    <div class="top"><button class="home" id="sceneHome">← 마을</button><button class="worry" id="worryBtn" style="background:none;border:none;color:#A9A08C;">걱정 <i><b id="worryBar"></b></i><span id="worryNum" style="font-weight:800;color:#EFE7D6;"></span></button><span class="slot" id="slotLabel"></span></div>
+    <div class="stage"><div class="bg"><img id="bgImg" src="" alt=""></div><div class="shade"></div><div class="cast" id="cast"></div><div class="badge" id="badge" hidden></div>
+      <div id="worryPop" class="worryPop" hidden></div></div>
+    <div class="dlg"><div class="nm" id="dNm"></div><div class="tx" id="dTx"></div><div id="dExtra"></div></div>
     <div class="choices" id="choices"></div>
   </section>
 
-  <!-- 낮: 누구를 만날지 -->
   <section id="sPick" class="screen">
     <div class="top"><button class="home" id="pickHome">← 마을</button><span class="worry">걱정 <i><b id="worryBar2"></b></i></span><span class="slot">낮</span></div>
-    <div class="panel">
-      <p class="lead" id="pickLead"></p>
-      <div class="grid2" id="pickGrid"></div>
-    </div>
+    <div class="panel"><p class="lead" id="pickLead"></p><div class="grid2" id="pickGrid"></div></div>
   </section>
 
-  <!-- 하루 결과 -->
   <section id="sResult" class="screen">
-    <div class="top"><span class="slot" style="margin-left:0;">오늘의 하루</span></div>
+    <div class="top"><span class="slot" style="margin-left:0;" id="resSlot">오늘의 하루</span></div>
     <div class="panel">
-      <div class="hero" style="max-height:40vh;"><img id="resImg" src="" alt=""></div>
+      <div class="hero" style="max-height:38vh;"><img id="resImg" src="" alt=""></div>
       <div class="title" style="font-size:24px;" id="resTitle"></div>
       <p class="lead" id="resText"></p>
+      <div id="resLetters" class="rel"></div>
       <div class="rel" id="resRel"></div>
       <p class="lead" id="resCoin" style="color:#F2C14B;font-weight:700;"></p>
-      <button class="big" id="btnAgain">내일도 살아보기</button>
-      <div class="row"><a class="ghost" href="../" style="text-decoration:none;text-align:center;">마을로</a><button class="ghost" id="btnDex2">결말 도감</button></div>
+      <button class="big" id="btnAgain">다음 날로</button>
+      <div class="row"><a class="ghost" href="../">마을로</a><button class="ghost" id="btnDex2">그림 도감</button></div>
     </div>
   </section>
 
-  <!-- 친구들 -->
   <section id="sRel" class="screen">
     <div class="top"><button class="home" data-back>← 뒤로</button><span class="slot">친구들</span></div>
-    <div class="panel"><div class="rel" id="relList"></div>
-      <p class="lead" style="font-size:11.5px;color:#8A8271;">숫자는 보이지 않습니다. 친구의 표정과 저녁이 말해 줍니다.</p></div>
+    <div class="panel"><div class="rel" id="relList"></div><div id="seedList" class="lead"></div>
+      <p class="lead" style="font-size:11.5px;color:#8A8271;">숫자는 보이지 않습니다. 친구의 표정과 며칠 뒤의 아침이 말해 줍니다.</p></div>
   </section>
 
-  <!-- 결말 도감 -->
   <section id="sDex" class="screen">
     <div class="top"><button class="home" data-back>← 뒤로</button><span class="slot" id="dexCount"></span></div>
-    <div class="panel"><div class="dexGrid" id="dexGrid"></div></div>
+    <div class="panel" id="dexPanel"></div>
   </section>
 
+  <div class="viewer" id="viewer"><img id="viewerImg" src="" alt=""><div class="cap" id="viewerCap"></div><button class="ghost" id="viewerClose" style="flex:none;padding:10px 26px;">닫기</button></div>
   <div class="toast" id="toast"><span>🏅</span><span><span class="at" id="toastT">업적 달성</span><br><span class="an" id="toastN"></span></span></div>
 </div>
 
 <script>
-// ====================== 데이터 (day/SCENES.md v0.3) ======================
-const A = '../assets/';
-const F = {
-  boneul:{n:'보늘',  sd:'sd_boneul_t.png',  ok:'sd_boneul_win_t.png',  bad:'sd_boneul_hit_t.png',  col:'#5F8348', dark:'#0F2007'},
-  ramda: {n:'람다',  sd:'sd_ramda_t.png',   ok:'sd_ramda_win_t.png',   bad:'sd_ramda_hit_t.png',   col:'#D2612C', dark:'#2B1305'},
-  bookgeo:{n:'북거씨',sd:'sd_bookgeo_t.png', ok:'sd_bookgeo_win_t.png', bad:'sd_bookgeo_hit_t.png', col:'#5C8A8A', dark:'#0D2020'},
-  lachil:{n:'라칠친 할머니',sd:'sd_lachilchin_t.png',ok:'sd_lachilchin_win_t.png',bad:'sd_lachilchin_hit_t.png',col:'#9A6A9A',dark:'#241224'},
-  migae: {n:'미개',  sd:'sd_migae_t.png',   ok:'sd_migae_win_t.png',   bad:'sd_migae_hit_t.png',   col:'#6A5890', dark:'#150F26'},
-  kkito: {n:'끼토',  sd:'sd_kkito_t.png',   ok:'sd_kkito_win_t.png',   bad:'sd_kkito_hit_t.png',   col:'#E0A12B', dark:'#2B2005'},
+// ====================== 기본 데이터 ======================
+const A='../assets/', AD='../assets/day/';
+const F={
+  boneul:{n:'보늘',sd:'sp_boneul_0.jpg',ok:'sp_boneul_1.png',bad:'sp_boneul_2.png',col:'#5F8348',dark:'#0F2007'},
+  ramda:{n:'람다',sd:'sp_ramda_0.jpg',ok:'sp_ramda_1.png',bad:'sp_ramda_2.png',col:'#D2612C',dark:'#2B1305'},
+  bookgeo:{n:'북거씨',sd:'sp_bookgeo_0.jpg',ok:'sp_bookgeo_1.png',bad:'sp_bookgeo_2.png',col:'#5C8A8A',dark:'#0D2020'},
+  lachil:{n:'라칠친 할머니',sd:'sp_lachilchin_0.jpg',ok:'sp_lachilchin_1.png',bad:'sp_lachilchin_2.png',col:'#9A6A9A',dark:'#241224'},
+  migae:{n:'미개',sd:'sp_migae_0.jpg',ok:'sp_migae_1.png',bad:'sp_migae_2.png',col:'#6A5890',dark:'#150F26'},
+  kkito:{n:'끼토',sd:'sp_kkito_0.jpg',ok:'sp_kkito_1.png',bad:'sp_kkito_2.png',col:'#E0A12B',dark:'#2B2005'},
 };
-// 꼬리표 → [보늘 깊이, 람다 맞음, 할머니 정, 걱정, 미개 반응]
-const TAG = {
-  '신중':{boneul:0, ramda:1, lachil:1, worry:-2, migae:'미개가 옆에서 같이 기다린다.'},
-  '대담':{boneul:0, ramda:0, lachil:-1, worry:3, migae:'미개가 신나서 앞장선다.'},
-  '느긋':{boneul:1, ramda:-1, lachil:0, worry:-1, migae:'미개가 발치에 엎드린다.'},
-  '부지런':{boneul:-1, ramda:1, lachil:1, worry:1, migae:'미개가 뽈뽈 따라 뛴다.'},
-  '나눔':{boneul:1, ramda:-2, lachil:2, worry:1, migae:'미개가 부스러기를 기대한다.'},
-  '알뜰':{boneul:0, ramda:2, lachil:1, worry:0, migae:'미개가 단추를 물어 온다.'},
+const SP=(k,st)=> AD+F[k][st||'sd'];
+// 꼬리표 → 그 장면의 친구에게만, 그리고 걱정에만 작용한다
+const TAG={
+  '신중':{boneul:0,ramda:1,lachil:1,worry:-2,migae:'미개가 옆에서 같이 기다린다.'},
+  '대담':{boneul:0,ramda:0,lachil:-1,worry:3,migae:'미개가 신나서 앞장선다.'},
+  '느긋':{boneul:1,ramda:-1,lachil:0,worry:-1,migae:'미개가 발치에 엎드린다.'},
+  '부지런':{boneul:-1,ramda:1,lachil:1,worry:1,migae:'미개가 뽈뽈 따라 뛴다.'},
+  '나눔':{boneul:1,ramda:-2,lachil:2,worry:1,migae:'미개가 부스러기를 기대한다.'},
+  '알뜰':{boneul:0,ramda:2,lachil:1,worry:0,migae:'미개가 단추를 물어 온다.'},
 };
-const MORNING = {
-  bg:'bg_day_entry.png', name:'901호 현관',
-  text:'솜솜시티의 아침. 오늘은 원고 마감 날. 끼토는 미개 산책 겸 볼일을 보러 나가려다 문 앞에서 멈췄다.<br><q>가스 불... 잠갔나?</q> 발밑에서 미개가 더듬이를 흔든다. 8시 41분.',
-  choices:[
-    {t:'확인하러 다시 들어간다', tag:'신중', eff:{late:1}, line:'잠겨 있었다. 세 번째다. 그리고 8시 52분이다.', migae:'미개는 문 앞에서 얌전히 기다린다.'},
-    {t:'그냥 뛰쳐나간다', tag:'대담', eff:{}, line:'<q>됐어, 잠갔을 거야! ...잠갔겠지? 잠갔을 거야!!</q>', migae:'<q>뽈뽈!</q> 미개가 먼저 골목으로 튀어 나간다.'},
-    {t:'빵집에 들러 하나 더 산다', tag:'나눔', eff:{coins:-3, bread:1}, line:'늦는 김에 제대로 늦자. 갓 구운 소금빵 두 개.', migae:'미개가 빵 봉투 밑에 딱 붙어서 걷는다.'},
-  ]
-};
-const DAY = {
-  boneul:{ who:'boneul', bg:'bg_day_boneul_home.png', place:'대나무숲 빌라', desc:'소파에 녹아 있는 오랜 친구',
-    text:(s)=> (s.boneulCold ? '보늘이 접시를 밀어 주지 않았다. 소파에 반쯤 녹은 채 눈만 굴린다. <q>왔냐.</q>'
-              : '보늘이 소파에 반쯤 녹아 있다. 옆에 \'늘보의 식탁\' 촬영 카메라가 꺼진 채 서 있다.<br><q>왔냐. 먹을래?</q> 토스트 접시를 밀어 준다. 묻지도 않는다.'),
-    choices:[
-      {t:'아무 말 없이 같이 먹는다', tag:'느긋', direct:{}, line:'토스트가 두 장 사라지는 동안 아무 말도 없었다. 그게 편했다.', face:{boneul:'ok'}},
-      {t:'"나 요즘 가스 불이 자꾸 신경 쓰여" 하고 털어놓는다', direct:{boneul:2, worry:-3}, line:'보늘: <q>...그래서 세 번 들어갔다 왔다고? 네 번은 아니네. 발전했다.</q>', face:{boneul:'ok'}, migae:'미개가 소파 밑으로 기어 들어가 과자 부스러기를 찾는다.'},
-      {t:'"바빠, 다음에" 하고 일어선다', tag:'부지런', direct:{boneulCold:1}, line:'보늘: <q>어. 가.</q>', face:{boneul:'bad'}},
-      {t:'소금빵을 내민다', tag:'나눔', bread:1, direct:{}, line:'보늘: <q>...빵 살 시간은 있었구나.</q> 그래도 받았다. 반을 쪼개 미개에게 준다.', face:{boneul:'ok'}},
-    ]},
-  ramda:{ who:'ramda', bg:'bg_day_acorn_shop.png', place:'도토리 상점', desc:'생각이 잘 맞는 상점 주인',
-    text:(s)=> (s.ramdaSulky ? '람다가 장부에서 눈을 안 뗀다. <q>왔어? 응. 바빠서.</q>'
-              : '람다가 \'주인장의 한줄\' 가판대 앞에서 고민 중이다.<br><q>오늘 한 줄, 뭐라고 쓸까? 너라면 알 거 같아서.</q>'),
-    choices:(s)=> s.ramdaSulky ? [
-      {t:'"지난번엔 내가 말이 좀 그랬지"', direct:{ramda:1, ramdaSulky:0, mended:1}, line:'람다: <q>...아니야. 나도 좀 그랬어.</q> 꼬리가 아주 조금 올라왔다.', face:{ramda:'ok'}},
-      {t:'아무렇지 않게 딴 얘기를 꺼낸다', direct:{ramda:-1}, line:'람다: <q>응. 그래.</q> 꼬리는 그대로였다.', face:{ramda:'bad'}},
-    ] : [
-      {t:'같이 문장을 짓는다', direct:{ramda:2}, line:'둘이 한 문장을 만드는 데 20분이 걸렸다. 람다 꼬리가 S자로 살랑거렸다.', face:{ramda:'ok'}},
-      {t:'"그것보다 가판대에 새 물건을 놔야지"', direct:{ramda:-2, ramdaSulky:1}, line:'람다: <q>...그래. 생각해볼게.</q> 톤이 내려갔다.', face:{ramda:'bad'}},
-      {t:'골목에서 주운 단추를 건넨다', tag:'알뜰', direct:{}, line:'람다가 단추를 요리조리 보더니 이름을 붙였다. <q>은행잎 밑 갈색 단추.</q>', face:{ramda:'ok'}},
-      {t:'"빵이랑 단추 하나 바꿀래?"', tag:'알뜰', bread:1, direct:{}, line:'거래 성립. 람다는 빵을, 끼토는 이름 없는 단추를 얻었다.', face:{ramda:'ok'}},
-    ]},
-  bookgeo:{ who:'bookgeo', bg:'bg_day_perfume_atelier.png', place:'북거 향수 공방', desc:'서두르지 않는 이웃 어른',
-    text:()=> '북거씨가 시향지를 코에 대고 눈을 감고 있다.<br><q>끼토 씨. 오늘도 뛰어왔군요.</q>',
-    choices:[
-      {t:'"마감이 오늘이라서요..." 발을 동동 구른다', direct:{learn:1, worry:-1}, line:'북거씨: <q>향은 서두르면 도망가요. 마감도 아마.</q>', face:{bookgeo:'ok'}},
-      {t:'옆에 앉아 같이 시향한다', direct:{learn:1, worry:-2, story:1}, line:'', face:{bookgeo:'ok'}},
-      {t:'"\'바다\'향 있어요? 급해서요!"', label:'대담', direct:{learn:1, worry:1}, line:'북거씨: <q>있죠. 하지만 오늘 끼토 씨한테 필요한 건 이쪽이에요.</q> 라벤더 유칼립투스 블렌드를 건넨다.', face:{bookgeo:'ok'}},
-    ]},
-  lachil:{ who:'lachil', bg:'bg_day_grandma_room.png', place:'당근빌라 5층', desc:'늘 챙겨주는 동네 어른',
-    text:()=> '할머니가 아끼는 옷에 단추를 다시 달려는데 바늘귀에 실이 안 들어간다.<br><q>아이구, 이게 안 보이네 그래~</q>',
-    choices:[
-      {t:'실을 꿰어 드린다', tag:'신중', direct:{}, line:'한 번에 들어갔다. 할머니: <q>아이구, 눈이 좋네 그래~</q>', face:{lachil:'ok'}},
-      {t:'차를 받아 마시며 이야기를 듣는다', tag:'느긋', direct:{lachil:1}, line:'<q>네?</q> 두 번째는 크게 말해야 들리셨다. 이야기는 길었고, 차는 두 잔이었다.', face:{lachil:'ok'}},
-      {t:'소금빵을 드린다', tag:'나눔', bread:1, direct:{}, line:'할머니: <q>참말로~ 이걸 다 나 주게?</q> 반은 접시에 덜어 미개 앞에 놓으셨다.', face:{lachil:'ok'}},
-    ]},
-  migae:{ who:'migae', bg:'bg_alley.png', place:'은행나무 골목', desc:'미개와 산책. 눈금은 없다',
-    text:()=> '미개가 분홍 부츠를 신고 은행잎 더미 앞에서 끼토를 올려다본다.<br>눈금은 없다. 그냥 같이 있는 시간이다.',
-    choices:[
-      {t:'목줄을 풀고 은행잎 더미로 같이 뛰어든다', direct:{worry:-2, walk:1}, line:'은행잎이 사방으로 튀었다. 미개가 더듬이를 하트로 맞댔다.', face:{migae:'ok'}},
-      {t:'벤치에 앉아 미개가 노는 걸 본다', tag:'느긋', direct:{worry:-1, walk:1}, line:'미개가 더미에 들어가고, 나오고, 다시 들어갔다. 세 번째는 은행잎을 하나 붙이고 나왔다.', face:{migae:'ok'}},
-    ]},
-  home:{ who:null, bg:'bg_day_studio.png', place:'901호 작업방', desc:'아무도 안 만나고 곧장 작업',
-    text:()=> '곧장 집. 태블릿 앞에 앉는다. 미개는 책상 밑 제자리.',
-    choices:[
-      {t:'한 컷씩 꼼꼼히', label:'신중', direct:{worry:-1}, line:'선 하나에 십 분. 그래도 손은 멈추지 않았다.', migae:'미개는 책상 밑에서 잠들었다.'},
-      {t:'몰아서 해치운다', label:'대담', direct:{worry:1}, line:'세 시간 뒤, 원고 다섯 장. 손목이 저렸다.', migae:'미개가 더듬이로 발목을 톡톡 쳤다. 쉬라는 뜻이다.'},
-    ]},
-};
-const STORY = [
-  '북거씨: <q>저는 젊을 때 향 하나를 완성하려고 아주 서둘렀어요.</q>',
-  '북거씨: <q>매일 병을 열어 확인했죠. 잠갔나, 안 잠갔나.</q>',
-  '북거씨: <q>향은 그럴수록 도망갔어요.</q>',
-  '북거씨: <q>그래서 그냥 두었어요. 석 달 뒤에 열었더니 \'바다\'가 있었어요.</q>',
-  '북거씨: <q>끼토 씨의 가스 불도, 아마 잠겨 있을 거예요.</q>',
-];
-const STORY_END = '북거씨: <q>오늘은 향만 맡죠.</q>';
-const ENDINGS = [
-  {id:'e0', n:'가스 불 대소동', img:'ending_e0_gas.png', fb:'bg_day_entry.png', key:'kkito',
-    cond:(d)=> d.worry>=8,
-    text:'밖에서 걱정이 터졌다. 끼토는 집으로 달렸다. 가스 불은 잠겨 있었다. 당연히. 마감 30분 전, 태블릿 앞에 앉아 후다닥.<br><q>...내일은 진짜 확인 안 할 거야.</q> (거짓말이다.)',
-    migae:'미개는 현관에서 끼토보다 먼저 숨을 고르고 있었다.'},
-  {id:'e7', n:'너무 느긋한 저녁', img:'ending_e7_lazy.png', fb:'bg_day_studio.png', key:'kkito',
-    cond:(d)=> d.worry<=1,
-    text:'걱정이 없으니 세상이 평화롭다. 평화롭게 원고 보내는 걸 잊었다. 편집자한테서 온 전화가 여섯 통.',
-    migae:'미개는 일곱 번째 벨소리에 더듬이를 세웠다.'},
-  {id:'e1a', n:'피자 두 판', img:'ending_e1_pizza.png', fb:'bg_day_boneul_home.png', key:'boneul',
-    cond:(d,r)=> d.met==='boneul' && r.boneul>=8,
-    text:'피자가 두 판이었다. <q>네 것도 시켰어. 늦을 줄 알고.</q> 보늘은 그 말을 하고 다시 무덤덤해졌다. 끼토는 그게 보늘식 위로라는 걸 안다.',
-    migae:'미개는 피자 상자 사이에서 잠들었다.'},
-  {id:'e1b', n:'피자 한 판', img:'ending_e1_pizza.png', fb:'bg_day_boneul_home.png', key:'boneul',
-    cond:(d,r)=> d.met==='boneul' && r.boneul>=3,
-    text:'원고를 보내고 보늘네에 들렀다. 피자 한 판. 보늘은 반을 밀어 줬다. 말은 없었다.',
-    migae:'미개는 크러스트 하나를 확보했다.'},
-  {id:'e1c', n:'불 켜진 창', img:'ending_e1_pizza.png', fb:'bg_day_boneul_home.png', key:'boneul',
-    cond:(d)=> d.met==='boneul',
-    text:'대나무숲 빌라 앞을 지나쳤다. 보늘네 불이 켜져 있었다. 들어가지 않았다. 내일은 들어가야지.',
-    migae:'미개가 창문 쪽을 자꾸 돌아봤다.'},
-  {id:'e2a', n:'오늘의 한 줄', img:'ending_e2_shopdoor.png', fb:'bg_day_acorn_shop.png', key:'ramda',
-    cond:(d,r,s)=> d.met==='ramda' && !s.ramdaSulky && r.ramda>=6,
-    text:'상점 문을 닫는 람다가 \'주인장의 한줄\' 가판대를 돌려 보여줬다.<br>〈오늘 문장은 둘이 썼어요.〉',
-    migae:'미개는 가판대 밑에서 단추 하나를 찾아냈다.'},
-  {id:'e2b', n:'단추 하나만큼의 거리', img:'ending_e2_shopdoor.png', fb:'bg_day_acorn_shop.png', key:'ramda',
-    cond:(d)=> d.met==='ramda',
-    text:'상점 불이 늦게까지 켜져 있었다. 끼토는 문 앞까지 갔다가 돌아왔다. 단추 하나만큼의 거리였다. 그게 제일 멀었다.',
-    migae:'미개가 문 앞에 잠깐 앉아 있다가 따라왔다.'},
-  {id:'e3', n:'시향지 두 장', img:'ending_e3_scent.png', fb:'bg_day_perfume_atelier.png', key:'bookgeo',
-    cond:(d)=> d.met==='bookgeo',
-    text:'해가 지는 공방 바닥에 끼토와 북거씨가 나란히 앉아 눈을 감고 있었다.',
-    extra:(s)=> s.story>0 && s.story<=STORY.length ? '<br>'+STORY[s.story-1] : '',
-    migae:'미개는 북거씨 등딱지 위에서 더듬이를 하트로 맞댔다.'},
-  {id:'e4a', n:'은행 한 봉지', img:'ending_e4_ginkgobag.png', fb:'bg_day_entry.png', key:'lachil',
-    cond:(d,r)=> d.met==='lachil' && r.lachil>=6,
-    text:'901호 문 앞에 은행 한 봉지와 쪽지. 〈그래~ 잘 먹어.〉 글자가 삐뚤빼뚤했다. 돋보기를 안 쓰고 쓰신 거다.',
-    migae:'미개용 은행은 한 알이 따로 놓여 있었다.'},
-  {id:'e4b', n:'그럭저럭 좋은 하루', img:'ending_e4_ginkgobag.png', fb:'bg_day_grandma_room.png', key:'lachil',
-    cond:(d)=> d.met==='lachil',
-    text:'할머니는 단추를 달았고, 끼토는 원고를 보냈다. 그럭저럭 좋은 하루.',
-    migae:'미개는 5층 문 앞에서 한 번 더듬이를 흔들었다.'},
-  {id:'e5', n:'은행잎 더미', img:'ending_e5_leafpile.png', fb:'bg_alley.png', key:'migae',
-    cond:(d)=> d.met==='migae',
-    text:'원고는 보냈다. 어떻게 보냈는지 기억이 안 난다. 기억나는 건 은행잎 더미와 거기서 튀어나오던 미개뿐이다.',
-    migae:'미개는 아직도 은행잎을 하나 붙이고 있다.'},
-  {id:'e6', n:'무사 마감', img:'ending_e6_deadline.png', fb:'bg_day_studio.png', key:'kkito',
-    cond:()=> true,
-    text:'8시 59분, 전송 완료. 아무도 안 만났고 아무 일도 없었다. 끼토는 그게 조금 아쉬웠다.',
-    migae:'미개는 아쉬운 게 없어 보였다. 끼토가 있으니까.'},
-];
-const TIER = {
-  boneul:(v)=> v<=2?'서먹':v<=7?'친구':'속 깊은',
-  ramda:(v)=> v<=2?'거리감':v<=5?'지인':v<=8?'통함':'단짝',
+const WD=['월','화','수','목','금','토','일'];
+const SEASONS=[{k:'',n:'가을'},{k:'_ginkgo',n:'은행 카펫'},{k:'_dusk',n:'해질녘'},{k:'_rain',n:'장마'},{k:'_winter',n:'겨울'},{k:'_night',n:'밤'}];
+const TIER={
+  boneul:(v)=> v<=2?'서먹':v<=7?'친구':'단짝',
+  ramda:(v)=> v<=5?'지인':v<=8?'통함':'단짝',
   lachil:(v)=> v<=2?'이웃':v<=5?'정든 이웃':'가족 같은',
-  bookgeo:(v)=> v===0?'처음':v<3?'배우는 중':v<6?'조금 차분해짐':'많이 차분해짐',
+  bookgeo:(v)=> v<3?'처음':v<6?'배우는 중':'차분해짐',
 };
-const ACH = {
-  day_first:{n:'끼토의 첫 하루', d:'하루를 처음 살아봤어요'},
-  day_all_friends:{n:'다섯 골목', d:'다섯 만남을 모두 경험했어요'},
-  day_ending5:{n:'다섯 개의 저녁', d:'결말 5종을 모았어요'},
-  day_bookgeo5:{n:'바다향의 비밀', d:'북거씨 이야기를 끝까지 들었어요'},
-  day_ramda_mend:{n:'단추 하나만큼 가까이', d:'람다의 서운함을 풀어줬어요'},
+const STAGE_IDX={boneul:(v)=>v<=2?0:v<=7?1:2, ramda:(v)=>v<=5?0:v<=8?1:2, lachil:(v)=>v<=2?0:v<=5?1:2, bookgeo:(v)=>v<3?0:v<6?1:2};
+
+// ====================== 컷 도감 ======================
+// img: assets/day/ 아래 파일(접두 없음) 또는 A+ 경로. h: 아직 못 봤을 때 힌트
+const CUTS={
+  a1:{g:'아침',n:'가스 불 확인',img:'a1_deadline_0.jpg',h:'월요일 아침'}, a2:{g:'아침',n:'잎사귀 고르기',img:'a2_rainwindow_0.jpg',h:'화요일 아침'},
+  a3:{g:'아침',n:'장날 골목',img:'a3_market_0.jpg',h:'수요일 아침'}, a4:{g:'아침',n:'냄새 민원',img:'a4_complaint_0.jpg',h:'목요일 아침'},
+  a5:{g:'아침',n:'은행 줍기 초대',img:'a5_ginkgo_call_0.jpg',h:'금요일 아침'}, a6:{g:'아침',n:'전구 다는 날',img:'a6_festival_prep_0.jpg',h:'토요일 아침'},
+  a7:{g:'아침',n:'늦잠',img:'a7_sleep_in_0.jpg',h:'일요일 아침'}, a8:{g:'아침',n:'미개가 아픈 날',img:'a8_sick_migae_0.jpg',h:'가끔 오는 아침'},
+  d1:{g:'낮',n:'대나무 문 앞',img:'d1_boneul_cold_0.jpg',h:'서먹한 보늘'}, d2:{g:'낮',n:'토스트 접시',img:'d2_boneul_toast_0.jpg',h:'친구 보늘'}, d3:{g:'낮',n:'늘보의 식탁 게스트',img:'d3_boneul_camera_0.jpg',h:'단짝 보늘'},
+  d4:{g:'낮',n:'주인장의 한줄',img:'d4_ramda_shop_0.jpg',h:'지인 람다'}, d5:{g:'낮',n:'옆 동네 문방구',img:'d5_ramda_stationery_0.jpg',h:'통하는 람다'}, d6:{g:'낮',n:'단추 이름 붙이기',img:'d6_ramda_buttons_0.jpg',h:'단짝 람다'},
+  d7:{g:'낮',n:'오늘도 뛰어왔군요',img:'d7_bookgeo_strip_0.jpg',h:'처음 만난 북거씨'}, d8:{g:'낮',n:'빈 병',img:'d8_bookgeo_bottle_0.jpg',h:'배우는 중인 북거씨'}, d9:{g:'낮',n:'이름 없는 향',img:'d9_bookgeo_name_0.jpg',h:'차분해진 뒤의 북거씨'},
+  d10:{g:'낮',n:'5층 복도',img:'d10_lachil_hallway_0.jpg',h:'이웃 할머니'}, d11:{g:'낮',n:'바늘귀',img:'d11_lachil_sewing_0.jpg',h:'정든 할머니'}, d12:{g:'낮',n:'사진첩',img:'d12_lachil_album_0.jpg',h:'가족 같은 할머니'},
+  d13:{g:'낮',n:'유칼립투스 우산',img:'d13_rain_bookgeo_0.jpg',h:'비 오는 화요일에 북거씨를'}, d14:{g:'낮',n:'나이테존 팻말',img:'d14_market_ramda_0.jpg',h:'장날에 람다를'},
+  d15:{g:'낮',n:'전 반장 대 현 반장',img:'d15_bamboo_boneul_0.jpg',h:'목요일에 보늘을'}, d16:{g:'낮',n:'은행나무 밑',img:'d16_ginkgo_grandma_0.jpg',h:'금요일에 할머니를'}, d17:{g:'낮',n:'사다리 잡기',img:'d17_festival_ladder_0.jpg',h:'토요일에 람다를'},
+  d18:{g:'낮',n:'맑은 날 산책',img:'d18_walk_sunny_0.jpg',h:'맑은 날 미개 산책'}, d19:{g:'낮',n:'빗속 산책',img:'d19_walk_rain_0.jpg',h:'비 오는 날 미개 산책'}, d20:{g:'낮',n:'바람 부는 골목',img:'d20_walk_wind_0.jpg',h:'바람 부는 날 미개 산책'},
+  d21:{g:'낮',n:'작업방',img:'d21_home_work_0.jpg',h:'집에서 작업'}, d22:{g:'낮',n:'피자 상자를 든 보늘',img:'d22_reconcile_pizza_0.jpg',h:'다툰 지 사흘째'},
+  s1:{g:'씨앗',n:'단추 키링',img:'s1_keyring_0.jpg',h:'람다에게 단추를 준 이틀 뒤'}, s2:{g:'씨앗',n:'먼저 나와 있던 보늘',img:'s2_boneul_waiting_0.jpg',h:'보늘에게 속 얘기를 한 다음 날'},
+  s3:{g:'씨앗',n:'향을 맡고 나선 아침',img:'s3_scent_morning_0.jpg',h:'북거씨의 향을 받은 다음 날'}, s6:{g:'씨앗',n:'옮겨진 쓰레기장',img:'s6_trash_moved_0.jpg',h:'보늘에게 정중히 부탁한 다음 날'},
+  s7:{g:'씨앗',n:'비 냄새 시향지',img:'s7_rain_scent_0.jpg',h:'잎을 권한 뒤 다시 비 오는 날'}, s8:{g:'씨앗',n:'부츠를 물고 온 미개',img:'s8_boots_0.jpg',h:'부츠를 먼저 챙긴 뒤 비 오는 날'},
+  s9:{g:'씨앗',n:'시티청 공문',img:'s9_letter_0.jpg',h:'시티청에 신고한 이틀 뒤'}, s10:{g:'씨앗',n:'솜재페의 밤',img:'s10_festival_night_0.jpg',h:'전구를 단 주의 일요일'}, s11:{g:'씨앗',n:'초상화',img:'s11_portrait_0.jpg',h:'할머니 사진을 그려 드린 이틀 뒤'},
+  u8:{g:'관계',n:'처음 밀어 준 접시',img:'u8_boneul_plate_0.jpg',h:'보늘과 친구가 되는 날'}, u1:{g:'관계',n:'피자 두 판',img:A+'ending_e1_pizza.png',h:'보늘과 단짝이 되는 날'},
+  u2:{g:'관계',n:'이거 너 줄 거였어',img:'u2_ramda_giftbutton_0.jpg',h:'람다와 통하게 되는 날'}, u3:{g:'관계',n:'셔터를 내리고',img:'u3_ramda_shutter_0.jpg',h:'람다와 단짝이 되는 날'},
+  u4:{g:'관계',n:'같은 속도로',img:'u4_bookgeo_walk_0.jpg',h:'북거씨를 세 번 찾아간 날'}, u5:{g:'관계',n:'향에 이름을',img:'u5_bookgeo_label_0.jpg',h:'북거씨를 여섯 번 찾아간 날'},
+  u6:{g:'관계',n:'차 한잔 하고 가~',img:'u6_lachil_tea_0.jpg',h:'할머니와 정이 드는 날'}, u7:{g:'관계',n:'무릎 위의 미개',img:'u7_lachil_lap_0.jpg',h:'할머니와 가족 같아지는 날'},
+  e0:{g:'저녁',n:'가스 불 대소동',img:A+'ending_e0_gas.png',h:'걱정이 넘친 저녁'}, e7:{g:'저녁',n:'너무 느긋한 저녁',img:A+'ending_e7_lazy.png',h:'걱정이 하나도 없는 저녁'},
+  e6:{g:'저녁',n:'무사 마감',img:A+'ending_e6_deadline.png',h:'월요일 저녁'}, n2:{g:'저녁',n:'창가에 말리는 잎',img:'n2_wet_leaf_0.jpg',h:'화요일 저녁'},
+  n3:{g:'저녁',n:'바뀐 팻말',img:'n3_sign_changed_0.jpg',h:'수요일 저녁'}, n4:{g:'저녁',n:'쓰레기장 앞 팻말',img:'n4_trash_sign_0.jpg',h:'목요일 저녁'},
+  n5:{g:'저녁',n:'은행 볶는 냄새',img:'n5_roasting_0.jpg',h:'금요일 저녁'}, n6:{g:'저녁',n:'불 켜진 전구',img:'n6_lights_on_0.jpg',h:'토요일 저녁'},
+  n7:{g:'저녁',n:'일요일 낮잠',img:'n7_sunday_nap_0.jpg',h:'일요일 저녁'}, m1:{g:'저녁',n:'다시 선 더듬이',img:'m1_migae_better_0.jpg',h:'미개가 아픈 날의 저녁'}, m2:{g:'저녁',n:'밤새 간호',img:'m2_night_nursing_0.jpg',h:'미개를 혼자 간호한 밤'},
+  e4:{g:'저녁',n:'은행 한 봉지',img:A+'ending_e4_ginkgobag.png',h:'할머니와 은행을 주운 사흘 뒤'}, e5:{g:'저녁',n:'은행잎 더미',img:A+'ending_e5_leafpile.png',h:'미개와 뛰어든 날'},
+  w1:{g:'한 주',n:'가을의 일요일',img:'w1_autumn_0.jpg',h:'1주차 일요일'}, w2:{g:'한 주',n:'은행 카펫',img:'w2_ginkgo_0.jpg',h:'2주차'}, w3:{g:'한 주',n:'해질녘',img:'w3_dusk_0.jpg',h:'3주차'},
+  w4:{g:'한 주',n:'장마',img:'w4_rain_0.jpg',h:'4주차'}, w5:{g:'한 주',n:'첫눈',img:'w5_winter_0.jpg',h:'5주차'}, w6:{g:'한 주',n:'밤',img:'w6_night_0.jpg',h:'6주차'}, wf:{g:'한 주',n:'여섯이 함께',img:'w_fest_0.jpg',h:'솜재페 주의 일요일'},
 };
+const IMG=(id)=>{ const c=CUTS[id]; if(!c) return A+'bg_alley.png'; return c.img.startsWith('../')?c.img:AD+c.img; };
+function seasonBg(base){ const s=SEASONS[S.week%6].k; return s?AD+base.replace('.png',s+'.jpg'):A+base; }
+
+// ====================== 아침 사건 ======================
+const EVENTS={
+  mon:{n:'원고 마감',cut:'a1',bg:'bg_day_entry.png',alt:['월요일. 마감 날. 알람보다 먼저 깼다. 문 앞에서 멈춘 건 언제나처럼 <q>가스 불... 잠갔나?</q> 8시 41분.','마감 날 아침의 끼토는 문을 세 번 연다. 오늘은 두 번째. <q>잠갔나?</q> 미개가 더듬이를 흔든다. 8시 41분.'],
+    text:(d)=>(d.worry>=6?'세 번째로 되돌아온 현관. ':'')+'솜솜시티의 월요일. 오늘은 원고 마감 날. 미개 산책 겸 볼일을 보러 나가려다 문 앞에서 멈췄다.<br><q>가스 불... 잠갔나?</q> 8시 41분.',
+    choices:[{t:'확인하러 다시 들어간다',tag:'신중',eff:{late:1},line:'잠겨 있었다. 세 번째다. 그리고 8시 52분이다.',migae:'미개는 문 앞에서 얌전히 기다린다.'},
+      {t:'그냥 뛰쳐나간다',tag:'대담',eff:{},line:'<q>됐어, 잠갔을 거야! ...잠갔겠지? 잠갔을 거야!!</q>',migae:'<q>뽈뽈!</q> 미개가 먼저 골목으로 튀어 나간다.'},
+      {t:'빵집에 들러 하나 더 산다',tag:'나눔',eff:{coins:-3,bread:1},line:'늦는 김에 제대로 늦자. 갓 구운 소금빵 두 개.',migae:'미개가 빵 봉투 밑에 딱 붙어서 걷는다.'}]},
+  tue:{n:'비 오는 날',cut:'a2',bg:'bg_day_studio.png',alt:['빗소리에 깼다. 창가 화분이 비를 부러워하는 것 같았다. 솜솜시티에서 우산은 잎이다.','비. 미개가 창턱에 앞다리를 올리고 밖을 본다. 잎사귀 우산을 고를 시간이다.'],
+    text:()=>'창밖에 비. 솜솜시티 사람들은 제일 아끼는 식물의 잎을 우산으로 쓴다. 끼토는 창가 화분 앞에 섰다.',
+    choices:[{t:'큰 잎 하나를 딴다',tag:'신중',eff:{},line:'제일 넓은 잎. 화분이 조금 허전해졌다.',migae:'미개가 잎 밑으로 들어와 본다.'},
+      {t:'미개 부츠부터 신긴다',tag:'나눔',eff:{seed:'boots'},line:'분홍 부츠 네 짝. 미개가 한 발씩 들어 준다.',migae:'미개가 부츠 신은 발로 바닥을 톡톡 친다.'},
+      {t:'그냥 나간다',tag:'대담',eff:{wet:1},line:'비는 곧 그치겠지. 그치지 않았다.',migae:'미개가 문 앞에서 잠깐 망설이다 따라 나온다.'}]},
+  wed:{n:'장날',cut:'a3',bg:'bg_day_market.png',alt:['장날 소리가 창문으로 먼저 들어왔다. 도토리 상점 앞 나이테존에 팻말이 섰다. "오늘만 나이만큼 할인".','수요일은 장날. 골목에 줄무늬 천막이 섰다. 람다는 새벽부터 나와 있었을 것이다.'],
+    text:()=>'골목 장터. 도토리 상점 앞 나이테존에 "오늘만 나이만큼 할인" 팻말이 섰다. 할머니가 장바구니를 들고 지나간다.',
+    choices:[{t:'나이테존을 구경한다',tag:'알뜰',eff:{seed:'button'},line:'3년 된 단추 하나가 눈에 들어왔다. 왕금박 볼록 단추.',migae:'미개가 단추 바구니에 코를 박는다.'},
+      {t:'할머니 장바구니를 들어드린다',tag:'나눔',eff:{},line:'<q>아이구, 참말로~</q> 바구니는 생각보다 무거웠다.',migae:'미개가 바구니 옆에서 뽈뽈 걷는다.'},
+      {t:'원고가 급해 집으로',tag:'부지런',eff:{},line:'장터 소리를 등지고 걸었다. 조금 아쉬웠다.',migae:'미개가 자꾸 뒤를 돌아본다.'}]},
+  thu:{n:'반장 일',cut:'a4',bg:'bg_day_entry.png',alt:['문 두드리는 소리. 5층 할머니가 코를 막고 서 있다. <q>반장, 이 냄새 좀 그래~</q> 대나무숲 빌라 쓰레기장이다.','당근빌라 반장의 목요일. 냄새가 먼저 문을 두드렸고, 할머니가 그 다음이었다.'],
+    text:()=>'대나무숲 빌라 쓰레기장 냄새가 당근빌라까지 넘어온다. 5층 할머니가 반장인 끼토를 찾아왔다. <q>아이구, 이 냄새 좀 어떻게 해 봐 그래~</q>',
+    choices:[{t:'시티청에 신고한다',tag:'대담',eff:{seed:'complaint'},line:'민원 접수. 접수 번호를 세 번 확인했다.',migae:'미개가 더듬이를 뒤로 눕힌다. 냄새 때문이다.'},
+      {t:'보늘에게 직접 말한다',tag:'신중',eff:{seedIf:{key:'boneul',min:5,yes:'favor',no:'quarrel'}},line:'전 반장에게 현 반장이 간다. 심호흡 한 번.',migae:'미개가 끼토 다리 뒤에 숨는다.'},
+      {t:'하루만 참아본다',tag:'느긋',eff:{worry:1},line:'창문을 닫았다. 냄새는 창문을 모른다.',migae:'미개가 코를 소파에 묻는다.'}]},
+  fri:{n:'은행 줍기',cut:'a5',bg:'bg_day_entry.png',alt:['은행 냄새가 계단을 타고 올라왔다. 할머니가 집게를 들고 문 앞에. <q>줍기 좋은 날이네 그래~</q>','금요일. 은행나무가 밤새 열매를 떨궜다. 할머니는 그걸 놓치는 법이 없다.'],
+    text:()=>'문 두드리는 소리. 할머니가 은행 집게와 바구니를 들고 서 있다. <q>아이구, 오늘이 줍기 딱 좋은 날이네 그래~</q>',
+    choices:[{t:'같이 줍는다',tag:'나눔',eff:{seed:'ginkgo'},line:'집게를 받았다. 냄새는 각오했다.',migae:'미개가 더듬이를 뒤로 눕힌 채 따라온다.'},
+      {t:'미개 산책 겸 따라간다',tag:'느긋',eff:{},line:'줍지는 않고, 옆에서 걷기만.',migae:'미개가 은행을 피해 요리조리 걷는다.'},
+      {t:'원고 핑계를 댄다',tag:'부지런',eff:{lachil:-1},line:'<q>그래~ 바쁘면 그래야지.</q> 할머니는 웃었지만 바구니가 조금 무거워 보였다.',migae:'미개가 문 틈으로 할머니를 본다.'}]},
+  sat:{n:'솜재페 준비',cut:'a6',bg:'bg_day_festival.png',alt:['공원에서 망치 소리. 솜재페가 일주일 남았다. 람다가 사다리 위에서 <q>끼토!</q> 하고 불렀다.','토요일 아침, 전구 줄이 공원에 도착했다. 람다는 이미 사다리 위다.'],
+    text:()=>'공원 무대에 전구 줄을 다는 날. 람다가 사다리 위에서 손을 흔든다. <q>끼토! 딱 좋을 때 왔어!</q>',
+    choices:[{t:'람다를 도와 전구를 단다',tag:'부지런',eff:{seed:'fest'},line:'전구 서른 개. 람다가 하나마다 이름을 붙이려 해서 오래 걸렸다.',migae:'미개가 사다리 밑을 지킨다.'},
+      {t:'북거씨 향 부스를 구경한다',tag:'신중',eff:{},line:'병이 열두 개. 북거씨는 하나를 열기까지 오 분을 썼다.',migae:'미개가 병 냄새를 하나씩 맡는다.'},
+      {t:'집에서 쉰다',tag:'느긋',eff:{},line:'멀리서 망치 소리. 끼토는 커튼을 조금 열어 두었다.',migae:'미개가 창가에 앉아 공원 쪽을 본다.'}]},
+  sun:{n:'아무 일 없는 날',cut:'a7',bg:'bg_day_studio.png',alt:['알람이 없는 아침. 미개가 배를 까고 옆에 누워 있다. 아무 일도 없을 예정이다.','일요일. 마감도, 냄새도, 장날도 없다. 끼토는 그게 조금 불안했다.'],
+    text:()=>'끼토가 모처럼 늦잠. 미개가 배를 까고 옆에 누워 있다. 창밖은 조용하다.',
+    choices:[{t:'더 잔다',tag:'느긋',eff:{worry:-2},line:'두 시간. 꿈에서도 가스 불은 잠겨 있었다.',migae:'미개가 같이 잔다.'},
+      {t:'미개와 긴 산책',eff:{forceWalk:1},label:'산책',line:'목줄을 챙겼다. 오늘은 어디까지든.',migae:'미개가 문 앞에서 빙글 돈다.'},
+      {t:'밀린 원고',tag:'부지런',eff:{},line:'일요일에 일하는 토끼. 마감은 요일을 모른다.',migae:'미개가 책상 밑으로 들어간다.'}]},
+  sick:{n:'미개가 아픈 날',cut:'a8',bg:'bg_day_studio.png',
+    text:()=>'미개 더듬이가 축 처지고 밥을 안 먹는다. 끼토는 밥그릇을 세 번 갈아 주었다.',
+    choices:[{t:'북거씨에게 데려간다',eff:{learn:1,seed:'calm'},label:'향',line:'북거씨: <q>놀란 거예요. 라벤더를 조금.</q> 미개 더듬이가 아주 조금 올라왔다.',migae:'미개가 북거씨 등딱지에 기대 잔다.'},
+      {t:'할머니께 여쭙는다',eff:{lachil:1},label:'차',line:'할머니: <q>아이구, 따뜻한 물 한 방울씩 그래~</q>',migae:'미개가 할머니 손바닥에 더듬이를 얹는다.'},
+      {t:'혼자 밤새 간호한다',eff:{worry:3,fix:'m2'},label:'간호',line:'인터넷 대신 북gpt에 물었다. 답은 "지켜보세요"였다.',migae:'미개가 끼토 손가락을 더듬이로 감는다.'}]},
+};
+const POOL={mon:['boneul','ramda'],tue:['bookgeo','lachil'],wed:['ramda','lachil'],thu:['boneul','bookgeo'],fri:['lachil'],sat:['ramda','bookgeo'],sun:['boneul','ramda','bookgeo','lachil'],sick:['bookgeo','lachil']};
+
+// ====================== 낮 장면 ======================
+const FS={
+  boneul:[
+    {cut:'d1',bg:'bg_day_bamboo_entry.png',text:'대나무숲 빌라 앞. 보늘이 문에 기대 과자를 먹는다. 눈만 굴린다. <q>...왔냐.</q>',
+      choices:[{t:'옆에 서서 같이 먹는다',tag:'느긋',line:'과자 봉지가 반쯤 비는 동안 둘 다 말이 없었다. 보늘이 봉지를 조금 기울여 줬다.',face:'ok'},
+        {t:'"저번 일은 미안"',direct:{boneul:2},line:'보늘: <q>...뭐가.</q> 그러고는 과자를 하나 건넸다. 그게 답이었다.',face:'ok'},
+        {t:'그냥 지나간다',tag:'부지런',direct:{boneul:-1},line:'보늘은 보지 않았다. 끼토도 돌아보지 않았다.',face:'bad'}]},
+    {cut:'d2',bg:'bg_day_boneul_home.png',text:'보늘네 소파. 보늘이 토스트 접시를 밀어 준다. 묻지도 않는다. <q>먹어.</q>',
+      choices:[{t:'아무 말 없이 같이 먹는다',tag:'느긋',line:'토스트 두 장이 사라지는 동안 아무 말도 없었다. 그게 편했다.',face:'ok'},
+        {t:'"나 요즘 가스 불이 자꾸 신경 쓰여"',direct:{boneul:2,worry:-3,seed:'heart'},line:'보늘: <q>...그래서 세 번 들어갔다 왔다고? 네 번은 아니네. 발전했다.</q>',face:'ok'},
+        {t:'"바빠, 다음에"',tag:'부지런',direct:{boneul:-1},line:'보늘: <q>어. 가.</q>',face:'bad'},
+        {t:'소금빵을 내민다',tag:'나눔',bread:1,line:'보늘: <q>...빵 살 시간은 있었구나.</q> 그래도 받았다.',face:'ok'}]},
+    {cut:'d3',bg:'bg_day_boneul_home.png',text:'보늘이 촬영 카메라를 켜 놓고 소파를 두드린다. <q>오늘 게스트. 앉아.</q> 늘보의 식탁 출연이다.',
+      choices:[{t:'같이 먹방을 찍는다',direct:{boneul:1,seed:'pizza'},line:'씹는 속도가 안 맞아서 편집이 힘들 거라고 보늘이 말했다. 그래도 찍었다.',face:'ok'},
+        {t:'카메라 뒤에서 구경만',tag:'느긋',line:'보늘은 카메라 앞에서도 소파 위에서도 똑같았다. 그게 인기 비결이다.',face:'ok'},
+        {t:'창피해서 도망',tag:'대담',line:'문 밖에서 들었다. <q>게스트는 도망갔습니다. 다음에 다시.</q>',face:'bad'}]}],
+  ramda:[
+    {cut:'d4',bg:'bg_day_acorn_shop.png',text:'도토리 상점 손님으로 들어간다. 람다가 \'주인장의 한줄\'을 쓰다 말고 본다. <q>오늘 한 줄, 뭐라고 쓸까? 너라면 알 거 같아서.</q>',
+      choices:[{t:'한 줄을 같이 짓는다',direct:{ramda:2},line:'스무 분 걸렸다. 람다 꼬리가 S자로 살랑거렸다.',face:'ok'},
+        {t:'"나이테존은 치우는 게 낫지 않아?"',direct:{ramda:-2,ramdaSulky:1},line:'람다: <q>...그래. 생각해볼게.</q> 톤이 내려갔다.',face:'bad'},
+        {t:'주운 단추를 건넨다',tag:'알뜰',direct:{seed:'button'},line:'람다가 단추를 요리조리 보더니 이름을 붙였다. <q>은행잎 밑 갈색 단추.</q>',face:'ok'}]},
+    {cut:'d5',bg:'bg_day_acorn_shop.png',text:'람다가 문을 잠그고 <q>잠깐 나가자</q> 한다. 옆 동네 문방구. 스티커 벽 앞에서 람다 눈이 반짝였다(점은 그대로, 주변에 작은 별).',
+      choices:[{t:'다꾸템을 같이 고른다',direct:{ramda:2,coins:-5},line:'세 시간. 나온 건 마스킹 테이프 다섯 개와 해 질 녘.',face:'ok'},
+        {t:'구경만 한다',tag:'느긋',line:'람다가 고르는 걸 보는 것만으로도 시간이 갔다.',face:'ok'},
+        {t:'마감이라 못 간다',tag:'부지런',direct:{ramda:-1},line:'람다: <q>아, 그렇지. 다음에.</q> 꼬리가 조금 내려갔다.',face:'bad'}]},
+    {cut:'d6',bg:'bg_day_acorn_shop.png',text:'람다가 단추 바구니를 통째로 들고 와 쏟았다. <q>이거 이름 다 같이 붙이자.</q> 이백 개는 돼 보였다.',
+      choices:[{t:'밤새 이름을 붙인다',direct:{ramda:1,worry:-1},line:'새벽 두 시. 마지막 단추 이름은 \'졸린 끼토\'였다.',face:'ok'},
+        {t:'열 개만 붙이고 간다',tag:'신중',line:'열 개. 람다는 나머지에 \'미정\'이라고 붙였다.',face:'ok'},
+        {t:'은행잎 밑 갈색 단추를 몰래 챙긴다',tag:'알뜰',line:'람다가 봤다. 모른 척했다. 그것도 단짝이다.',face:'ok'}]}],
+  bookgeo:[
+    {cut:'d7',bg:'bg_day_perfume_atelier.png',text:'북거씨가 시향지를 코에 대고 눈을 감고 있다. <q>끼토 씨. 오늘도 뛰어왔군요.</q>',
+      choices:[{t:'"마감이 오늘이라서요..." 발을 동동',direct:{learn:1,worry:-1},line:'북거씨: <q>향은 서두르면 도망가요. 마감도 아마.</q>',face:'ok'},
+        {t:'옆에 앉아 같이 시향한다',direct:{learn:1,worry:-2,story:1},line:'',face:'ok'},
+        {t:'"\'바다\'향 있어요? 급해서요!"',direct:{learn:1,worry:1},label:'대담',line:'북거씨: <q>있죠. 하지만 오늘 끼토 씨한테 필요한 건 이쪽이에요.</q> 라벤더 유칼립투스 블렌드를 건넨다.',face:'ok'}]},
+    {cut:'d8',bg:'bg_alley.png',text:'골목에서 마주친 북거씨가 빈 병을 내민다. <q>오늘 골목 냄새를 담아 보세요.</q>',
+      choices:[{t:'은행잎 냄새',direct:{learn:1,story:1},line:'',face:'ok'},
+        {t:'빵집 냄새',direct:{learn:1},line:'북거씨: <q>좋은 선택. 배고픈 냄새는 정직하죠.</q>',face:'ok'},
+        {t:'"냄새가 안 나는데요"',direct:{learn:1,worry:1},line:'북거씨: <q>그건 걱정이 코를 막고 있어서예요. 내일 다시.</q>',face:'ok'}]},
+    {cut:'d9',bg:'bg_day_perfume_atelier.png',text:'북거씨가 라벨 없는 새 향을 건넨다. <q>이름을 지어 주세요.</q>',
+      choices:[{t:'\'가스 불 잠근 날\'',direct:{learn:1,worry:-3,seed:'calm'},line:'북거씨가 아주 천천히 웃었다. <q>그 이름이면, 매일 잠겨 있을 거예요.</q>',face:'ok'},
+        {t:'\'901호\'',direct:{learn:1},line:'북거씨: <q>집 냄새군요. 좋아요.</q>',face:'ok'},
+        {t:'\'미개\'',direct:{learn:1},line:'미개가 자기 이름에 더듬이를 세웠다.',face:'ok'}]}],
+  lachil:[
+    {cut:'d10',bg:'bg_day_entry.png',text:'5층 복도. 할머니가 장바구니를 내려놓고 허리를 두드린다. <q>아이구, 오늘따라 계단이 길다 그래~</q>',
+      choices:[{t:'바구니를 들어드린다',tag:'나눔',line:'<q>참말로~ 반장이 힘도 세.</q>',face:'ok'},
+        {t:'인사만',tag:'느긋',line:'<q>그래~</q> 할머니는 한 계단씩 올라갔다.',face:'ok'},
+        {t:'급해서 지나친다',tag:'부지런',direct:{lachil:-1},line:'뒤에서 <q>그래~</q> 소리가 작게 들렸다.',face:'bad'}]},
+    {cut:'d11',bg:'bg_day_grandma_room.png',text:'할머니가 아끼는 옷에 단추를 다시 달려는데 바늘귀에 실이 안 들어간다. <q>아이구, 이게 안 보이네 그래~</q>',
+      choices:[{t:'실을 꿰어 드린다',tag:'신중',line:'한 번에 들어갔다. <q>아이구, 눈이 좋네 그래~</q>',face:'ok'},
+        {t:'차를 마시며 이야기를 듣는다',tag:'느긋',direct:{worry:-1},line:'<q>네?</q> 두 번째는 크게 말해야 들리셨다. 이야기는 길었고, 차는 두 잔이었다.',face:'ok'},
+        {t:'소금빵을 드린다',tag:'나눔',bread:1,line:'<q>참말로~ 이걸 다 나 주게?</q> 반은 접시에 덜어 미개 앞에 놓으셨다.',face:'ok'}]},
+    {cut:'d12',bg:'bg_day_grandma_room.png',text:'할머니가 낡은 사진첩을 편다. 젊은 라칠친과 은행나무. <q>이때는 말이야, 그래~</q>',
+      choices:[{t:'끝까지 듣는다',direct:{lachil:1,worry:-2},line:'세 번 졸고 세 번 깨셨다. 이야기는 이어졌다.',face:'ok'},
+        {t:'사진을 한 장 그려 드리겠다고 한다',direct:{lachil:2,seed:'portrait'},line:'<q>아이구, 그림쟁이가 그래 주면야 그래~</q>',face:'ok'},
+        {t:'졸음이 와서 같이 존다',tag:'느긋',line:'둘 다 잤다. 미개가 사진첩을 지켰다.',face:'ok'}]}],
+};
+const VARIANT={
+  tue:{who:'bookgeo',cut:'d13',bg:'bg_day_rain_alley.png',text:'북거씨가 작은 유칼립투스 잎을 머리에 얹고 비를 맞으며 기어간다. 눈을 거의 못 뜬다.',
+    choices:[{t:'큰 잎을 빌려드린다',direct:{learn:1,seed:'euca'},line:'북거씨는 고개를 휘이휘이 저었다. <q>이건 제 잎이라서요.</q> 그래도 기억하는 눈이었다.',face:'ok'},
+      {t:'옆에서 같은 속도로 걷는다',direct:{learn:1,worry:-2},line:'비 오는 골목을 거북이 속도로. 생각보다 멀지 않았다.',face:'ok'},
+      {t:'뛰어가서 큰 잎을 씌운다',tag:'대담',direct:{learn:1},line:'북거씨: <q>고맙지만... 앞이 안 보여요.</q>',face:'ok'}]},
+  wed:{who:'ramda',cut:'d14',bg:'bg_day_market.png',text:'람다가 나이테존 팻말을 고쳐 쓴다. <q>3년 된 단추가 오늘 주인을 만날까?</q>',
+    choices:[{t:'왕금박 볼록 단추를 산다',tag:'알뜰',direct:{coins:-3,seed:'button'},line:'나이만큼 할인. 주민증을 보여줬다.',face:'ok'},
+      {t:'팻말 문장을 같이 고친다',direct:{ramda:2},line:'〈시간은 오히려 선명하게 만들어요.〉 둘이 쓴 문장이 팻말에 올라갔다.',face:'ok'},
+      {t:'"새 물건이 앞에 있어야지"',direct:{ramda:-2,ramdaSulky:1},line:'람다: <q>...그래. 생각해볼게.</q>',face:'bad'}]},
+  thu:{who:'boneul',cut:'d15',bg:'bg_day_bamboo_entry.png',text:'대나무숲 빌라 앞. 보늘이 팔짱을 끼고 서 있다. 전 반장 대 현 반장.',
+    choices:[{t:'차분히 냄새 얘기를 한다',tag:'신중',direct:{seedIf:{key:'boneul',min:5,yes:'favor',no:'quarrel'},boneulIf:{min:5,v:1}},line:'보늘은 끝까지 들었다. 그리고 <q>...알았어</q>라고 했는지, 하품을 했는지 애매했다.',face:'ok'},
+      {t:'"시티청에 신고할 거야"',tag:'대담',direct:{seed:'quarrel'},line:'보늘: <q>해.</q> 짧았다. 둘 다 돌아섰다.',face:'bad'},
+      {t:'피자 얘기로 돌린다',tag:'느긋',direct:{boneul:1},line:'냄새 얘기는 못 했다. 피자는 시켰다.',face:'ok'}]},
+  fri:{who:'lachil',cut:'d16',bg:'bg_alley.png',text:'은행나무 밑. 할머니 바구니가 반쯤 찼다. 미개가 은행 냄새에 더듬이를 뒤로 눕힌다.',
+    choices:[{t:'집게로 같이 줍는다',tag:'나눔',direct:{seed:'ginkgo'},line:'바구니가 찼다. 손끝에 냄새가 남았다. 사흘은 갈 냄새다.',face:'ok'},
+      {t:'미개를 달랜다',direct:{worry:-1},line:'미개는 끼토 다리 뒤에서만 은행나무를 봤다.',face:'ok'},
+      {t:'냄새가 심해 물러난다',tag:'대담',direct:{lachil:-1},line:'<q>그래~ 젊은 사람은 그렇지.</q>',face:'bad'}]},
+  sat:{who:'ramda',extra:['bookgeo'],cut:'d17',bg:'bg_day_festival.png',text:'솜재페 무대. 람다가 사다리 위, 북거씨가 향 부스 준비.',
+    choices:[{t:'사다리를 잡아 준다',tag:'부지런',direct:{seed:'fest'},line:'전구가 켜지는 순서를 람다가 정했다. 끼토 이름 전구가 하나 있었다.',face:'ok'},
+      {t:'향 부스 병을 진열한다',tag:'신중',direct:{learn:1},line:'북거씨: <q>큰 병은 뒤에, 파란 병은 가운데.</q>',face:'ok'},
+      {t:'벤치에서 리허설을 듣는다',tag:'느긋',line:'색소폰이 세 번 틀렸다. 세 번 다 좋았다.',face:'ok'}]},
+};
+const WALK={sunny:{cut:'d18',bg:'bg_alley.png',text:'맑은 날. 미개가 분홍 부츠를 신고 목줄 끝에서 앞장선다. 눈금은 없다. 그냥 같이 있는 시간이다.'},
+  rain:{cut:'d19',bg:'bg_day_rain_alley.png',text:'비 오는 골목. 큰 잎 우산 아래, 미개가 물웅덩이를 골라 밟는다.'},
+  wind:{cut:'d20',bg:'bg_alley.png',text:'바람 부는 날. 은행잎이 날고, 끼토 귀가 뒤로 넘어간다. 미개가 잎을 잡으러 뛴다.'}};
+const WALK_CHOICES=[{t:'목줄을 풀고 은행잎 더미로 같이 뛰어든다',direct:{worry:-2,walk:1},line:'은행잎이 사방으로 튀었다. 미개가 더듬이를 하트로 맞댔다.',face:'ok'},
+  {t:'벤치에 앉아 미개가 노는 걸 본다',tag:'느긋',direct:{worry:-1,walk:1},line:'미개가 더미에 들어가고, 나오고, 다시 들어갔다.',face:'ok'}];
+const HOME={cut:'d21',bg:'bg_day_studio.png',text:'곧장 집. 태블릿 앞에 앉는다. 미개는 책상 밑 제자리.',
+  choices:[{t:'한 컷씩 꼼꼼히',label:'신중',direct:{worry:-1},line:'선 하나에 십 분. 그래도 손은 멈추지 않았다.',migae:'미개는 책상 밑에서 잠들었다.'},
+    {t:'몰아서 해치운다',label:'대담',direct:{worry:1},line:'세 시간 뒤, 원고 다섯 장. 손목이 저렸다.',migae:'미개가 더듬이로 발목을 톡톡 쳤다. 쉬라는 뜻이다.'}]};
+const SULKY={cut:'d4',bg:'bg_day_acorn_shop.png',text:'람다가 장부에서 눈을 안 뗀다. <q>왔어? 응. 바빠서.</q>',
+  choices:[{t:'"지난번엔 내가 말이 좀 그랬지"',direct:{ramda:1,ramdaSulky:0,mended:1},line:'람다: <q>...아니야. 나도 좀 그랬어.</q> 꼬리가 아주 조금 올라왔다.',face:'ok'},
+    {t:'아무렇지 않게 딴 얘기를 꺼낸다',direct:{ramda:-1},line:'람다: <q>응. 그래.</q> 꼬리는 그대로였다.',face:'bad'}]};
+const RECONCILE={cut:'d22',bg:'bg_day_entry.png',who:'boneul',text:'사흘째. 문을 여니 보늘이 피자 상자를 들고 서 있다. <q>...남았어.</q> 남을 리가 없다. 방금 산 상자다.',
+  choices:[{t:'말없이 상자를 받는다',direct:{boneul:2,clearQuarrel:1},line:'둘 다 사과는 안 했다. 피자는 두 판이었다.',face:'ok'},
+    {t:'"냄새는?"',direct:{boneul:1,clearQuarrel:1},line:'보늘: <q>옮겼어. 메인 거리 뒤로.</q> 그 말을 하러 피자를 사 온 거였다.',face:'ok'},
+    {t:'문을 닫는다',direct:{boneul:-2,clearQuarrel:1},line:'문 밖에서 상자 내려놓는 소리. 미개가 문을 긁었다.',face:'bad'}]};
+const STORY=['북거씨: <q>저는 젊을 때 향 하나를 완성하려고 아주 서둘렀어요.</q>','북거씨: <q>매일 병을 열어 확인했죠. 잠갔나, 안 잠갔나.</q>','북거씨: <q>향은 그럴수록 도망갔어요.</q>','북거씨: <q>그래서 그냥 두었어요. 석 달 뒤에 열었더니 \'바다\'가 있었어요.</q>','북거씨: <q>끼토 씨의 가스 불도, 아마 잠겨 있을 거예요.</q>'];
+const STORY_END='북거씨: <q>오늘은 향만 맡죠.</q>';
+
+// ====================== 씨앗 ======================
+const SEEDS={
+  button:{n:'단추',fuse:2,when:'morning',cut:'s1',eff:{ramda:1},text:'문고리에 단추 키링이 걸려 있다. 쪽지: 〈은행잎 밑 갈색 단추 → 끼토 것〉',migae:'미개가 키링을 툭 쳐서 흔들어 본다.'},
+  heart:{n:'속마음',fuse:1,when:'noon',cut:'s2',eff:{boneul:1},text:'골목에 보늘이 먼저 나와 있었다. 평소엔 안 나오는 사람이. <q>...지나가다.</q> 대나무숲 빌라는 반대쪽이다.',migae:'미개가 보늘에게 먼저 달려간다.'},
+  calm:{n:'진정향',fuse:1,when:'morning',cut:'s3',eff:{worryStart:3},text:'문을 나서기 전에 시향지를 한 번 맡았다. 오늘은 되돌아오지 않았다.',migae:'미개가 더듬이를 하트로 맞댄다.'},
+  ginkgo:{n:'은행',fuse:3,when:'evening',cut:'e4',eff:{lachil:1},text:'901호 문 앞에 볶은 은행 한 봉지와 쪽지. 〈그래~ 잘 먹어.〉 글자가 삐뚤빼뚤했다. 돋보기를 안 쓰고 쓰신 거다.',migae:'미개용 은행은 한 알이 따로 놓여 있었다.'},
+  quarrel:{n:'다툼',fuse:2,when:'noon',cut:'d22',eff:{},text:'',migae:''},
+  favor:{n:'부탁',fuse:1,when:'morning',cut:'s6',eff:{boneul:1},text:'창밖. 대나무숲 빌라 쓰레기장이 메인 거리 뒤로 옮겨져 있었다. 보늘은 아무 말도 안 했다. 그게 보늘식이다.',migae:'미개가 창턱에서 코를 킁킁거린다. 냄새가 없다.'},
+  euca:{n:'유칼립투스',fuse:-1,when:'rain-evening',cut:'s7',eff:{learn:1},text:'비 오는 저녁, 공방 문 앞. 북거씨가 시향지를 내밀었다. <q>비 냄새예요. 그날 것.</q>',migae:'미개가 부츠 신은 발로 물웅덩이를 밟는다.'},
+  boots:{n:'부츠',fuse:-1,when:'rain-morning',cut:'s8',eff:{worry:-1},text:'미개가 부츠 한 짝을 물고 와 발을 내민다. 비 오는 날은 부츠라는 걸 배웠다.',migae:'미개가 네 발을 차례로 든다.'},
+  complaint:{n:'민원',fuse:2,when:'morning',cut:'s9',eff:{boneul:-1},text:'우편함에 시티청 공문. 〈쓰레기장 이전 통보〉. 처리는 됐다. 보늘 이름으로 온 통보였다.',migae:'미개가 우편함 기둥을 타고 올라가 본다.'},
+  fest:{n:'솜재페',fuse:-1,when:'sunday',cut:'wf',eff:{ramda:2},text:'',migae:''},
+  pizza:{n:'피자 약속',fuse:3,when:'evening',cut:'u1',eff:{boneul:1},text:'피자가 두 판이었다. <q>네 것도 시켰어. 늦을 줄 알고.</q> 보늘은 그 말을 하고 다시 무덤덤해졌다.',migae:'미개는 피자 상자 사이에서 잠들었다.'},
+  portrait:{n:'초상화',fuse:2,when:'evening',cut:'s11',eff:{lachil:2},text:'완성한 그림을 5층에 가져갔다. 할머니가 돋보기를 내려 썼다. 한참 말이 없었다. <q>...이때 내가 이렇게 생겼었나, 그래.</q>',migae:'미개가 액자 뒤를 잡아 주었다.'},
+};
+// 단계 상승 이벤트
+const UPS={
+  boneul:[{at:1,cut:'u8',n:'처음 밀어 준 접시',text:'보늘이 토스트 접시를 밀어 줬다. 처음이었다. <q>...먹어.</q> 그 한마디에 서먹함이 접시 밑으로 들어갔다.',migae:'미개가 접시 옆에 자리를 잡았다.'},
+    {at:2,cut:'u1',n:'피자 두 판',text:'피자가 두 판이었다. <q>네 것도 시켰어. 늦을 줄 알고.</q> 보늘은 그 말을 하고 다시 무덤덤해졌다. 끼토는 그게 보늘식 위로라는 걸 안다.',migae:'미개는 피자 상자 사이에서 잠들었다.'}],
+  ramda:[{at:1,cut:'u2',n:'이거 너 줄 거였어',text:'상점 문 앞. 람다가 작은 상자를 내밀었다. 이름 붙인 단추 하나. <q>은행잎 밑 갈색 단추. 원래 네 거였어.</q>',migae:'미개가 상자 안을 들여다본다.'},
+    {at:2,cut:'u3',n:'셔터를 내리고',text:'람다가 셔터를 내리고 끼토 손목을 잡아끌었다. <q>문 닫고 솜재페. 오늘은 장사보다 재즈야.</q>',migae:'미개가 앞장서서 뛴다.'}],
+  bookgeo:[{at:1,cut:'u4',n:'같은 속도로',text:'해 질 녘 골목. 북거씨와 같은 속도로 걸었다. 뛰지 않아도 도착했다. <q>보세요. 9시는 9시에 와요.</q>',migae:'미개가 북거씨 등딱지 위에서 졸았다.'},
+    {at:2,cut:'u5',n:'향에 이름을',text:'새 병에 라벨을 붙였다. 끼토 글씨로. 북거씨: <q>이제 끼토 씨 향이에요. 서두르지 않는 냄새.</q>',migae:'미개가 병을 두 팔로 잡아 주었다.'}],
+  lachil:[{at:1,cut:'u6',n:'차 한잔 하고 가~',text:'5층 문이 먼저 열렸다. <q>아이구, 그래~ 차 한잔 하고 가~</q> 찻잔은 두 개였다. 처음부터.',migae:'미개가 발 사이로 먼저 들어갔다.'},
+    {at:2,cut:'u7',n:'무릎 위의 미개',text:'할머니 무릎 위에서 미개가 잠들었다. 할머니: <q>다리가 여섯이면 양말도 여섯 짝이겠네 그래~</q> 사진첩은 둘 사이에 펼쳐져 있었다.',migae:'미개는 깨지 않았다.'}],
+};
+const EVENT_END={mon:{cut:'e6',n:'무사 마감',text:'8시 59분, 전송 완료. 아무 일도 없었다. 끼토는 그게 조금 아쉬웠다.',migae:'미개는 아쉬운 게 없어 보였다. 끼토가 있으니까.'},
+  tue:{cut:'n2',n:'창가에 말리는 잎',text:'비가 그쳤다. 젖은 잎을 창가에 말렸다. 내일도 비면 또 쓸 수 있다.',migae:'미개 부츠 네 짝도 나란히 말렸다.'},
+  wed:{cut:'n3',n:'바뀐 팻말',text:'상점 앞을 지나는데 나이테존 팻말이 바뀌어 있었다. 〈3년 된 단추, 오늘 주인을 만났어요.〉',migae:'미개가 유리창에 더듬이를 댔다.'},
+  thu:{cut:'n4',n:'쓰레기장 앞 팻말',text:'대나무숲 빌라 쓰레기장 앞에 손글씨 팻말. 〈옮기는 중〉. 누가 썼는지는 글씨로 알았다.',migae:'미개가 팻말 냄새를 맡았다. 냄새가 없다.'},
+  fri:{cut:'n5',n:'은행 볶는 냄새',text:'가스 불을 켰다. 은행을 볶았다. 가스 불을 껐다. 확인했다. 한 번만.',migae:'미개는 냄새 때문에 거실 끝에 있었다.'},
+  sat:{cut:'n6',n:'불 켜진 전구',text:'저녁에 전구가 켜졌다. 벤치에 앉아 올려다봤다. 서른 개 중에 하나가 끼토 것이다.',migae:'미개가 벤치에서 끼토 무릎으로 옮겨 앉았다.'},
+  sun:{cut:'n7',n:'일요일 낮잠',text:'아무 일도 없는 날이 끝났다. 소파에서 잠들었다. 미개는 배 위에서.',migae:'미개도 배를 까고 잤다.'},
+  sick:{cut:'m1',n:'다시 선 더듬이',text:'저녁. 미개 더듬이가 다시 섰다. 밥그릇이 비었다. 끼토는 그 자리에 주저앉았다.',migae:'미개가 더듬이를 하트로 맞댔다. 처음 보는 각도로.'},
+  m2:{cut:'m2',n:'밤새 간호',text:'새벽 세 시. 끼토는 소파에 기대 잠들었다. 손은 미개 옆에 그대로.',migae:'미개가 그 손에 더듬이를 얹었다.'},
+  e0:{cut:'e0',n:'가스 불 대소동',text:'밖에서 걱정이 터졌다. 끼토는 집으로 달렸다. 가스 불은 잠겨 있었다. 당연히. <q>...내일은 진짜 확인 안 할 거야.</q> (거짓말이다.)',migae:'미개는 현관에서 끼토보다 먼저 숨을 고르고 있었다.'},
+  e7:{cut:'e7',n:'너무 느긋한 저녁',text:'걱정이 없으니 세상이 평화롭다. 평화롭게 원고 보내는 걸 잊었다. 편집자한테서 온 전화가 여섯 통.',migae:'미개는 일곱 번째 벨소리에 더듬이를 세웠다.'},
+  walk:{cut:'e5',n:'은행잎 더미',text:'원고는 보냈다. 어떻게 보냈는지 기억이 안 난다. 기억나는 건 은행잎 더미와 거기서 튀어나오던 미개뿐이다.',migae:'미개는 아직도 은행잎을 하나 붙이고 있다.'}};
+const LETTERS={
+  boneul:['...뭐. 다음 주에 보든가.','피자 시킬 때 두 판 시킬게. 미리.','게스트 다시 나와. 편집 끝났어. 씹는 속도 맞췄어.'],
+  ramda:['다음에 상점 오면 한 줄 같이 써 줘.','네 단추, 이름 바꿨어. \'끼토 것\'으로.','문 닫는 날은 너랑 정해. 재즈든 뭐든.'],
+  bookgeo:['오늘도 뛰어왔죠. 괜찮아요. 내일은 걸어와요.','병은 서두르지 않는 사람 것이에요. 끼토 씨 것이에요.','새 향 이름, 매일 불러요. 잠겨 있죠?'],
+  lachil:['그래~ 밥은 먹고 다니고.','차 한잔 하고 가. 찻잔 두 개 씻어 뒀다 그래~','사진첩 다음 장은 네 그림으로 채운다 그래~'],
+};
+const ACH={day_first:{n:'끼토의 첫 하루'},day_week:{n:'한 주를 살았다'},day_seed5:{n:'씨앗 다섯 개'},day_cuts30:{n:'그림 서른 장'},day_bookgeo5:{n:'바다향의 비밀'},day_ramda_mend:{n:'단추 하나만큼 가까이'},day_all_friends:{n:'다섯 골목'}};
 
 // ====================== 저장 ======================
 const KEY='somsom_day';
-function load(){ try{ return Object.assign({rel:{boneul:5,ramda:3,lachil:2}, learn:0, story:0, ramdaSulky:0, boneulCold:0, met:{}, endings:{}, days:0, mended:0}, JSON.parse(localStorage.getItem(KEY)||'{}')); }catch(e){ return {rel:{boneul:5,ramda:3,lachil:2},learn:0,story:0,ramdaSulky:0,boneulCold:0,met:{},endings:{},days:0,mended:0}; } }
-function save(s){ try{ localStorage.setItem(KEY, JSON.stringify(s)); }catch(e){} }
+const DEF=()=>({v:4,rel:{boneul:5,ramda:3,lachil:2},learn:0,story:0,ramdaSulky:0,mended:0,dayNo:1,week:0,seeds:[],cuts:{},met:{},fired:[],weekFired:[],stage:{boneul:1,ramda:0,lachil:0,bookgeo:0},sickUsedWeek:-1});
+function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY)||'{}'); if(s.v!==4) return DEF(); return Object.assign(DEF(),s); }catch(e){ return DEF(); } }
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 function statsLoad(){ try{ return JSON.parse(localStorage.getItem('somsom_stats')||'{}'); }catch(e){ return {}; } }
 function achLoad(){ try{ return JSON.parse(localStorage.getItem('somsom_ach')||'{}'); }catch(e){ return {}; } }
 let toastQ=[];
 function toast(t,n){ toastQ.push([t,n]); if(toastQ.length===1) toastNext(); }
-function toastNext(){ const el=document.getElementById('toast'); if(!toastQ.length) return; const [t,n]=toastQ[0];
-  document.getElementById('toastT').textContent=t; document.getElementById('toastN').textContent=n; el.classList.add('on');
-  setTimeout(()=>{ el.classList.remove('on'); setTimeout(()=>{ toastQ.shift(); toastNext(); },450); },2200); }
-function achUnlock(id){ const a=achLoad(); if(a[id]) return false; a[id]=Date.now(); try{ localStorage.setItem('somsom_ach',JSON.stringify(a)); }catch(e){} toast('업적 달성', ACH[id]?ACH[id].n:id); return true; }
+function toastNext(){ const el=$('toast'); if(!toastQ.length) return; const [t,n]=toastQ[0]; $('toastT').textContent=t; $('toastN').textContent=n; el.classList.add('on'); setTimeout(()=>{ el.classList.remove('on'); setTimeout(()=>{ toastQ.shift(); toastNext(); },450); },2200); }
+function achUnlock(id){ const a=achLoad(); if(a[id]) return false; a[id]=Date.now(); try{ localStorage.setItem('somsom_ach',JSON.stringify(a)); }catch(e){} toast('업적 달성',ACH[id]?ACH[id].n:id); return true; }
 function dexAdd(id){ try{ const d=JSON.parse(localStorage.getItem('somsom_dex')||'{}'); if(d[id]) return false; d[id]=Date.now(); localStorage.setItem('somsom_dex',JSON.stringify(d)); return true; }catch(e){ return false; } }
-function report(key, coins){ const st=statsLoad(); st.played=st.played||{}; st.played.day=(st.played.day||0)+1; st.chars=st.chars||{}; if(key){ st.chars[key]=(st.chars[key]||0)+1; st.last=key; } st.coins=Math.max(0,(st.coins||0)+(coins||0)); try{ localStorage.setItem('somsom_stats',JSON.stringify(st)); }catch(e){} return st; }
+function report(key,coins){ const st=statsLoad(); st.played=st.played||{}; st.played.day=(st.played.day||0)+1; st.chars=st.chars||{}; if(key){ st.chars[key]=(st.chars[key]||0)+1; st.last=key; } st.coins=Math.max(0,(st.coins||0)+(coins||0)); try{ localStorage.setItem('somsom_stats',JSON.stringify(st)); }catch(e){} }
 function coinsNow(){ return statsLoad().coins||0; }
-// 허브 '오늘의 미션'과 같은 날짜 키·저장 위치를 쓴다 (somsom_missions[YYYYMMDD].day)
 function dayKey(){ const d=new Date(); return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate(); }
 function missionDone(g){ try{ const all=JSON.parse(localStorage.getItem('somsom_missions')||'{}'); const k=String(dayKey()); all[k]=all[k]||{}; if(all[k][g]) return false; all[k][g]=1; localStorage.setItem('somsom_missions',JSON.stringify(all)); toast('오늘의 미션','완료!'); return true; }catch(e){ return false; } }
+function seeCut(id){ if(!CUTS[id]) return false; const first=!S.cuts[id]; S.cuts[id]=(S.cuts[id]||0)+1; dexAdd('day_'+id); if(first){ D.newCuts++; const n=Object.keys(S.cuts).length; if(n>=30) achUnlock('day_cuts30'); } return first; }
 
-// ====================== 진행 상태 ======================
-let S = load();           // 영구
-let D = null;             // 오늘 하루
-const $ = (id)=> document.getElementById(id);
+// ====================== 진행 ======================
+let S=load(), D=null, backTo='sTitle';
+const $=(id)=>document.getElementById(id);
+const rnd=(n)=>Math.floor(Math.random()*n);
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); $(id).classList.add('on'); }
-function startWorry(){ return S.learn>=6 ? 3 : S.learn>=3 ? 4 : 5; }
 function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
-function worryUI(){ const pct=Math.round(D.worry/10*100); ['worryBar','worryBar2'].forEach(i=>{ const el=$(i); if(el) el.style.width=pct+'%'; }); }
-
-function newDay(){
-  D = {worry:startWorry(), late:0, bread:0, coins:0, met:null, walk:0, changes:{}, faces:{}};
-  $('slotLabel').textContent='아침';
-  playScene({bg:MORNING.bg, name:MORNING.name, text:MORNING.text, cast:['kkito','migae'], choices:MORNING.choices, after:()=>pickDay()});
+function worryUI(){ const pct=Math.round(D.worry/10*100); ['worryBar','worryBar2'].forEach(i=>{ const el=$(i); if(el) el.style.width=pct+'%'; }); const n=$('worryNum'); if(n) n.textContent=' '+D.worry; }
+// 걱정은 반드시 이유와 함께 움직인다
+function worryAdd(delta, why){ if(!delta) return; const before=D.worry; D.worry=clamp(D.worry+delta,0,10); const real=D.worry-before; if(real) D.wlog.push({d:real,why}); D.wlast.push({d:real||delta,why}); }
+function worryPopRender(){
+  const el=$('worryPop'); if(!el) return;
+  const rows=D.wlog.map(w=>'<div class="wr"><b class="'+(w.d>0?'up':'dn')+'">'+(w.d>0?'+':'')+w.d+'</b><span>'+w.why+'</span></div>').join('');
+  el.innerHTML='<div class="wh">오늘의 걱정 '+D.worry+'/10</div><div class="wr"><b>'+D.worry0+'</b><span>'+D.worry0why+'</span></div>'+rows+'<div class="wf">8 이상이면 저녁에 걱정이 터지고, 1 이하면 너무 느슨해집니다. 누르면 닫힙니다.</div>';
 }
-
-// 장면 재생: 지문 → 선택 → 결과 대사 + 반응 → 다음
-function playScene(sc){
-  show('sScene'); worryUI();
-  const img=$('bgImg'); img.onerror=()=>{ img.onerror=null; img.src=A+'bg_alley.png'; }; img.src=A+sc.bg;
-  $('dNm').textContent=sc.name; $('dTx').innerHTML=sc.text; $('dExtra').innerHTML='';
-  renderCast(sc.cast, {});
-  const box=$('choices'); box.innerHTML='';
-  const list=(typeof sc.choices==='function')?sc.choices(S):sc.choices;
-  for(const c of list){
-    if(c.bread && !D.bread) continue;
-    const b=document.createElement('button');
-    const lb=c.tag||c.label;
-    b.innerHTML=(lb?'<span class="tg'+(c.bread?' bread':'')+'">'+(c.bread?'빵 · ':'')+lb+'</span>':(c.bread?'<span class="tg bread">빵</span>':''))+'<span>'+c.t+'</span>';
-    b.onclick=()=> choose(sc,c);
-    box.appendChild(b);
-  }
-}
-function applyTag(tag, worryOnly){
-  const t=TAG[tag]; if(!t) return {};
+function weekday(){ return (S.dayNo-1)%7; }
+function startWorry(){ return S.learn>=6?3:S.learn>=3?4:5; }
+function plant(id){ const sp=SEEDS[id]; if(!sp||S.seeds.find(s=>s.id===id)) return; S.seeds.push({id,fuse:sp.fuse,day:S.dayNo}); D.planted.push(sp.n); }
+function hasSeed(id){ return S.seeds.find(s=>s.id===id); }
+function takeSeed(id){ const i=S.seeds.findIndex(s=>s.id===id); if(i<0) return null; const s=S.seeds.splice(i,1)[0]; S.fired.push(id); S.weekFired.push(id); return s; }
+function applyEff(e, present){
   const ch={};
-  D.worry=clamp(D.worry+t.worry,0,10);
-  if(!worryOnly){ for(const k of ['boneul','ramda','lachil']){ if(t[k]){ S.rel[k]=clamp(S.rel[k]+t[k],0,10); ch[k]=(ch[k]||0)+t[k]; } } }
+  const bump=(k,v)=>{ if(!v) return; if(k==='learn'){ S.learn+=v; ch.bookgeo=(ch.bookgeo||0)+v; return; } S.rel[k]=clamp(S.rel[k]+v,0,10); ch[k]=(ch[k]||0)+v; };
+  if(e.worry) worryAdd(e.worry, D.curChoice||'');
+  if(e.worryStart && D.worry>e.worryStart){ const dlt=e.worryStart-D.worry; worryAdd(dlt,'북거씨의 향을 맡고 나섰다'); }
+  for(const k of ['boneul','ramda','lachil','learn']) if(e[k]) bump(k,e[k]);
+  if(e.boneulIf && S.rel.boneul>=e.boneulIf.min) bump('boneul',e.boneulIf.v);
+  if(e.late) D.late=1; if(e.bread) D.bread=1; if(e.wet) D.wet=1; if(e.walk) D.walk=1; if(e.forceWalk) D.forceWalk=1;
+  if(e.coins) D.coins+=e.coins;
+  if(e.fix) D.fix=e.fix;
+  if(e.seed) plant(e.seed);
+  if(e.seedIf){ plant(S.rel[e.seedIf.key]>=e.seedIf.min?e.seedIf.yes:e.seedIf.no); }
+  if('ramdaSulky' in e) S.ramdaSulky=e.ramdaSulky?1:0;
+  if(e.mended && !S.mended){ S.mended=1; achUnlock('day_ramda_mend'); }
+  if(e.clearQuarrel){ takeSeed('quarrel'); }
+  if(e.story){ if(S.story<STORY.length){ D.storyLine=STORY[S.story]; S.story++; if(S.story>=STORY.length) achUnlock('day_bookgeo5'); } else D.storyLine=STORY_END; }
   return ch;
 }
-function choose(sc,c){
-  const ch={}; let migaeLine=c.migae||'';
-  if(c.tag){ const r=applyTag(c.tag, c.worryOnly); for(const k in r) ch[k]=(ch[k]||0)+r[k]; if(!migaeLine) migaeLine=TAG[c.tag].migae; }
-  const e=Object.assign({}, c.eff||{}, c.direct||{});
-  if(e.worry) D.worry=clamp(D.worry+e.worry,0,10);
-  if(e.late) D.late=1; if(e.bread) D.bread=1; if(c.bread) D.bread=0;
-  if(e.coins){ D.coins+=e.coins; }
-  if(e.walk) D.walk=1;
-  for(const k of ['boneul','ramda','lachil']) if(e[k]){ S.rel[k]=clamp(S.rel[k]+e[k],0,10); ch[k]=(ch[k]||0)+e[k]; }
-  if(e.learn){ S.learn+=e.learn; ch.bookgeo=1; }
-  let line=c.line||'';
-  if(e.story){ if(S.story<STORY.length){ line=STORY[S.story]; S.story++; if(S.story>=STORY.length) achUnlock('day_bookgeo5'); } else line=STORY_END; }
-  if('ramdaSulky' in e) S.ramdaSulky=e.ramdaSulky?1:0;
-  if(e.boneulCold) S.boneulCold=1; else if(sc.who==='boneul') S.boneulCold=0;
-  if(e.mended && !S.mended){ S.mended=1; achUnlock('day_ramda_mend'); }
-  save(S); worryUI();
-  // 결과 표시
-  $('dTx').innerHTML=line||'…';
-  let extra='';
-  // 반응 띠: 그 장면에 실제로 있는 친구만, 무엇을 뜻하는지 글로 함께 보여준다
-  const present=new Set(sc.cast||[]);
-  const rc=[]; const shown=new Set();
-  const put=(k,up)=>{ const f=F[k]; if(!f||shown.has(k)||!present.has(k)) return; shown.add(k);
-    rc.push('<div class="rc '+(up?'up':'down')+'"><img src="'+A+(up?f.ok:f.bad)+'" alt="">'+f.n+'<br><b>'+(up?'기뻐한다':'서운해한다')+'</b></div>'); };
-  for(const k in ch){ if(ch[k]) put(k, ch[k]>0); }
-  if(c.face){ for(const k in c.face) put(k, c.face[k]==='ok'); }
-  if(rc.length) extra+='<div class="react">'+rc.join('')+'</div>';
-  if(migaeLine) extra+='<div class="migaeLine"><img src="'+A+'sd_migae_t.png" alt="">'+migaeLine+'</div>';
-  $('dExtra').innerHTML=extra;
-  const faces={}; for(const k in ch) faces[k]=ch[k]>0?'ok':'bad'; if(c.face) for(const k in c.face) faces[k]=faces[k]||c.face[k];
-  renderCast(sc.cast, faces);
-  const box=$('choices'); box.innerHTML=''; const b=document.createElement('button'); b.className='next'; b.textContent='계속'; b.onclick=sc.after; box.appendChild(b);
-}
-function renderCast(cast, faces){
-  const el=$('cast'); el.innerHTML='';
-  for(const k of cast){ const f=F[k]; if(!f) continue; const img=document.createElement('img'); img.alt=f.n;
-    img.src=A+(faces[k]==='ok'?f.ok:faces[k]==='bad'?f.bad:f.sd);
-    if(k==='migae') img.className='migae'+(faces[k]?' bump':''); else if(k!=='kkito') img.className='friend'+(faces[k]?' bump':'');
-    el.appendChild(img); }
-}
+function applyTag(tag, present){ const t=TAG[tag]; if(!t) return {}; worryAdd(t.worry, D.curChoice+' ('+tag+')'); const ch={}; if(present && t[present]){ S.rel[present]=clamp(S.rel[present]+t[present],0,10); ch[present]=t[present]; } return ch; }
 
-function pickDay(){
-  show('sPick'); worryUI(); $('slotLabel').textContent='낮';
-  $('pickLead').innerHTML=(D.late?'허겁지겁 나온 끼토. ':'')+'마감까지는 저녁. 골목 어귀에서 익숙한 얼굴들이 보인다. 미개는 당연히 따라온다.<br><b>딱 한 군데만.</b>';
-  const g=$('pickGrid'); g.innerHTML='';
-  for(const k of ['boneul','ramda','bookgeo','lachil','migae','home']){
-    const d=DAY[k]; const f=d.who?F[d.who]:F.kkito;
-    const b=document.createElement('button'); b.className='card'; b.style.background=f.col; b.style.color=f.dark;
-    let tier=''; if(k==='boneul'||k==='ramda'||k==='lachil') tier=TIER[k](S.rel[k]); else if(k==='bookgeo') tier=TIER.bookgeo(S.learn); else if(k==='migae') tier='항상 100';
-    if(k==='ramda'&&S.ramdaSulky) tier='서운함';
-    b.innerHTML=(tier?'<span class="tier">'+tier+'</span>':'')+'<img src="'+A+f.sd+'" alt=""><div class="cn">'+(d.who?f.n:'집으로')+'</div><div class="cd">'+d.place+' · '+d.desc+'</div>';
-    b.onclick=()=>{ D.met=k; if(k!=='home'){ S.met[k]=1; save(S); }
-      const cast=d.who?['kkito','migae',d.who]:['kkito','migae']; if(d.who==='migae') cast.pop();
-      playScene({bg:d.bg, name:d.place, text:d.text(S), cast, who:d.who, choices:d.choices, after:()=>evening()}); };
-    g.appendChild(b);
+function newDay(){
+  const wd=weekday(); S.week=Math.floor((S.dayNo-1)/7);
+  let ev=['mon','tue','wed','thu','fri','sat','sun'][wd];
+  if(S.sickUsedWeek!==S.week && Math.random()<0.10){ ev='sick'; S.sickUsedWeek=S.week; }
+  const r=Math.random(); const rainP=SEASONS[S.week%6].k==='_rain'?0.7:0.25;
+  let weather = ev==='tue'?'rain': r<rainP?'rain': r<rainP+0.15?'wind':'sunny';
+  const w0=startWorry();
+  D={ev,weather,worry:w0,worry0:w0,worry0why:(w0<5?'북거씨에게 배운 만큼 낮게 시작':'끼토의 평소 걱정'),wlog:[],wlast:[],curChoice:'',late:0,bread:0,wet:0,walk:0,forceWalk:0,coins:0,met:null,fix:null,planted:[],newCuts:0,storyLine:'',stageBefore:JSON.parse(JSON.stringify(S.stage)),morningSeeds:[],eveningSeeds:[],noonSeed:null};
+  if(weather==='rain' && ev!=='tue') worryAdd(1,'비 오는 날');
+  if(ev==='mon') worryAdd(1,'원고 마감 날');
+  if(ev==='sick') worryAdd(2,'미개가 아프다');
+  // 씨앗 카운트다운
+  for(const s of S.seeds){ if(s.fuse>0) s.fuse--; }
+  for(const s of [...S.seeds]){ const sp=SEEDS[s.id];
+    if(sp.when==='morning' && s.fuse===0) D.morningSeeds.push(s.id);
+    if(sp.when==='rain-morning' && weather==='rain' && s.day<S.dayNo) D.morningSeeds.push(s.id);
+    if(sp.when==='evening' && s.fuse===0) D.eveningSeeds.push(s.id);
+    if(sp.when==='rain-evening' && weather==='rain' && s.day<S.dayNo) D.eveningSeeds.push(s.id);
+    if(sp.when==='noon' && s.fuse===0) D.noonSeed=s.id; }
+  save();
+  $('slotLabel').textContent=WD[wd]+'요일 · 아침';
+  const q=[];
+  for(const id of D.morningSeeds){ const sp=SEEDS[id]; takeSeed(id); applyEff(sp.eff,null); q.push({bg:seasonBg(bgFor(sp.cut)),cut:sp.cut,name:'씨앗 · '+sp.n,text:sp.text,migae:sp.migae,cast:[]}); }
+  const runQ=()=>{ const s=q.shift(); if(!s) return morning(); playCut(s, runQ); };
+  runQ();
+}
+function bgFor(cut){ const m={s1:'bg_day_entry.png',s3:'bg_day_entry.png',s6:'bg_day_studio.png',s8:'bg_day_entry.png',s9:'bg_alley.png',s7:'bg_day_rain_alley.png',s2:'bg_alley.png'}; return m[cut]||'bg_alley.png'; }
+// 컷 하나 보여주기 (선택 없음)
+function playCut(s, next){
+  show('sScene'); worryUI(); $('cast').classList.add('hidden');
+  const img=$('bgImg'); img.onerror=()=>{ img.onerror=null; img.src=s.bg||A+'bg_alley.png'; }; img.src=s.cut?IMG(s.cut):s.bg;
+  const first=s.cut?seeCut(s.cut):false;
+  $('badge').hidden=!s.cut; $('badge').textContent=first?'새 그림':'';
+  if(!first) $('badge').hidden=true;
+  $('dNm').textContent=s.name; $('dTx').innerHTML=s.text; $('dExtra').innerHTML=(s.migae?'<div class="migaeLine"><img src="'+SP('migae')+'" alt="">'+s.migae+'</div>':'');
+  const box=$('choices'); box.innerHTML=''; const b=document.createElement('button'); b.className='next'; b.textContent=s.btn||'계속'; b.onclick=next; box.appendChild(b);
+}
+function morning(){
+  const ev=EVENTS[D.ev]; $('slotLabel').textContent=WD[weekday()]+'요일 · 아침 · '+(D.weather==='rain'?'비':D.weather==='wind'?'바람':'맑음');
+  const wtxt=D.weather==='rain'&&D.ev!=='tue'?' 잎사귀 우산을 챙겼다.':D.weather==='wind'?' 귀가 자꾸 뒤로 넘어간다.':'';
+  const intro=(ev.alt&&Math.random()<0.5)?ev.alt[rnd(ev.alt.length)]:ev.text(D);
+  playScene({bg:ev.bg,cut:ev.cut,name:ev.n,text:intro+wtxt,cast:['kkito','migae'],who:null,choices:ev.choices,after:()=> D.forceWalk?walkScene():transit()});
+}
+// 아침과 낮 사이: 골목을 걷는 장면. 날씨·계절이 보이고, 오늘 골목에 나온 얼굴이 멀리 보인다
+const NEWS=['빵집에 새 메뉴가 붙었다. 은행잎 모양 소금빵.','시티청 게시판에 솜재페 포스터가 새로 붙었다.','누가 벤치에 잎사귀 우산을 두고 갔다. 아직 그대로다.','우편함 옆에 도토리 세 알. 람다 짓이다.','대나무숲 빌라 쪽에서 바람이 분다. 냄새는... 오늘은 괜찮다.','골목 끝 가로등이 낮에도 켜져 있다. 아무도 안 끈다.','북gpt에 "가스 불"을 검색한 사람이 오늘도 한 명 있었다. 끼토다.','은행나무 밑에 할머니 집게 자국. 아침 일찍 다녀가셨다.','빵집 앞에 보늘 발자국. 방향은 집 쪽.','골목 어귀 담벼락에 누가 분필로 개미를 그려 놨다. 리본까지.'];
+function transit(){
+  const wd=weekday(); let pool=[...POOL[D.ev]]; if(D.ev==='sun') pool=[pool[rnd(pool.length)]];
+  if(hasSeed('quarrel') && D.noonSeed!=='quarrel') pool=pool.filter(k=>k!=='boneul');
+  if(D.noonSeed==='heart' && !pool.includes('boneul')) pool.unshift('boneul');
+  if(D.noonSeed==='quarrel') pool=['boneul'];
+  while(pool.length>2){ pool.splice(rnd(pool.length),1); }
+  D.pool=pool;
+  const wl={rain:'큰 잎 우산 아래로 빗소리. 돌바닥이 반들거린다.',wind:'은행잎이 얼굴로 날아든다. 귀가 자꾸 뒤로 넘어간다.',sunny:'해가 따뜻하다. 은행잎이 발밑에서 바스락거린다.'}[D.weather];
+  const seen=pool.map(k=>F[k].n).join(', ');
+  const text='골목을 걷는다. '+wl+'<br>'+NEWS[rnd(NEWS.length)]+'<br>저 앞에 <b>'+seen+'</b>'+(pool.length>1?'가':'이')+' 보인다.';
+  const bg=D.weather==='rain'?'bg_day_rain_alley.png':'bg_alley.png';
+  playScene({bg,cut:null,name:WD[wd]+'요일 · 골목',text,cast:['kkito','migae'],who:null,choices:[{t:'골목 어귀로',eff:{},label:'이동',line:'',skip:1}],after:pickDay});
+}
+function playScene(sc){
+  show('sScene'); worryUI();
+  // 장면 컷(캐릭터가 이미 그려진 그림)이 있으면 스프라이트를 겹치지 않는다. 컷이 없거나 못 불러오면 배경 + 스프라이트
+  const cast=$('cast'); cast.classList.toggle('hidden', !!sc.cut);
+  const img=$('bgImg'); img.onerror=()=>{ img.onerror=null; cast.classList.remove('hidden'); img.src=seasonBg(sc.bg); img.onerror=()=>{ img.onerror=null; img.src=A+sc.bg; }; }; img.src=sc.cut?IMG(sc.cut):seasonBg(sc.bg);
+  const first=sc.cut?seeCut(sc.cut):false; $('badge').hidden=!first; $('badge').textContent='새 그림';
+  $('dNm').textContent=sc.name; $('dTx').innerHTML=sc.text; $('dExtra').innerHTML='';
+  renderCast(sc.cast,{});
+  const box=$('choices'); box.innerHTML='';
+  for(const c of sc.choices){
+    if(c.bread && !D.bread) continue;
+    const b=document.createElement('button'); const lb=c.tag||c.label;
+    b.innerHTML=(lb?'<span class="tg'+(c.bread?' bread':'')+'">'+(c.bread?'빵 · ':'')+lb+'</span>':(c.bread?'<span class="tg bread">빵</span>':''))+'<span>'+c.t+'</span>';
+    b.onclick=()=> c.skip?sc.after():choose(sc,c); if(c.skip) b.className='next'; box.appendChild(b);
   }
 }
+function choose(sc,c){
+  const present=sc.who; let ch={}; let migaeLine=c.migae||''; D.curChoice=c.t.replace(/<[^>]+>/g,''); D.wlast=[];
+  if(c.tag){ ch=applyTag(c.tag,present); if(!migaeLine) migaeLine=TAG[c.tag].migae; }
+  const e=Object.assign({},c.eff||{},c.direct||{}); if(c.bread) D.bread=0;
+  const r=applyEff(e,present); for(const k in r) ch[k]=(ch[k]||0)+r[k];
+  let line=c.line||''; if(D.storyLine){ line=line?line+'<br>'+D.storyLine:D.storyLine; D.storyLine=''; }
+  save(); worryUI();
+  $('dTx').innerHTML=line||'…';
+  let extra='';
+  const shown=new Set(); const rc=[];
+  const put=(k,up)=>{ const f=F[k]; if(!f||shown.has(k)||!(sc.cast||[]).includes(k)) return; shown.add(k); rc.push('<div class="rc '+(up?'up':'down')+'"><img src="'+SP(k,up?'ok':'bad')+'" alt="">'+f.n+'<br><b>'+(up?'기뻐한다':'서운해한다')+'</b></div>'); };
+  for(const k in ch){ if(ch[k]) put(k,ch[k]>0); }
+  if(c.face && present) put(present,c.face==='ok');
+  if(rc.length) extra+='<div class="react">'+rc.join('')+'</div>';
+  const wsum=D.wlast.reduce((a,w)=>a+w.d,0); if(wsum) extra+='<div><span class="worryTag'+(wsum<0?' down':'')+'">걱정 '+(wsum>0?'+':'')+wsum+' · '+D.wlast.map(w=>w.why.replace(/ \([^)]*\)$/,'')).filter((v,i,a)=>a.indexOf(v)===i).join(', ')+'</span></div>';
+  if(D.planted.length){ extra+='<div><span class="seedTag">씨앗을 심었다 · '+D.planted.join(', ')+'</span></div>'; D.planted=[]; }
+  if(migaeLine) extra+='<div class="migaeLine"><img src="'+SP('migae')+'" alt="">'+migaeLine+'</div>';
+  $('dExtra').innerHTML=extra;
+  const faces={}; for(const k in ch) faces[k]=ch[k]>0?'ok':'bad'; if(c.face&&present) faces[present]=faces[present]||c.face;
+  renderCast(sc.cast,faces);
+  const box=$('choices'); box.innerHTML=''; const b=document.createElement('button'); b.className='next'; b.textContent='계속'; b.onclick=sc.after; box.appendChild(b);
+}
+function renderCast(cast,faces){
+  const el=$('cast'); el.innerHTML='';
+  for(const k of cast){ const f=F[k]; if(!f) continue; const img=document.createElement('img'); img.alt=f.n; img.src=SP(k,faces[k]==='ok'?'ok':faces[k]==='bad'?'bad':'sd'); img.onerror=()=>{ img.onerror=null; img.src=A+'sd_'+(k==='lachil'?'lachilchin':k)+'_t.png'; };
+    if(k==='migae') img.className='migae'+(faces[k]?' bump':''); else if(k!=='kkito') img.className='friend'+(faces[k]?' bump':''); el.appendChild(img); }
+}
+function pickDay(){
+  show('sPick'); worryUI();
+  const pool=D.pool||[...POOL[D.ev]].slice(0,2);
+  $('pickLead').innerHTML=(D.late?'허겁지겁 나온 끼토. ':'')+(D.wet?'흠뻑 젖은 채로. ':'')+'골목 어귀. 오늘 골목에 나온 얼굴은 '+pool.map(k=>F[k].n).join(', ')+'. 미개는 당연히 따라온다.<br><b>딱 한 군데만.</b>';
+  const g=$('pickGrid'); g.innerHTML='';
+  const mk=(k,title,desc,tier,onclick)=>{ const f=F[k]; const b=document.createElement('button'); b.className='card'; b.style.background=f.col; b.style.color=f.dark; b.innerHTML=(tier?'<span class="tier">'+tier+'</span>':'')+'<img src="'+SP(k)+'" alt="" onerror="this.onerror=null;this.src=\''+A+'sd_'+(k==='lachil'?'lachilchin':k)+'_t.png\'"><div class="cn">'+title+'</div><div class="cd">'+desc+'</div>'; b.onclick=onclick; g.appendChild(b); };
+  for(const k of pool){ const v=VARIANT[D.ev]; const isVar=v&&v.who===k;
+    let tier=k==='bookgeo'?TIER.bookgeo(S.learn):TIER[k](S.rel[k]); if(k==='ramda'&&S.ramdaSulky) tier='서운함';
+    mk(k,F[k].n,isVar?('오늘의 사건 · '+EVENTS[D.ev].n):'골목에서 마주침',tier,()=>friendScene(k));
+  }
+  mk('migae','미개와 산책',D.weather==='rain'?'빗속 · 부츠':D.weather==='wind'?'바람 · 은행잎':'맑음','항상 100',walkScene);
+  mk('kkito','집으로','작업방 · 아무도 안 만남','',homeScene);
+}
+function friendScene(k){
+  D.met=k; S.met[k]=1; if(['boneul','ramda','bookgeo','lachil'].every(x=>S.met[x])) achUnlock('day_all_friends');
+  const v=VARIANT[D.ev]; let sc;
+  if(D.noonSeed==='quarrel'&&k==='boneul'){ takeSeed('quarrel'); sc=Object.assign({},RECONCILE); }
+  else if(k==='ramda'&&S.ramdaSulky) sc=Object.assign({},SULKY);
+  else if(v&&v.who===k) sc=Object.assign({},v);
+  else { const idx=k==='bookgeo'?STAGE_IDX.bookgeo(S.learn):STAGE_IDX[k](S.rel[k]); sc=Object.assign({},FS[k][idx]); }
+  const cast=['kkito','migae',k]; if(sc.extra) cast.push(...sc.extra);
+  const go=()=> playScene({bg:sc.bg,cut:sc.cut,name:EVENTS[D.ev].n+' · '+F[k].n,text:sc.text,cast,who:k,choices:sc.choices,after:evening});
+  if(D.noonSeed==='heart'&&k==='boneul'){ const sp=SEEDS.heart; takeSeed('heart'); applyEff(sp.eff,null); playCut({cut:'s2',name:'씨앗 · 속마음',text:sp.text,migae:sp.migae},go); } else go();
+}
+function walkScene(){ D.met='migae'; const w=WALK[D.weather]; const t=w.text+(hasSeed('boots')&&D.weather==='rain'?' 부츠가 딱 맞는다.':''); playScene({bg:w.bg,cut:w.cut,name:'미개와 산책',text:t,cast:['kkito','migae'],who:null,choices:WALK_CHOICES,after:evening}); }
+function homeScene(){ D.met='home'; playScene({bg:HOME.bg,cut:HOME.cut,name:'901호 작업방',text:HOME.text,cast:['kkito','migae'],who:null,choices:HOME.choices,after:evening}); }
 
 function evening(){
-  $('slotLabel').textContent='저녁';
-  const d={worry:D.worry, met:D.met};
-  const end=ENDINGS.find(e=>e.cond(d,S.rel,S));
-  const firstTime=!S.endings[end.id]; S.endings[end.id]=(S.endings[end.id]||0)+1; S.days++;
-  const gain=10+(firstTime?20:0)+D.coins; D.gain=gain;
-  save(S); dexAdd('day_'+end.id); report(end.key, gain);
-  achUnlock('day_first'); missionDone('day');
-  if(['boneul','ramda','bookgeo','lachil','migae'].every(k=>S.met[k])) achUnlock('day_all_friends');
-  if(Object.keys(S.endings).length>=5) achUnlock('day_ending5');
-  // 결말 장면
-  show('sScene'); const img=$('bgImg'); img.onerror=()=>{ img.onerror=null; img.src=A+end.fb; }; img.src=A+end.img;
-  $('dNm').textContent='저녁 · '+end.n; $('dTx').innerHTML=end.text+(end.extra?end.extra(S):'');
-  $('dExtra').innerHTML='<div class="migaeLine"><img src="'+A+'sd_migae_t.png" alt="">'+end.migae+'</div>'+(firstTime?'<div class="sub">새 결말을 도감에 넣었습니다.</div>':'');
-  $('cast').innerHTML='';
-  const box=$('choices'); box.innerHTML=''; const b=document.createElement('button'); b.className='next'; b.textContent='하루 마무리'; b.onclick=()=>result(end,firstTime); box.appendChild(b);
+  $('slotLabel').textContent=WD[weekday()]+'요일 · 저녁';
+  // 단계 갱신
+  const stNow={boneul:STAGE_IDX.boneul(S.rel.boneul),ramda:STAGE_IDX.ramda(S.rel.ramda),lachil:STAGE_IDX.lachil(S.rel.lachil),bookgeo:STAGE_IDX.bookgeo(S.learn)};
+  let up=null; for(const k of ['boneul','ramda','bookgeo','lachil']){ if(stNow[k]>S.stage[k]){ up=(UPS[k]||[]).find(u=>u.at===stNow[k]); if(up) up={...up,who:k}; } S.stage[k]=Math.max(S.stage[k],stNow[k]); }
+  let end;
+  if(up) end={cut:up.cut,n:up.n,text:up.text,migae:up.migae,key:up.who,kind:'관계'};
+  else if(D.eveningSeeds.length){ const id=D.eveningSeeds[0]; const sp=SEEDS[id]; takeSeed(id); applyEff(sp.eff,null); end={cut:sp.cut,n:sp.n,text:sp.text,migae:sp.migae,key:'kkito',kind:'씨앗'}; }
+  else if(D.fix) end={...EVENT_END[D.fix],key:'migae',kind:'저녁'};
+  else if(D.worry>=8){ end={...EVENT_END.e0,key:'kkito',kind:'저녁'}; end.text+='<br><span class="sub">걱정이 넘친 이유: '+worryWhy()+'</span>'; }
+  else if(D.worry<=1){ end={...EVENT_END.e7,key:'kkito',kind:'저녁'}; end.text+='<br><span class="sub">걱정이 사라진 이유: '+worryWhy()+'</span>'; }
+  else if(D.walk) end={...EVENT_END.walk,key:'migae',kind:'저녁'};
+  else end={...EVENT_END[D.ev],key:D.met&&D.met!=='home'?D.met:'kkito',kind:'저녁'};
+  if(Object.keys(S.cuts).length===0) {}
+  const gain=10+D.coins; D.gain=gain; D.end=end;
+  const seedsLeft=S.seeds.length;
+  playCut({cut:end.cut,name:end.kind+' · '+end.n,text:end.text,migae:end.migae,btn:'하루 마무리'},()=>finishDay());
 }
-function result(end, firstTime){
-  show('sResult');
-  const img=$('resImg'); img.onerror=()=>{ img.onerror=null; img.src=A+end.fb; }; img.src=A+end.img;
-  $('resTitle').textContent=end.n; $('resText').innerHTML=(S.days)+'번째 하루가 끝났습니다.'+(firstTime?' 처음 보는 저녁이었습니다.':'');
-  $('resRel').innerHTML=relRows(true);
-  $('resCoin').textContent='🌰 +'+D.gain+' (마을 도토리 '+coinsNow()+')';
+function worryWhy(){ return [D.worry0why+' '+D.worry0].concat(D.wlog.map(w=>w.why.replace(/ \([^)]*\)$/,'')+' '+(w.d>0?'+':'')+w.d)).join(', '); }
+function finishDay(){
+  const end=D.end; const wd=weekday();
+  const gain=D.gain+(D.newCuts*5);
+  report(end.key==='home'?'kkito':end.key,gain); achUnlock('day_first'); missionDone('day');
+  if(S.fired.length>=5) achUnlock('day_seed5');
+  const isSunday=wd===6;
+  S.dayNo++; save();
+  if(isSunday) return weekly(gain);
+  result(end,gain,null);
+}
+function weekly(gain){
+  achUnlock('day_week');
+  let cut='w'+((S.week%6)+1); let festText='';
+  if(hasSeed('fest')){ takeSeed('fest'); applyEff(SEEDS.fest.eff,null); cut='wf'; festText='솜재페의 밤. 여섯이 무대 앞에 나란히 섰다. 람다가 전구를 세었다. 서른 개. 끼토 것도 켜져 있었다.<br>'; }
+  seeCut(cut);
+  const letters=['boneul','ramda','bookgeo','lachil'].map(k=>{ const idx=k==='bookgeo'?STAGE_IDX.bookgeo(S.learn):STAGE_IDX[k](S.rel[k]); return '<div class="letter"><b>'+F[k].n+'</b> · '+LETTERS[k][idx]+'</div>'; }).join('');
+  const fired=S.weekFired.map(id=>SEEDS[id]?SEEDS[id].n:id);
+  S.weekFired=[]; S.week=Math.floor((S.dayNo-1)/7); save();
+  show('sResult'); $('resSlot').textContent='이번 주의 끼토';
+  const img=$('resImg'); img.onerror=()=>{ img.onerror=null; img.src=A+'bg_day_studio.png'; }; img.src=IMG(cut);
+  $('resTitle').textContent=(Math.floor((S.dayNo-2)/7)+1)+'주차 · '+SEASONS[(S.week-1+6)%6].n;
+  $('resText').innerHTML=festText+'한 주가 끝났다. 창밖 계절이 한 칸 넘어간다. 다음 주는 <b>'+SEASONS[S.week%6].n+'</b>.'+(fired.length?'<br>이번 주에 터진 씨앗: '+fired.join(', '):'');
+  $('resLetters').innerHTML=letters; $('resRel').innerHTML=relRows(true); $('resCoin').textContent='🌰 +'+gain+' (마을 도토리 '+coinsNow()+')';
+  $('btnAgain').textContent='다음 주로';
+}
+function result(end,gain){
+  show('sResult'); $('resSlot').textContent='오늘의 하루';
+  const img=$('resImg'); img.onerror=()=>{ img.onerror=null; img.src=A+'bg_alley.png'; }; img.src=IMG(end.cut);
+  $('resTitle').textContent=end.n; $('resText').innerHTML=(S.dayNo-1)+'번째 하루 · '+WD[weekday()===0?6:weekday()-1]+'요일이 끝났습니다.'+(D.newCuts?' 새 그림 '+D.newCuts+'장을 도감에 넣었습니다.':'')+(S.seeds.length?'<br>심어 둔 씨앗: '+S.seeds.map(s=>SEEDS[s.id].n).join(', '):'');
+  $('resLetters').innerHTML=''; $('resRel').innerHTML=relRows(true); $('resCoin').textContent='🌰 +'+gain+' (마을 도토리 '+coinsNow()+')';
+  $('btnAgain').textContent='다음 날로';
 }
 function relRows(compact){
-  const rows=[
-    ['boneul', S.rel.boneul, TIER.boneul(S.rel.boneul), '가장 오랜 친구. 속 이야기를 꺼낼수록 깊어집니다.'],
-    ['ramda', S.rel.ramda, (S.ramdaSulky?'서운함 · ':'')+TIER.ramda(S.rel.ramda), '생각이 잘 맞는 친구. 다른 생각을 말하면 서운해합니다.'],
-    ['bookgeo', Math.min(10,S.learn), TIER.bookgeo(S.learn), '조향사 이웃 어른. 찾아갈수록 끼토의 걱정이 줄어듭니다.'],
-    ['lachil', S.rel.lachil, TIER.lachil(S.rel.lachil), '5층 할머니. 나누는 만큼 정이 듭니다.'],
-    ['migae', 10, '항상 100', '끼토의 반려개미. 눈금이 없습니다.'],
-  ];
-  return rows.map(([k,v,t,d])=>{ const f=F[k]; const dots=Array.from({length:10},(_,i)=>'<i class="'+(i<v?'on':'')+'"></i>').join('');
-    return '<div class="relRow"><img src="'+A+f.sd+'" alt=""><div><div class="rn">'+f.n+' <span style="color:#F2C14B;font-size:11px;">'+t+'</span></div>'+(compact?'':'<div class="rt">'+d+'</div>')+'</div><div class="dots">'+dots+'</div></div>'; }).join('');
+  const rows=[['boneul',S.rel.boneul,TIER.boneul(S.rel.boneul),'가장 오랜 친구. 속 이야기를 꺼낼수록 깊어집니다.'],['ramda',S.rel.ramda,(S.ramdaSulky?'서운함 · ':'')+TIER.ramda(S.rel.ramda),'생각이 잘 맞는 친구. 다른 생각을 말하면 서운해합니다.'],['bookgeo',Math.min(10,S.learn),TIER.bookgeo(S.learn),'조향사 이웃 어른. 찾아갈수록 끼토의 걱정이 줄어듭니다.'],['lachil',S.rel.lachil,TIER.lachil(S.rel.lachil),'5층 할머니. 나누는 만큼 정이 듭니다.'],['migae',10,'항상 100','끼토의 반려개미. 눈금이 없습니다.']];
+  return rows.map(([k,v,t,d])=>{ const dots=Array.from({length:10},(_,i)=>'<i class="'+(i<v?'on':'')+'"></i>').join(''); return '<div class="relRow"><img src="'+SP(k)+'" alt="" onerror="this.onerror=null;this.src=\''+A+'sd_'+(k==='lachil'?'lachilchin':k)+'_t.png\'"><div><div class="rn">'+F[k].n+' <span style="color:#F2C14B;font-size:11px;">'+t+'</span></div>'+(compact?'':'<div class="rt">'+d+'</div>')+'</div><div class="dots">'+dots+'</div></div>'; }).join('');
 }
-function renderRel(){ $('relList').innerHTML=relRows(false); show('sRel'); }
+function renderRel(){ $('relList').innerHTML=relRows(false); $('seedList').innerHTML=S.seeds.length?'심어 둔 씨앗: '+S.seeds.map(s=>SEEDS[s.id].n+(s.fuse>0?' ('+s.fuse+'일 뒤)':s.fuse===0?' (오늘)':' (비 오는 날)')).join(', '):'심어 둔 씨앗이 없습니다.'; show('sRel'); }
 function renderDex(){
-  const g=$('dexGrid'); g.innerHTML=''; let n=0;
-  for(const e of ENDINGS){ const got=!!S.endings[e.id]; if(got) n++;
-    const c=document.createElement('div'); c.className='dexCell'+(got?' got':'');
-    c.innerHTML='<img src="'+A+e.img+'" alt="" onerror="this.onerror=null;this.src=\''+A+e.fb+'\'"><span class="n">'+(got?e.n:'？')+'</span>'; g.appendChild(c); }
-  $('dexCount').textContent='결말 '+n+' / '+ENDINGS.length; show('sDex');
+  const p=$('dexPanel'); p.innerHTML=''; let n=0,total=0; const groups={};
+  for(const id in CUTS){ const c=CUTS[id]; (groups[c.g]=groups[c.g]||[]).push(id); total++; if(S.cuts[id]) n++; }
+  for(const g in groups){ const h=document.createElement('div'); h.className='dexGrp'; h.textContent=g; p.appendChild(h); const grid=document.createElement('div'); grid.className='dexGrid';
+    for(const id of groups[g]){ const c=CUTS[id]; const got=!!S.cuts[id]; const cell=document.createElement('div'); cell.className='dexCell'+(got?' got':''); cell.innerHTML='<img src="'+IMG(id)+'" alt="" onerror="this.onerror=null;this.src=\''+A+'bg_alley.png\'"><span class="n">'+(got?c.n:'？')+'</span>'+(got?'':'<span class="h">'+c.h+'</span>'); if(got) cell.onclick=()=>{ $('viewerImg').src=IMG(id); $('viewerCap').textContent=c.n; $('viewer').classList.add('on'); }; grid.appendChild(cell); }
+    p.appendChild(grid); }
+  $('dexCount').textContent='그림 '+n+' / '+total; show('sDex');
 }
 function renderTitle(){
-  $('titleDays').textContent=S.days?S.days+'일째':'첫날';
-  const n=Object.keys(S.endings).length;
-  $('titleHint').textContent=(n?'모은 결말 '+n+'/'+ENDINGS.length+' · ':'')+'하루 시작 걱정 '+startWorry()+'/10'+(S.learn>=3?' (북거씨 덕분에 내려갔습니다)':'');
+  const wd=weekday(); $('titleDays').textContent=(S.dayNo===1?'첫날':S.dayNo+'일째')+' · '+SEASONS[S.week%6].n;
+  $('cal').innerHTML=WD.map((w,i)=>'<i class="'+(i<wd?'done':i===wd?'today':'')+'">'+w+'</i>').join('');
+  const n=Object.keys(S.cuts).length; $('titleHint').textContent='모은 그림 '+n+'/'+Object.keys(CUTS).length+' · 하루 시작 걱정 '+startWorry()+'/10'+(S.seeds.length?' · 씨앗 '+S.seeds.length+'개':'');
+  const last=Object.keys(S.cuts).pop(); const img=$('titleImg'); img.onerror=()=>{ img.onerror=null; img.src=A+'ending_e5_leafpile.png'; }; img.src=last?IMG(last):A+'ending_e5_leafpile.png';
   show('sTitle');
 }
-
-// ====================== 이벤트 ======================
-$('btnStart').onclick=newDay;
-$('btnAgain').onclick=newDay;
-let backTo='sTitle';
+$('btnStart').onclick=newDay; $('btnAgain').onclick=newDay;
 $('btnRel').onclick=()=>{ backTo='sTitle'; renderRel(); };
-$('btnDex').onclick=()=>{ backTo='sTitle'; renderDex(); };
-$('btnDex2').onclick=()=>{ backTo='sResult'; renderDex(); };
-$('sceneHome').onclick=()=>{ if(confirm('오늘 하루를 중단하고 마을로 갈까요? 관계 변화는 저장됩니다.')) location.href='../'; };
-$('pickHome').onclick=$('sceneHome').onclick;
+$('btnDex').onclick=()=>{ backTo='sTitle'; renderDex(); }; $('btnDex2').onclick=()=>{ backTo='sResult'; renderDex(); };
+$('sceneHome').onclick=()=>{ if(confirm('오늘 하루를 중단하고 마을로 갈까요? 관계와 씨앗은 저장됩니다.')) location.href='../'; }; $('pickHome').onclick=$('sceneHome').onclick;
 document.querySelectorAll('[data-back]').forEach(b=> b.onclick=()=>{ if(backTo==='sTitle') renderTitle(); else show(backTo); });
+$('worryBtn').onclick=()=>{ const p=$('worryPop'); if(!D) return; if(p.hidden){ worryPopRender(); p.hidden=false; } else p.hidden=true; };
+$('worryPop').onclick=()=>{ $('worryPop').hidden=true; };
+$('viewerClose').onclick=()=>$('viewer').classList.remove('on'); $('viewer').onclick=(e)=>{ if(e.target.id==='viewer') $('viewer').classList.remove('on'); };
 renderTitle();
 </script>
 </body>

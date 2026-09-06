@@ -252,20 +252,6 @@ const DEX_ITEMS = [
     {id:'run_lamp',    f:'assets/dex_run_lamp.png',    n:'가로등'},
     {id:'run_bakery',  f:'assets/dex_run_bakery.png',  n:'골목 빵집'},
   ]},
-  {g:'끼토의 하루 · 저녁 결말', items:[
-    {id:'day_e0',  f:'assets/ending_e0_gas.png',       n:'가스 불 대소동'},
-    {id:'day_e7',  f:'assets/ending_e7_lazy.png',      n:'너무 느긋한 저녁'},
-    {id:'day_e1a', f:'assets/ending_e1_pizza.png',     n:'피자 두 판'},
-    {id:'day_e1b', f:'assets/ending_e1_pizza.png',     n:'피자 한 판'},
-    {id:'day_e1c', f:'assets/ending_e1_pizza.png',     n:'불 켜진 창'},
-    {id:'day_e2a', f:'assets/ending_e2_shopdoor.png',  n:'오늘의 한 줄'},
-    {id:'day_e2b', f:'assets/ending_e2_shopdoor.png',  n:'단추 하나만큼의 거리'},
-    {id:'day_e3',  f:'assets/ending_e3_scent.png',     n:'시향지 두 장'},
-    {id:'day_e4a', f:'assets/ending_e4_ginkgobag.png', n:'은행 한 봉지'},
-    {id:'day_e4b', f:'assets/ending_e4_ginkgobag.png', n:'그럭저럭 좋은 하루'},
-    {id:'day_e5',  f:'assets/ending_e5_leafpile.png',  n:'은행잎 더미'},
-    {id:'day_e6',  f:'assets/ending_e6_deadline.png',  n:'무사 마감'},
-  ]},
 ];
 const CUT_POOL = {kkito:12, boneul:8, migae:12, ramda:12, bookgeo:8, lachilchin:12};
 const CUT_NAME = {kkito:'끼토', boneul:'보늘', migae:'미개', ramda:'람다', bookgeo:'북거씨', lachilchin:'라칠친 할머니'};
@@ -286,6 +272,9 @@ function renderDex(){
     }
     list.appendChild(grid);
   }
+  { const dayN=Object.keys(got).filter(k=>k.startsWith('day_')).length, dayT=67; have+=dayN; total+=dayT;
+    const h3=document.createElement('div'); h3.className='achGrp'; h3.textContent='끼토의 하루 그림 (게임 안 도감에서 크게 보기)'; list.appendChild(h3);
+    const r=document.createElement('div'); r.className='cutRow'; r.innerHTML='<span class="nm">아침·낮·씨앗·관계·저녁·한 주</span><span class="pg">'+dayN+' / '+dayT+'</span>'; list.appendChild(r); }
   const h2=document.createElement('div'); h2.className='achGrp'; h2.textContent='짝맞추기 일상 컷'; list.appendChild(h2);
   for(const k in CUT_POOL){
     const n=(cuts[k]||[]).length, p=CUT_POOL[k]; have+=n; total+=p;
