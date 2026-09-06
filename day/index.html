@@ -31,6 +31,17 @@
   .stage .cast img.migae{position:absolute;left:38%;bottom:0;height:24%;}
   .stage .cast img.bump{transform:translateY(-10px);}
   .stage .cast.hidden{display:none;}
+  .stage .cols{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);z-index:3;}
+  .stage .cols.hidden{display:none;}
+  .stage .col{position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:0 2px 17%;border-right:1px solid rgba(255,255,255,.14);cursor:pointer;background:rgba(20,16,12,.18);transition:background .2s;}
+  .stage .col:last-child{border-right:none;}
+  .stage .col.sel{background:rgba(242,193,75,.22);box-shadow:inset 0 0 0 2px rgba(242,193,75,.8);}
+  .stage .col img{height:50%;max-width:96%;object-fit:contain;object-position:bottom;filter:drop-shadow(0 8px 12px rgba(0,0,0,.5));transition:transform .2s;}
+  .stage .col.sel img{transform:translateY(-8px) scale(1.06);}
+  .stage .col .hd{position:absolute;top:8px;left:2px;right:2px;display:flex;flex-direction:column;align-items:center;gap:3px;}
+  .stage .col .ct{font-size:9.5px;font-weight:800;letter-spacing:.04em;color:#221E18;background:rgba(242,193,75,.92);border-radius:6px;padding:2px 6px;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis;}
+  .stage .col .cn{font-size:12px;font-weight:800;color:#FDFBF5;text-shadow:0 1px 3px rgba(0,0,0,.8);text-align:center;line-height:1.25;}
+  .stage .col .cs{font-size:9.5px;color:#EFE7D6;opacity:.85;text-shadow:0 1px 3px rgba(0,0,0,.8);text-align:center;line-height:1.2;}
   .stage .shade{position:absolute;left:0;right:0;bottom:0;height:22%;background:linear-gradient(to top,rgba(34,30,24,.55),transparent);pointer-events:none;}
   .stage .badge{position:absolute;left:12px;top:10px;font-size:10.5px;font-weight:800;letter-spacing:.1em;color:#221E18;background:#F2C14B;border-radius:8px;padding:3px 8px;}
   .dlg{flex:none;background:#FDFBF5;color:#3A2E24;margin:0 10px;border:2.5px solid #222;border-radius:16px;box-shadow:3px 3px 0 rgba(0,0,0,.6);padding:12px 14px 12px;position:relative;z-index:6;transform:translateY(-14px);min-height:96px;max-height:42vh;overflow-y:auto;}
@@ -133,7 +144,7 @@
 
   <section id="sScene" class="screen">
     <div class="top"><button class="home" id="sceneHome">← 마을</button><button class="worry" id="worryBtn" style="background:none;border:none;color:#A9A08C;">걱정 <i><b id="worryBar"></b></i><span id="worryNum" style="font-weight:800;color:#EFE7D6;"></span></button><span class="ms" id="msLabel"></span><span class="slot" id="slotLabel"></span></div>
-    <div class="stage"><div class="bg"><img id="bgImg" src="" alt=""></div><div class="shade"></div><div class="cast" id="cast"></div><div class="badge" id="badge" hidden></div>
+    <div class="stage"><div class="bg"><img id="bgImg" src="" alt=""></div><div class="shade"></div><div class="cast" id="cast"></div><div class="cols hidden" id="pickCols"></div><div class="badge" id="badge" hidden></div>
       <div id="worryPop" class="worryPop" hidden></div></div>
     <div class="dlg"><div class="nm" id="dNm"></div><div class="tx" id="dTx"></div><div id="dExtra"></div></div>
     <div class="choices" id="choices"></div>
@@ -819,7 +830,7 @@ function newDay(){
 }
 // 컷 하나 보여주기 (선택 없음)
 function playCut(s, next){
-  show('sScene'); worryUI(); $('cast').classList.add('hidden');
+  show('sScene'); worryUI(); $('cast').classList.add('hidden'); $('pickCols').classList.add('hidden');
   const img=$('bgImg'); const fb=s.bg||seasonBg(bgFor(s.cut)); img.onerror=()=>{ img.onerror=null; img.src=fb; img.onerror=()=>{ img.onerror=null; img.src=A+'bg_alley.png'; }; }; img.src=s.cut?IMG(s.cut):fb;
   const first=s.cut?seeCut(s.cut):false;
   $('badge').hidden=!first; $('badge').textContent='새 그림';
@@ -863,7 +874,7 @@ function transit(){
   playScene({bg,cut:null,name:WD[wd]+'요일 · 골목',text,cast:['kkito','migae'],who:null,choices:[{t:'골목 어귀로',eff:{},label:'이동',line:'',skip:1}],after:pickDay});
 }
 function playScene(sc){
-  show('sScene'); worryUI();
+  show('sScene'); worryUI(); $('pickCols').classList.add('hidden');
   const cast=$('cast'); cast.classList.toggle('hidden', !!sc.cut);
   const img=$('bgImg'); img.onerror=()=>{ img.onerror=null; cast.classList.remove('hidden'); img.src=seasonBg(sc.bg||bgFor(sc.cut)); img.onerror=()=>{ img.onerror=null; img.src=A+(sc.bg||'bg_alley.png'); }; }; img.src=sc.cut?IMG(sc.cut):seasonBg(sc.bg);
   const first=sc.cut?seeCut(sc.cut):false; $('badge').hidden=!first; $('badge').textContent='새 그림';
@@ -918,19 +929,42 @@ function renderCast(cast,faces){
   for(const k of cast){ const f=F[k]; if(!f) continue; const img=document.createElement('img'); img.alt=f.n; img.src=SP(k,faces[k]==='ok'?'ok':faces[k]==='bad'?'bad':'sd'); img.onerror=()=>{ img.onerror=null; img.src=A+'sd_'+(k==='lachil'?'lachilchin':k)+'_t.png'; };
     if(k==='migae') img.className='migae'+(faces[k]?' bump':''); else if(k!=='kkito') img.className='friend'+(faces[k]?' bump':''); el.appendChild(img); }
 }
+// 낮: 골목 어귀 무대를 세로 4칸으로 나눠 오늘의 갈 곳을 고른다. 칸을 누르면 말풍선이 뜨고, 한 번 더 누르면 간다
+const BUBBLE={
+  boneul:['...왔냐.','먹어. 토스트.','오늘 게스트. 앉아.'], ramda:['오늘 한 줄, 뭐라고 쓸까?','잠깐 나가자. 문방구.','이거 이름 다 같이 붙이자.'],
+  bookgeo:['끼토 씨. 오늘도 뛰어왔군요.','오늘 골목 냄새를 담아 보세요.','이름을 지어 주세요.'], lachil:['아이구, 오늘따라 계단이 길다 그래~','차 한잔 하고 가~','이때는 말이야, 그래~'],
+};
+function bubbleFor(k){
+  const f=S.flags;
+  if(k==='migae') return {who:'미개',t:(D.weather==='rain'?'부츠를 신고 물웅덩이를 고르고 있다. ':D.weather==='wind'?'날아가는 은행잎을 잡으려고 뛴다. ':'더듬이를 세우고 목줄을 물고 온다. ')+'<q>뽈뽈!</q>',sub:'산책 · 걱정이 줄어든다'};
+  if(k==='kkito') return {who:'901호',t:'태블릿이 켜진 채 기다린다. '+(S.serialStop?'연재는 끊겼지만 손은 멈추지 않는다.':'원고 '+S.ms+'/5. 오늘 낮을 통째로 쓰면 두세 장.')+(S.flags.lam_promise==='yes'&&S.reading<3?' 낭독글도 쓸 수 있다.':''),sub:'집에서 원고 · 아무도 안 만남'};
+  if(k==='ramda'&&S.sulk>=2) return {who:'람다',t:'문방구 앞에서 스티커 벽을 보고 있다. 끼토를 봤다. 인사는 없었다.',sub:'거리감 · 화해가 필요하다'};
+  if(D.noonSeed==='quarrel'&&k==='boneul') return {who:'보늘',t:'피자 상자를 들고 서 있다. <q>...남았어.</q>',sub:'다툰 지 사흘째'};
+  if(arcNoon(k)) return {who:F[k].n,t:{boneul:'소파 옆에 낡은 노트가 엎어져 있다. 보늘은 못 본 척한다.',ramda:'순서표를 벽에 붙이다 말고 돌아본다. <q>...초고?</q>',bookgeo:'선반에 병이 늘었다. <q>어디에 있었는지가 재료가 돼요.</q>',lachil:'사진첩을 펴 놓고 기다리신다. <q>옛날 솜재페야, 그래~</q>'}[k],sub:'오늘의 이야기'};
+  if(S.letterTo===k) return {who:F[k].n,t:'어젯밤 편지를 읽고 골목에 나와 있다. '+BUBBLE[k][k==='bookgeo'?STAGE_IDX.bookgeo(S.learn):STAGE_IDX[k](S.rel[k])].replace(/^/,'<q>').replace(/$/,'</q>'),sub:'편지를 받고 나왔다'};
+  const v=VARIANT[D.ev]; if(v&&v.who===k) return {who:F[k].n,t:{tue:'작은 유칼립투스 잎을 머리에 얹고 비를 맞으며 기어간다.',wed:'나이테존 팻말을 고쳐 쓰고 있다. <q>3년 된 단추가 오늘 주인을 만날까?</q>',thu:'대나무숲 빌라 앞에서 팔짱을 끼고 서 있다. 전 반장 대 현 반장.',fri:'은행나무 밑. 바구니가 반쯤 찼다.',sat:'사다리 위에서 손을 흔든다. <q>끼토! 딱 좋을 때 왔어!</q>'}[D.ev],sub:'오늘의 사건 · '+EVENTS[D.ev].n};
+  const idx=k==='bookgeo'?STAGE_IDX.bookgeo(S.learn):STAGE_IDX[k](S.rel[k]);
+  return {who:F[k].n,t:'<q>'+BUBBLE[k][idx]+'</q>',sub:'골목에서 마주침'};
+}
 function pickDay(){
-  show('sPick'); worryUI();
+  show('sScene'); worryUI(); $('slotLabel').textContent=WD[weekday()]+'요일 · 낮';
   const pool=D.pool||[...POOL[D.ev]].slice(0,2);
-  $('pickLead').innerHTML=(D.late?'허겁지겁 나온 끼토. ':'')+(D.wet?'흠뻑 젖은 채로. ':'')+'골목 어귀. 오늘 골목에 나온 얼굴은 '+pool.map(k=>F[k].n).join(', ')+'. 미개는 당연히 따라온다.<br><b>딱 한 군데만.</b> 친구에게 쓴 낮은 원고에 못 쓴 낮이다.';
-  const g=$('pickGrid'); g.innerHTML='';
-  const mk=(k,title,desc,tier,onclick)=>{ const f=F[k]; const b=document.createElement('button'); b.className='card'; b.style.background=f.col; b.style.color=f.dark; b.innerHTML=(tier?'<span class="tier">'+tier+'</span>':'')+'<img src="'+SP(k)+'" alt="" onerror="this.onerror=null;this.src=\''+A+'sd_'+(k==='lachil'?'lachilchin':k)+'_t.png\'"><div class="cn">'+title+'</div><div class="cd">'+desc+'</div>'; b.onclick=onclick; g.appendChild(b); };
-  for(const k of pool){ const v=VARIANT[D.ev]; const isVar=v&&v.who===k; const isArc=!!arcNoon(k);
-    let tier=k==='bookgeo'?TIER.bookgeo(S.learn):TIER[k](S.rel[k]); if(k==='ramda'&&S.sulk>=2) tier='거리감'; else if(k==='ramda'&&S.sulk===1) tier+=' · 서운';
-    mk(k,F[k].n,isArc?'오늘의 이야기':(S.letterTo===k?'편지를 받고 나왔다':isVar?('오늘의 사건 · '+EVENTS[D.ev].n):'골목에서 마주침'),tier,()=>friendScene(k));
-  }
-  mk('migae','미개와 산책',D.weather==='rain'?'빗속 · 부츠':D.weather==='wind'?'바람 · 은행잎':'맑음','항상 100',walkScene);
-  mk('kkito','집에서 원고','작업방 · 원고 +2~3'+(S.flags.lam_promise==='yes'&&S.reading<3?' · 낭독글':''),(S.serialStop?'연재 중단':'원고 '+S.ms+'/5'),homeScene);
-  S.letterTo=null; save();
+  const cast=$('cast'); cast.classList.add('hidden'); $('badge').hidden=true;
+  const img=$('bgImg'); const bgn=D.weather==='rain'?'bg_day_rain_alley.png':'bg_alley.png'; img.onerror=()=>{ img.onerror=null; img.src=A+bgn; }; img.src=seasonBg(bgn);
+  $('dNm').textContent='골목 어귀'; $('dTx').innerHTML=(D.late?'허겁지겁 나온 끼토. ':'')+(D.wet?'흠뻑 젖은 채로. ':'')+'오늘 골목에 나온 얼굴은 <b>'+pool.map(k=>F[k].n).join(', ')+'</b>. 미개는 당연히 따라온다.<br><b>딱 한 군데만.</b> 친구에게 쓴 낮은 원고에 못 쓴 낮이다.'; $('dExtra').innerHTML='';
+  $('choices').innerHTML='';
+  const cols=$('pickCols'); cols.innerHTML=''; cols.classList.remove('hidden');
+  const items=pool.map(k=>({k})).concat([{k:'migae'},{k:'kkito'}]);
+  let sel=null;
+  const go=(k)=>{ cols.classList.add('hidden'); cols.innerHTML=''; S.letterTo=null; save(); if(k==='migae') walkScene(); else if(k==='kkito') homeScene(); else friendScene(k); };
+  for(const it of items){ const k=it.k; const f=F[k]; const col=document.createElement('div'); col.className='col';
+    let tier=k==='migae'?'항상 100':k==='kkito'?(S.serialStop?'연재 중단':'원고 '+S.ms+'/5'):k==='bookgeo'?TIER.bookgeo(S.learn):TIER[k](S.rel[k]); if(k==='ramda'&&S.sulk>=2) tier='거리감'; else if(k==='ramda'&&S.sulk===1) tier+=' · 서운';
+    const b=bubbleFor(k); const hh={boneul:60,kkito:47,ramda:35,lachil:27,bookgeo:22,migae:13}[k]||44;
+    col.innerHTML='<div class="hd"><div class="cn">'+(k==='kkito'?'집에서 원고':k==='migae'?'미개와 산책':f.n)+'</div><span class="ct">'+tier+'</span><div class="cs">'+b.sub+'</div></div><img style="height:'+hh+'%" src="'+SP(k)+'" alt="" onerror="this.onerror=null;this.src=\''+A+'sd_'+(k==='lachil'?'lachilchin':k)+'_t.png\'">';
+    col.onclick=()=>{ if(sel===k) return go(k); sel=k; cols.querySelectorAll('.col').forEach(c=>c.classList.remove('sel')); col.classList.add('sel');
+      $('dNm').textContent=b.who+' · '+b.sub; $('dTx').innerHTML=b.t; $('dExtra').innerHTML='';
+      const box=$('choices'); box.innerHTML=''; const bt=document.createElement('button'); bt.className='next'; bt.textContent=(k==='kkito'?'집으로':k==='migae'?'산책 간다':F[k].n+'에게 간다'); bt.onclick=()=>go(k); box.appendChild(bt); };
+    cols.appendChild(col); }
 }
 function friendScene(k){
   D.met=k; S.met[k]=1; S.visits[k]=(S.visits[k]||0)+1; if(FRIENDS.every(x=>S.met[x])) achUnlock('day_all_friends');
