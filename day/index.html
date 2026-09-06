@@ -514,7 +514,13 @@ const NEWS2=[
   {if:()=>S.flags.booth==='applied',t:'솜재페 부스 신청 명단 마지막 줄. "토스트 · 보늘". 글씨가 아주 작다.'},
   {if:()=>S.flags.migae_found,t:'골목 아이들이 미개를 보고 "찾은 개미다!" 했다. 미개는 모르는 척했다.'},
   {if:()=>S.serialStop,t:'우편함에 출판사 봉투가 없다. 세 번째 주째.'},
-  {if:()=>S.week>=3,t:'공원 무대에 마이크 스탠드가 섰다. 일요일까지 나흘.'},
+  {if:()=>S.week>=3&&S.seasonNo===0,t:'공원 무대에 마이크 스탠드가 섰다. 일요일까지 나흘.'},
+  {if:()=>S.seasonNo===1&&(S.year||{}).booth_0==='applied',t:'대나무숲 빌라 창문에 가을 부스 간판이 아직 걸려 있다. 눈이 쌓였다.'},
+  {if:()=>S.seasonNo===1&&(S.year||{}).bk_label_0,t:()=>'공방 창가에 가을 병이 하나 있다. 〈'+(S.year||{}).bk_label_0+'〉. 옆자리가 비어 있다.'},
+  {if:()=>S.seasonNo===1&&(S.year||{}).gm_wheels_0,t:'은행나무 옆에 가을 수레가 눈을 뒤집어쓰고 서 있다.'},
+  {if:()=>S.seasonNo===1&&(S.year||{}).lam_promise_0==='yes',t:'시티청 게시판에 가을 솜재페 순서표가 아직 붙어 있다. "낭독 · 끼토"에 눈이 얼었다.'},
+  {if:()=>S.seasonNo===1&&pieceCount()>=3,t:'공방 선반에 병이 늘었다. 라벨은 아직 없다. 북거씨가 하나씩 열어 본다.'},
+  {if:()=>S.seasonNo===1&&S.flags.live==='yes',t:'대나무숲 빌라 앞에 택배 상자. 카메라 삼각대다. 100만 라이브가 다가온다.'},
 ];
 const WEEK_TITLE=(w)=>{ const f=S.flags; if(w===0) return f.lam_promise==='yes'?'부탁의 주':f.minwon?'신고의 주':'가을의 주'; if(w===1) return f.bon_secret?'비밀의 주':f.draft_seen?'초고의 주':'은행 카펫의 주'; if(w===2) return f.migae_found?'찾은 것들의 주':f.migae_lost?'잃어버린 것의 주':'해질녘의 주'; return '약속의 주'; };
 const WEEK_PREVIEW=['다음 주 예고: 보늘네 소파 옆에 낡은 노트 한 권이 놓여 있다.','다음 주 예고: 미개가 장날을 너무 좋아하는 게 걱정이다.','다음 주 예고: 다음 주 일요일, 솜재페.'];
@@ -868,7 +874,7 @@ function transit(){
   D.pool=pool; D.force=force;
   const wl=(CH().walkLine||{rain:'큰 잎 우산 아래로 빗소리. 돌바닥이 반들거린다.',wind:'은행잎이 얼굴로 날아든다. 귀가 자꾸 뒤로 넘어간다.',sunny:'해가 따뜻하다. 은행잎이 발밑에서 바스락거린다.'})[D.weather]||'';
   const seen=pool.map(k=>F[k].n).join(', ');
-  const n2=NEWS2.filter(n=>{ try{ return n.if(); }catch(e){ return false; } }); const news=(n2.length&&Math.random()<0.6)?n2[rnd(n2.length)].t:NEWS[rnd(NEWS.length)];
+  const n2=NEWS2.filter(n=>{ try{ return n.if(); }catch(e){ return false; } }); const nn=(n2.length&&Math.random()<0.6)?n2[rnd(n2.length)].t:NEWS[rnd(NEWS.length)]; const news=typeof nn==='function'?nn():nn;
   const letter=S.letterTo?'<br>어젯밤 쓴 편지를 읽었는지, <b>'+F[S.letterTo].n+'</b>'+(S.letterTo==='lachil'?'가':'이')+' 골목에 나와 있다.':'';
   const text='골목을 걷는다. '+wl+'<br>'+news+'<br>저 앞에 <b>'+seen+'</b>'+(pool.length>1?'가':'이')+' 보인다.'+letter;
   const bg=D.weather==='rain'?'bg_day_rain_alley.png':'bg_alley.png';
@@ -1078,8 +1084,9 @@ function relRows(compact){
   const rows=[['boneul',S.rel.boneul,TIER.boneul(S.rel.boneul),'가장 오랜 친구. 속 이야기를 꺼낼수록 깊어집니다.'],['ramda',S.rel.ramda,(S.sulk>=2?'거리감 · ':S.sulk===1?'서운 · ':'')+TIER.ramda(S.rel.ramda),'생각이 잘 맞는 친구. 다른 생각을 말하면 서운해하고, 서운함이 쌓이면 거리를 둡니다.'],['bookgeo',Math.min(10,S.learn),TIER.bookgeo(S.learn),'조향사 이웃 어른. 찾아갈수록 끼토의 걱정이 줄어듭니다.'],['lachil',S.rel.lachil,TIER.lachil(S.rel.lachil),'5층 할머니. 나누는 만큼 정이 듭니다.'],['migae',10,'항상 100','끼토의 반려개미. 눈금이 없습니다.']];
   return rows.map(([k,v,t,d])=>{ const dots=Array.from({length:10},(_,i)=>'<i class="'+(i<v?'on':'')+'"></i>').join(''); return '<div class="relRow"><img src="'+SP(k)+'" alt="" onerror="this.onerror=null;this.src=\''+A+'sd_'+(k==='lachil'?'lachilchin':k)+'_t.png\'"><div><div class="rn">'+F[k].n+' <span style="color:#F2C14B;font-size:11px;">'+t+'</span></div>'+(compact?'':'<div class="rt">'+d+'</div>')+'</div><div class="dots">'+dots+'</div></div>'; }).join('');
 }
+function yearLines(){ const L=[]; const names=['가을','겨울','봄','여름']; (S.seasons||[]).forEach((sz,i)=>{ const o=sz.o||{}; const N=i===0?OUT_N:W_OUT_N; L.push(names[i]+': '+FRIENDS.map(k=>F[k].n+' · '+((N[k]||{})[o[k]]||'')).join(' / ')+(sz.label?' / 향 「'+sz.label+'」':'')); }); return L; }
 function renderRel(){ $('relList').innerHTML=relRows(false); $('seedList').innerHTML=S.seeds.length?'심어 둔 씨앗: '+S.seeds.map(s=>SEEDS[s.id].n+(s.fuse>0?' ('+s.fuse+'일 뒤)':s.fuse===0?' (오늘)':' (비 오는 날)')).join(', '):'심어 둔 씨앗이 없습니다.';
-  const fl=flagLines(); const ing=ingNames(); $('flagList').innerHTML='<b style="color:#F2C14B;">이번 시즌의 약속</b><br>'+(fl.length?fl.map(t=>'· '+t).join('<br>'):'아직 없습니다.')+'<br><br><b style="color:#F2C14B;">북거씨 향 재료</b> '+(ing.length?ing.join(', ')+' ('+ing.length+'/5)':'아직 없음')+(S.serialStop?'<br><br>연재 중단 · 원고 압박 없음':'<br><br>원고 '+S.ms+'/5 · 도토리 '+S.acorn); show('sRel'); }
+  const fl=flagLines(); const ing=ingNames(); const yl=yearLines(); $('flagList').innerHTML=(yl.length?'<b style="color:#F2C14B;">한 해의 약속</b><br>'+yl.map(t=>'· '+t).join('<br>')+'<br><br>':'')+'<b style="color:#F2C14B;">이번 시즌의 약속</b><br>'+(fl.length?fl.map(t=>'· '+t).join('<br>'):'아직 없습니다.')+'<br><br><b style="color:#F2C14B;">북거씨 향 재료</b> '+(ing.length?ing.join(', ')+' ('+ing.length+'/5)':'아직 없음')+(S.serialStop?'<br><br>연재 중단 · 원고 압박 없음':'<br><br>원고 '+S.ms+'/5 · 도토리 '+S.acorn); show('sRel'); }
 function renderDex(){
   const p=$('dexPanel'); p.innerHTML=''; let n=0,total=0; const groups={};
   for(const id in CUTS){ const c=CUTS[id]; (groups[c.g]=groups[c.g]||[]).push(id); total++; if(S.cuts[id]) n++; }
