@@ -150,7 +150,7 @@
     </a>
     <a class="blk" href="day/" style="background:#E9B7C6;color:#3A1F2C;grid-column:1 / -1;">
       <div class="mask"><img src="assets/ending_e5_leafpile.png" alt="" style="object-position:center 30%;"></div>
-      <div class="txt"><div class="no">GAME 05 · NEW</div><div class="nm">끼토의 하루</div><div class="ds">4주 뒤 솜재페에 누가 올까. 원고 마감과 친구 사이에서 고르는 끼토의 한 시즌</div></div>
+      <div class="txt"><div class="no">GAME 05 · NEW</div><div class="nm">끼토의 하루</div><div class="ds">솜재페·등불 밤·벼룩장·옥상 영화제. 네 계절을 살고 나면 끼토와 보늘은 절친이 됩니다</div></div>
       <img class="ch" src="assets/sd_kkito_win_t.png" alt="" style="height:96%;max-height:120px;right:10px;">
     </a>
   </nav>
@@ -219,6 +219,11 @@ const ACH = [
   {id:'day_migae',      g:'끼토의 하루', n:'미개를 찾았다',    d:'장날에 사라진 미개를 찾았어요'},
   {id:'day_season',     g:'끼토의 하루', n:'솜재페의 밤',      d:'한 시즌을 끝까지 살았어요'},
   {id:'day_full',       g:'끼토의 하루', n:'만석',             d:'솜재페에 넷이 다 제 자리로 왔어요'},
+  {id:'day_sea',        g:'끼토의 하루', n:'바다를 본 적 없는 조향사', d:'겨울에 바다향 조각 다섯을 모았어요'},
+  {id:'day_key',        g:'끼토의 하루', n:'문을 연 끼토',     d:'봄에 이름 없는 열쇠의 주인 문을 찾았어요'},
+  {id:'day_owner',      g:'끼토의 하루', n:'환불 원정대, 해산', d:'봄에 나이테존 물건 다섯이 다 주인을 만났어요'},
+  {id:'day_book',       g:'끼토의 하루', n:'골목 이야기',      d:'그림책 네 장을 다 그렸어요'},
+  {id:'day_bff',        g:'끼토의 하루', n:'둘도 없는 절친',   d:'여름 옥상에서 끼토와 보늘이 절친이 됐어요'},
   {id:'all_three',  g:'솜솜시티',  n:'마을 한 바퀴',  d:'세 게임을 모두 해봤어요'},
   {id:'all_four',   g:'솜솜시티',  n:'네 골목 제패',  d:'네 게임을 모두 해봤어요'},
   {id:'all_chars',  g:'솜솜시티',  n:'여섯 친구',     d:'여섯 주민 모두와 놀았어요'},
@@ -277,7 +282,7 @@ function renderDex(){
     }
     list.appendChild(grid);
   }
-  { const dayN=Object.keys(got).filter(k=>k.startsWith('day_')).length, dayT=109; have+=dayN; total+=dayT;
+  { const dayN=Object.keys(got).filter(k=>k.startsWith('day_')).length, dayT=301; have+=dayN; total+=dayT;
     const h3=document.createElement('div'); h3.className='achGrp'; h3.textContent='끼토의 하루 그림 (게임 안 도감에서 크게 보기)'; list.appendChild(h3);
     const r=document.createElement('div'); r.className='cutRow'; r.innerHTML='<span class="nm">아침·낮·씨앗·관계·줄기·위기·원고·솜재페</span><span class="pg">'+dayN+' / '+dayT+'</span>'; list.appendChild(r); }
   const h2=document.createElement('div'); h2.className='achGrp'; h2.textContent='짝맞추기 일상 컷'; list.appendChild(h2);
