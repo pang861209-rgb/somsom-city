@@ -464,7 +464,7 @@ const STORY_END='북거씨: <q>오늘은 향만 맡죠.</q>';
 
 // ====================== 씨앗 ======================
 const SEEDS={
-  button:{n:'단추',fuse:2,when:'morning',cut:'s1',eff:{ramda:1},text:'문고리에 단추 키링이 걸려 있다. 쪽지: 〈은행잎 밑 갈색 단추 → 끼토 것〉',migae:'미개가 키링을 툭 쳐서 흔들어 본다.'},
+  button:{n:'단추',fuse:2,when:'morning',cut:'s1',eff:{ramda:1},text:'문고리에 단추 키링이 걸려 있다. 쪽지: 〈이 단추, 원래 네 거였어 → 끼토 것〉',migae:'미개가 키링을 툭 쳐서 흔들어 본다.'},
   heart:{n:'속마음',fuse:1,when:'noon',cut:'s2',eff:{boneul:1},text:'골목에 보늘이 먼저 나와 있었다. 평소엔 안 나오는 사람이. <q>...지나가다.</q> 대나무숲 빌라는 반대쪽이다.',migae:'미개가 보늘에게 먼저 달려간다.'},
   calm:{n:'진정향',fuse:1,when:'morning',cut:'s3',eff:{worryStart:3},text:'문을 나서기 전에 시향지를 한 번 맡았다. 오늘은 되돌아오지 않았다.',migae:'미개가 더듬이를 하트로 맞댄다.'},
   ginkgo:{n:'은행',fuse:3,when:'evening',cut:'e4',eff:{lachil:1},text:'901호 문 앞에 볶은 은행 한 봉지와 쪽지. 〈그래~ 잘 먹어.〉 글자가 삐뚤빼뚤했다. 돋보기를 안 쓰고 쓰신 거다.',migae:'미개용 은행은 한 알이 따로 놓여 있었다.'},
@@ -1069,7 +1069,7 @@ function finishDay(){
 function weekly(gain){
   achUnlock('day_week');
   const w=S.week; let cut=WCUT[seasonKey(w)]; let festText='';
-  if(hasSeed('fest')){ takeSeed('fest'); applyEff(SEEDS.fest.eff,null); cut='wf'; festText='전구 시험 점등의 밤. 여섯이 무대 앞에 나란히 섰다. 람다가 전구를 세었다. 서른 개. 끼토 것도 켜져 있었다.<br>'; }
+  if(hasSeed('fest')){ takeSeed('fest'); applyEff(SEEDS.fest.eff,null); cut=CH().festSeedCut||'wf'; festText=(CH().festSeedText||'전구 시험 점등의 밤. 여섯이 무대 앞에 나란히 섰다. 람다가 전구를 세었다. 서른 개. 끼토 것도 켜져 있었다.')+'<br>'; }
   seeCut(cut);
   const letters=FRIENDS.map(k=>{ const idx=k==='bookgeo'?STAGE_IDX.bookgeo(S.learn):STAGE_IDX[k](S.rel[k]); const cold=(k==='ramda'&&S.sulk>=2)?'...':LETTERS[k][idx]; return '<div class="letter"><b>'+F[k].n+'</b> · '+cold+'</div>'; }).join('');
   const fired=S.weekFired.map(id=>SEEDS[id]?SEEDS[id].n:id);
@@ -1648,7 +1648,7 @@ function w_festival(){ const o=w_outcomes(); const hero=w_heroCut(o); S.outcome=
   if(hero) playCut({cut:hero,bg:AD+'bg_alley_night.jpg',name:'등불 밤 · '+CUTS[hero].n,text:{w_fest_sea:'등불이 켜지자 골목이 조용해졌다. 북거씨가 병을 열었다. 젖은 은행잎, 소금, 빨래, 노래, 골목 끝의 벽. 다 있었다. <q>이 골목이 바다였어요.</q> 5층 창문에서 노래가 내려왔다.',w_fest_alone:'등불 마흔 개. 끼토와 미개. 공방은 닫혀 있고, 대나무숲 빌라는 불이 꺼져 있고, 람다는 무대 뒤였다. 그래도 끼토 이름 등은 켜졌다.',w_fest_song:'등불 밑에서 다들 위를 봤다. 5층 창문. 할머니가 노래를 불렀다. 서른 해 전 그 노래. 북거씨가 목을 길게 뺐다.',w_fest_live:'보늘이 등불 밑에 서 있었다. 감기는 나았고, 카메라는 없었다. <q>...라이브에서 한 말, 진짜야.</q> 그러고는 토스트를 꺼냈다.',w_fest_lanterns:'골목 양쪽에 람다의 등. 3년 된 병, 5년 된 단추, 6년 된 시향지가 불을 담고 있었다. 나이테존이 처음으로 골목 전체가 됐다.'}[hero],migae:'미개가 목도리를 하고 등불을 올려다봤다.',btn:'결산 카드'},showCard); else showCard(); }
 const W_WEEK_TITLE=(w)=>{ const f=S.flags; if(w===0) return f.note_asked?'쪽지의 주':'첫눈의 주'; if(w===1) return pieces().leaf?'조각의 주':f.live==='yes'?'약속의 주':'눈 쌓인 주'; if(w===2) return f.soup?'죽 한 그릇의 주':pieces().road?'골목 끝의 주':'얼음의 주'; return '등불의 주'; };
 const W_PREVIEW=['다음 주 예고: 북거씨가 선반 맨 뒤에서 라벨 없는 병을 꺼낸다.','다음 주 예고: 보늘이 열이 난다. 라이브 사흘 전.','다음 주 예고: 동짓날 밤, 등불 마흔 개.'];
-CHAPTERS.push({ups:UPS_W,nightLine:'밤. 보일러가 한 번 돌고 멈춘다. 창에 성에. 책상 스탠드 하나만 켜져 있다. 내일 골목에 누가 나올지는 아직 안 정해졌다.',fs:FS_W,id:'winter',n:'겨울 · 바다향의 비밀',season:['_winter','_winter','_winter','_night'],themes:['쪽지','조각','위기','등불'],finaleBtn:'등불 밤',until:'등불 밤까지',outN:W_OUT_N,festBg:'w_fest_bg',festBgFb:AD+'bg_alley_night.jpg',
+CHAPTERS.push({festSeedCut:'w_n_lantern1',festSeedText:'등불 시험 점등의 밤. 골목 등 하나만 켜졌다. 여섯이 그 밑에 섰다. 람다가 등을 세었다. 마흔 개. 끼토 이름 붙은 것도.',ups:UPS_W,nightLine:'밤. 보일러가 한 번 돌고 멈춘다. 창에 성에. 책상 스탠드 하나만 켜져 있다. 내일 골목에 누가 나올지는 아직 안 정해졌다.',fs:FS_W,id:'winter',n:'겨울 · 바다향의 비밀',season:['_winter','_winter','_winter','_night'],themes:['쪽지','조각','위기','등불'],finaleBtn:'등불 밤',until:'등불 밤까지',outN:W_OUT_N,festBg:'w_fest_bg',festBgFb:AD+'bg_alley_night.jpg',
   arcDays:[1,5,13,16,17,18,19,20,26,27],arcMorning:w_arcMorning,arcNoon:w_arcNoon,arcForce:w_arcForce,weekTitle:W_WEEK_TITLE,preview:W_PREVIEW,types:W_TYPES,finaleStart:w_finaleStart,
   events:W_EVENTS,variant:W_VARIANT,eventEnd:W_EVENT_END,pool:{mon:['boneul','ramda'],tue:['bookgeo','lachil'],wed:['ramda','lachil'],thu:['boneul','bookgeo'],fri:['lachil','bookgeo'],sat:['ramda','bookgeo'],sun:['boneul','ramda','bookgeo','lachil'],sick:['bookgeo','lachil']},
   weather:(ev,sk,r)=> ev==='tue'?'snow': r<0.5?'snow': r<0.7?'wind':'sunny',
@@ -1917,7 +1917,7 @@ function sp_festival(){ const o=sp_outcomes(); const hero=sp_heroCut(o); S.outco
   else showCard(); }
 const SP_WEEK_TITLE=(w)=>{ const f=S.flags; if(w===0) return f.quest==='find'?'원정대의 주':f.quest==='sell'?'벼룩장의 주':'공고의 주'; if(w===1) return itemCount()>=2?'주인의 주':'벚꽃의 주'; if(w===2) return f.spoke==='kkito'?'말한 주':f.roof_open?'옥상의 주':'봄비의 주'; return '팻말의 주'; };
 const SP_PREVIEW=['다음 주 예고: 나이테존 물건 다섯이 하나씩 골목으로 나온다. 단추, 상자, 찻잔, 사진틀.','다음 주 예고: 미개가 꽃잎을 따라간다. 그리고 금요일, 시티청 창구.','다음 주 예고: 일요일, 봄 벼룩장. 팻말이 남는가.'];
-CHAPTERS.push({ups:UPS_P,nightLine:'밤. 창문을 열어 뒀다. 꽃잎이 한 장 책상 위로 들어왔다. 스탠드 하나. 내일 골목에 누가 나올지는 아직 안 정해졌다.',fs:FS_P,id:'spring',n:'봄 · 환불 원정대',season:['_spring','_petal','_may','_green'],themes:['공고','주인','창구','팻말'],finaleBtn:'봄 벼룩장',until:'벼룩장까지',outN:SP_OUT_N,festBg:'p_fest_bg',festBgFb:AD+'bg_alley_green.jpg',
+CHAPTERS.push({festSeedCut:'p_n_stall',festSeedText:'분필 선 긋는 밤. 여섯이 골목 네모 안에 하나씩 들어가 섰다. 람다가 네모를 세었다. 열두 개. 나이테존 것도.',ups:UPS_P,nightLine:'밤. 창문을 열어 뒀다. 꽃잎이 한 장 책상 위로 들어왔다. 스탠드 하나. 내일 골목에 누가 나올지는 아직 안 정해졌다.',fs:FS_P,id:'spring',n:'봄 · 환불 원정대',season:['_spring','_petal','_may','_green'],themes:['공고','주인','창구','팻말'],finaleBtn:'봄 벼룩장',until:'벼룩장까지',outN:SP_OUT_N,festBg:'p_fest_bg',festBgFb:AD+'bg_alley_green.jpg',
   arcDays:[1,3,4,5,9,10,11,12,17,18,19,20,24,25,26,27],arcMorning:sp_arcMorning,arcNoon:sp_arcNoon,arcForce:sp_arcForce,weekTitle:SP_WEEK_TITLE,preview:SP_PREVIEW,types:SP_TYPES,finaleStart:sp_finaleStart,
   events:SP_EVENTS,variant:SP_VARIANT,eventEnd:SP_EVENT_END,pool:{mon:['boneul','ramda'],tue:['bookgeo','lachil'],wed:['ramda','lachil'],thu:['boneul','bookgeo'],fri:['lachil','bookgeo'],sat:['ramda','bookgeo'],sun:['boneul','ramda','bookgeo','lachil'],sick:['bookgeo','lachil']},
   weather:(ev,sk,r)=> ev==='tue'?'rain': sk==='_may'?(r<0.6?'rain':'sunny'): r<0.2?'rain': r<0.45?'wind':'sunny',
@@ -2175,7 +2175,7 @@ function u_festival(){ const o=u_outcomes(); const hero=u_heroCut(o); S.outcome=
   playCut({cut:hero,bg:AD+'bg_alley_night.jpg',name:'영화제의 밤 · '+CUTS[hero].n,text:{u_fest_full:'옥상. 의자 열두 개가 다 찼다. 람다가 영사기를 돌리고, 북거씨가 그 옆에서 렌즈를 봤고, 할머니는 맨 앞줄에서 얼음 쑥떡을 돌렸다. 스크린에 골목이 떴다. 끼토와 보늘은 맨 뒷줄. 나란히. 보늘: <q>...내년에도 해.</q> 절친이 된 밤.',u_fest_alone:'골목 벽에 빛. 의자 대신 벤치. 끼토와 미개. 람다는 상점 안에서 나오지 않았고, 대나무숲 빌라 창문은 어두웠다. 그래도 빛은 벽에 떴다. 골목이 잠깐 환했다.',u_fest_bff:'영화가 끝나고 다들 내려간 옥상. 난간에 끼토와 보늘. 골목에 불이 하나씩 꺼졌다. 보늘: <q>...김치 통.</q> 끼토: <q>...김치 통.</q> 둘 다 웃었다. 둘도 없는 절친이 된 밤.',u_fest_book:'스크린에 그림책 「골목 이야기」가 떴다. 한 장에 한 계절. 끼토가 읽었다. 목소리가 갈라졌다. 객석에서 누가 웃었다. 보늘이었다. 마지막 장은 오늘 밤이었다.',u_fest_screen:'옥상. 스크린에 빛이 떴다. 의자 열두 개. 두 빌라가 처음으로 같은 화면을 봤다. 매미가 그쳤다. 미개가 스크린 앞을 지나가서 그림자가 됐다. 다들 웃었다.',u_fest_window:'옥상은 못 썼다. 골목 벽에 빛. 5층 창문이 열리고 할머니가 내려다봤다. 벽에 뜬 빛이 창문까지 닿았다. 할머니가 손을 흔들었다. 끼토도, 미개도.',u_fest_wall:'골목 벽에 빛. 벤치 세 개. 람다가 빔을 돌렸다. 옥상은 아니었지만 골목이 잠깐 극장이 됐다. 북거씨가 계단 밑에서 봤다.'}[hero],migae:'미개가 스크린 앞을 지나갔다. 그림자가 제일 컸다.',btn:'결산 카드'},showCard); }
 const U_WEEK_TITLE=(w)=>{ const f=S.flags; if(w===0) return f.movie==='yes'?'두 반장의 주':f.movie==='solo'?'따로의 주':'더위의 주'; if(w===1) return f.mem2&&f.mem2!=='skip'?'회상의 주':f.projector==='ok'?'영사기의 주':'스크린의 주'; if(w===2) return f.migae_cool?'그늘의 주':f.permit_roof?'허가의 주':'폭염의 주'; return '영화제의 주'; };
 const U_PREVIEW=['다음 주 예고: 람다 창고에서 영사기가 나온다. 돌아갈까.','다음 주 예고: 미개가 더위를 먹는다. 그리고 시티청, 다시.','다음 주 예고: 전야, 옥상, 둘. 일요일 밤 영화제.'];
-CHAPTERS.push({ups:UPS_U,nightLine:'밤. 선풍기가 목을 돌린다. 매미는 그쳤다. 스탠드 하나. 내일 골목에 누가 나올지는 아직 안 정해졌다.',fs:FS_U,id:'summer',n:'여름 · 두 반장 이야기',season:['_summer','_rain','_heat','_night'],themes:['더위','회상','폭염','영화제'],finaleBtn:'옥상 영화제',until:'영화제까지',outN:U_OUT_N,festBg:'u_fest_bg',festBgFb:AD+'bg_alley_night.jpg',
+CHAPTERS.push({festSeedCut:'u_n_roof',festSeedText:'의자 놓는 밤. 여섯이 옥상에 올라가 의자에 하나씩 앉아 봤다. 람다가 의자를 세었다. 열두 개. 두 반장 것은 맨 뒷줄.',ups:UPS_U,nightLine:'밤. 선풍기가 목을 돌린다. 매미는 그쳤다. 스탠드 하나. 내일 골목에 누가 나올지는 아직 안 정해졌다.',fs:FS_U,id:'summer',n:'여름 · 두 반장 이야기',season:['_summer','_rain','_heat','_night'],themes:['더위','회상','폭염','영화제'],finaleBtn:'옥상 영화제',until:'영화제까지',outN:U_OUT_N,festBg:'u_fest_bg',festBgFb:AD+'bg_alley_night.jpg',
   arcDays:[1,4,6,10,11,13,17,18,19,20,24,25,26,27],arcMorning:u_arcMorning,arcNoon:u_arcNoon,arcForce:u_arcForce,weekTitle:U_WEEK_TITLE,preview:U_PREVIEW,types:U_TYPES,finaleStart:u_finaleStart,
   events:U_EVENTS,variant:U_VARIANT,eventEnd:U_EVENT_END,pool:{mon:['boneul','ramda'],tue:['bookgeo','lachil'],wed:['ramda','lachil'],thu:['boneul','bookgeo'],fri:['lachil','bookgeo'],sat:['ramda','bookgeo'],sun:['boneul','ramda','bookgeo','lachil'],sick:['bookgeo','lachil']},
   weather:(ev,sk,r)=> ev==='tue'?'rain': sk==='_rain'?(r<0.7?'rain':'sunny'): sk==='_heat'?(r<0.1?'wind':'sunny'): r<0.2?'rain': r<0.35?'wind':'sunny',
