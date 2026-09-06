@@ -233,7 +233,7 @@ const SEASON_N={'':'가을','_ginkgo':'은행 카펫','_dusk':'해질녘','_rain
 const WCUT={'':'w1','_ginkgo':'w2','_dusk':'w3','_rain':'w4','_winter':'w5','_night':'w6','_spring':'p_w1','_petal':'p_w2','_may':'p_w3','_green':'p_w4','_summer':'u_w1','_heat':'u_w2'};
 const WEEK_THEME=['부탁','비밀','위기','약속'];
 const TIER={
-  boneul:(v)=> v<=2?'서먹':v<=7?'친구':'단짝',
+  boneul:(v)=> (typeof wasBff==='function'&&wasBff())?(v<=2?'절친 · 뜸함':v<=7?'절친':'절친 · 옆자리'):(v<=2?'서먹':v<=7?'친구':'단짝'),
   ramda:(v)=> v<=5?'지인':v<=8?'통함':'단짝',
   lachil:(v)=> v<=2?'이웃':v<=5?'정든 이웃':'가족 같은',
   bookgeo:(v)=> v<3?'처음':v<6?'배우는 중':'차분해짐',
@@ -746,6 +746,8 @@ const rnd=(n)=>Math.floor(Math.random()*n);
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); $(id).classList.add('on'); }
 function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
 function CH(){ return CHAPTERS[Math.min(S.seasonNo,CHAPTERS.length-1)]; }
+function yearNo(){ return (S.round||0)+1; }
+function wasBff(){ return !!(S.year&&S.year.bff_3); }
 function seasonKey(w){ return CH().season[Math.min(3,Math.max(0,w))]; }
 function seasonName(w){ return SEASON_N[seasonKey(w)]; }
 function seasonBg(base){ const s=seasonKey(S.week); return s?AD+base.replace('.png',s+'.jpg'):A+base; }
@@ -942,7 +944,7 @@ function renderCast(cast,faces){
 }
 // 낮: 골목 어귀 무대를 세로 4칸으로 나눠 오늘의 갈 곳을 고른다. 칸을 누르면 말풍선이 뜨고, 한 번 더 누르면 간다
 const BUBBLE={
-  boneul:['...왔냐.','먹어. 토스트.','오늘 게스트. 앉아.'], ramda:['오늘 한 줄, 뭐라고 쓸까?','잠깐 나가자. 문방구.','이거 이름 다 같이 붙이자.'],
+  boneul:['...왔냐.','먹어. 토스트.','오늘 게스트. 앉아.'], boneulBff:['...왔네.','네 몫 따로 뒀어.','오늘도 옆자리 비워 놨어.'], ramda:['오늘 한 줄, 뭐라고 쓸까?','잠깐 나가자. 문방구.','이거 이름 다 같이 붙이자.'],
   bookgeo:['끼토 씨. 오늘도 뛰어왔군요.','오늘 골목 냄새를 담아 보세요.','이름을 지어 주세요.'], lachil:['아이구, 오늘따라 계단이 길다 그래~','차 한잔 하고 가~','이때는 말이야, 그래~'],
 };
 function bubbleFor(k){
@@ -955,7 +957,8 @@ function bubbleFor(k){
   if(S.letterTo===k) return {who:F[k].n,t:'어젯밤 편지를 읽고 골목에 나와 있다. '+BUBBLE[k][k==='bookgeo'?STAGE_IDX.bookgeo(S.learn):STAGE_IDX[k](S.rel[k])].replace(/^/,'<q>').replace(/$/,'</q>'),sub:'편지를 받고 나왔다'};
   const v=(CH().variant||VARIANT)[D.ev]; if(v&&v.who===k) return {who:F[k].n,t:(CH().variantBubble||{tue:'작은 유칼립투스 잎을 머리에 얹고 비를 맞으며 기어간다.',wed:'나이테존 팻말을 고쳐 쓰고 있다. <q>3년 된 단추가 오늘 주인을 만날까?</q>',thu:'대나무숲 빌라 앞에서 팔짱을 끼고 서 있다. 전 반장 대 현 반장.',fri:'은행나무 밑. 바구니가 반쯤 찼다.',sat:'사다리 위에서 손을 흔든다. <q>끼토! 딱 좋을 때 왔어!</q>'})[D.ev],sub:'오늘의 사건 · '+((CH().events&&CH().events[D.ev])||EVENTS[D.ev]).n};
   const idx=k==='bookgeo'?STAGE_IDX.bookgeo(S.learn):STAGE_IDX[k](S.rel[k]);
-  return {who:F[k].n,t:'<q>'+BUBBLE[k][idx]+'</q>',sub:'골목에서 마주침'};
+  const tbl=(k==='boneul'&&wasBff())?BUBBLE.boneulBff:BUBBLE[k];
+  return {who:F[k].n,t:'<q>'+tbl[idx]+'</q>',sub:(k==='boneul'&&wasBff())?'절친이 된 뒤':'골목에서 마주침'};
 }
 // 무대 4칸 공통: items=[{k,name,tier,sub,bubble,who,btn,disabled}], 칸을 누르면 말풍선, 한 번 더 누르면 go(k)
 function stageColumns(items, bgn, lead, go){
@@ -997,6 +1000,8 @@ function friendScene(k){
   if(k==='ramda'&&f.gm_cart&&!f.gm_wheels&&S.sulk<2) sc.choices.push({t:'할머니 수레 바퀴를 산다',label:'수레',cost:6,direct:{flag:{gm_wheels:1}},line:'람다: <q>할머니 거지? 바퀴 하나는 내가 낼게.</q> 도토리 여덟 개. 여섯만 받았다.',face:'ok'});
   if(k==='ramda'&&f.gm_cart&&!f.gm_wheels&&S.sulk>=2) sc.choices.push({t:'할머니 수레 바퀴를 산다',label:'수레',cost:8,direct:{flag:{gm_wheels:1}},line:'람다는 바퀴 두 개를 말없이 내놓았다. 도토리 여덟 개. 거스름돈도 말없이.',face:'bad'});
   if(CH().noonExtra) CH().noonExtra(k,sc);
+  if(wasBff()&&k==='boneul'&&!CH().arcNoon(k)) sc.text+='<br><span class="sub">작년 여름 옥상 뒤로 둘 사이에 설명이 필요 없어졌다.</span>';
+  if(wasBff()&&k==='ramda'&&S.seasonNo===0&&S.dayNo<=7) sc.text+='<br>람다: <q>너희 둘 요즘 같이 다니더라. 나도 껴 줘.</q>';
   if(S.seasonNo===0&&S.dayNo===2&&k==='bookgeo'){ sc.text+='<br>북거씨: <q>올해 솜재페엔 이 도시의 향을 내놓고 싶어요. 재료 셋을 아직 못 정했어요. 끼토 씨가 어디에 있었는지가 재료가 될 거예요.</q>'; }
   const cast=['kkito','migae',k]; if(sc.extra) cast.push(...sc.extra);
   const go=()=> playScene({bg:sc.bg,cut:sc.cut,name:(CH().arcNoon(k)?'이야기 · ':((CH().events&&CH().events[D.ev])||EVENTS[D.ev]).n+' · ')+F[k].n,text:sc.text,cast,who:k,choices:sc.choices,after:evening});
@@ -1045,7 +1050,7 @@ function night(){
 }
 function letterPick(){
   $('slotLabel').textContent=WD[weekday()]+'요일 · 밤 · 편지';
-  const LB={boneul:'<q>...뭐. 내일 골목.</q> 답장은 이 한 줄일 것이다. 그래도 나온다.',ramda:'<q>편지! 답장은 세 장 쓸게.</q> 내일 골목에서 먼저 손을 흔들 것이다.',bookgeo:'<q>편지는 천천히 읽는 거예요.</q> 내일 골목에 시향지를 한 장 들고 나올 것이다.',lachil:'<q>아이구, 편지를 다 받고 그래~</q> 내일 골목에 찻잔 두 개를 들고 나오실 것이다.'};
+  const LB={boneul:wasBff()?'<q>...읽었어. 내일 봐.</q> 답장이 두 줄이다. 작년보다 한 줄 늘었다.':'<q>...뭐. 내일 골목.</q> 답장은 이 한 줄일 것이다. 그래도 나온다.',ramda:'<q>편지! 답장은 세 장 쓸게.</q> 내일 골목에서 먼저 손을 흔들 것이다.',bookgeo:'<q>편지는 천천히 읽는 거예요.</q> 내일 골목에 시향지를 한 장 들고 나올 것이다.',lachil:'<q>아이구, 편지를 다 받고 그래~</q> 내일 골목에 찻잔 두 개를 들고 나오실 것이다.'};
   const items=FRIENDS.map(k=>{ const out=(k==='boneul'&&S.flags.bon_leak2&&S.dayNo<18); const cold=(k==='ramda'&&S.sulk>=2);
     return {k,name:F[k].n,tier:k==='bookgeo'?TIER.bookgeo(S.learn):TIER[k](S.rel[k]),sub:out?'답이 없을 것이다':cold?'읽을지는 모른다':'내일 골목에서',bubble:out?'보늘은 지금 아무 편지도 열지 않는다.':cold?'람다가 봉투를 열지 않은 채 서랍에 넣는다. 내일 골목엔 나온다. 말은 안 할 것이다.':LB[k],who:F[k].n,btn:F[k].n+'에게 보낸다',disabled:out}; });
   const lead={nm:'밤 · 편지',tx:'누구에게 쓸까. 편지를 받은 사람은 내일 골목에 반드시 나온다. 도토리 하나.'};
@@ -1089,7 +1094,7 @@ function relRows(compact){
   const rows=[['boneul',S.rel.boneul,TIER.boneul(S.rel.boneul),'가장 오랜 친구. 속 이야기를 꺼낼수록 깊어집니다.'],['ramda',S.rel.ramda,(S.sulk>=2?'거리감 · ':S.sulk===1?'서운 · ':'')+TIER.ramda(S.rel.ramda),'생각이 잘 맞는 친구. 다른 생각을 말하면 서운해하고, 서운함이 쌓이면 거리를 둡니다.'],['bookgeo',Math.min(10,S.learn),TIER.bookgeo(S.learn),'조향사 이웃 어른. 찾아갈수록 끼토의 걱정이 줄어듭니다.'],['lachil',S.rel.lachil,TIER.lachil(S.rel.lachil),'5층 할머니. 나누는 만큼 정이 듭니다.'],['migae',10,'항상 100','끼토의 반려개미. 눈금이 없습니다.']];
   return rows.map(([k,v,t,d])=>{ const dots=Array.from({length:10},(_,i)=>'<i class="'+(i<v?'on':'')+'"></i>').join(''); return '<div class="relRow"><img src="'+SP(k)+'" alt="" onerror="this.onerror=null;this.src=\''+A+'sd_'+(k==='lachil'?'lachilchin':k)+'_t.png\'"><div><div class="rn">'+F[k].n+' <span style="color:#F2C14B;font-size:11px;">'+t+'</span></div>'+(compact?'':'<div class="rt">'+d+'</div>')+'</div><div class="dots">'+dots+'</div></div>'; }).join('');
 }
-function yearLines(){ const L=[]; const names=['가을','겨울','봄','여름']; (S.seasons||[]).forEach((sz,i)=>{ const o=sz.o||{}; const ci=i%4; const N=(CHAPTERS[ci]&&CHAPTERS[ci].outN)||OUT_N; L.push((i>=4?(Math.floor(i/4)+1)+'년째 ':'')+names[ci]+': '+FRIENDS.map(k=>F[k].n+' · '+((N[k]||{})[o[k]]||'')).join(' / ')+(sz.label?' / 향 「'+sz.label+'」':'')); }); return L; }
+function yearLines(){ const L=[]; if((S.round||0)>=1) L.push('— '+yearNo()+'년째 골목입니다. 지난해 기록은 아래 —'); const names=['가을','겨울','봄','여름']; (S.seasons||[]).forEach((sz,i)=>{ const o=sz.o||{}; const ci=i%4; const N=(CHAPTERS[ci]&&CHAPTERS[ci].outN)||OUT_N; L.push((i>=4?(Math.floor(i/4)+1)+'년째 ':'')+names[ci]+': '+FRIENDS.map(k=>F[k].n+' · '+((N[k]||{})[o[k]]||'')).join(' / ')+(sz.label?' / '+['향','향','팻말','그림책'][ci]+' 「'+sz.label+'」':'')); }); return L; }
 function renderRel(){ $('relList').innerHTML=relRows(false); $('seedList').innerHTML=S.seeds.length?'심어 둔 씨앗: '+S.seeds.map(s=>SEEDS[s.id].n+(s.fuse>0?' ('+s.fuse+'일 뒤)':s.fuse===0?' (오늘)':' (비 오는 날)')).join(', '):'심어 둔 씨앗이 없습니다.';
   const fl=flagLines(); const ing=ingNames(); const yl=yearLines(); $('flagList').innerHTML=(yl.length?'<b style="color:#F2C14B;">한 해의 약속</b><br>'+yl.map(t=>'· '+t).join('<br>')+'<br><br>':'')+'<b style="color:#F2C14B;">이번 시즌의 약속</b><br>'+(fl.length?fl.map(t=>'· '+t).join('<br>'):'아직 없습니다.')+'<br><br><b style="color:#F2C14B;">북거씨 향 재료</b> '+(ing.length?ing.join(', ')+' ('+ing.length+'/5)':'아직 없음')+(S.serialStop?'<br><br>연재 중단 · 원고 압박 없음':'<br><br>원고 '+S.ms+'/5 · 도토리 '+S.acorn); show('sRel'); }
 const DEX_G={
@@ -1123,7 +1128,7 @@ function renderDex(){
 }
 function renderTitle(){
   const wd=weekday(); const w=Math.floor((S.dayNo-1)/7); S.week=Math.min(3,w);
-  $('titleDays').textContent=CH().n+' · '+(S.dayNo===1?'첫날':S.dayNo+'일째')+' · '+seasonName(S.week);
+  $('titleDays').textContent=(yearNo()>1?yearNo()+'년째 · ':'')+CH().n+' · '+(S.dayNo===1?'첫날':S.dayNo+'일째')+' · '+seasonName(S.week);
   $('yearRow').innerHTML=['가을','겨울','봄','여름'].map((nm,i)=>'<span class="'+(i===S.seasonNo?'now':'')+'" style="'+(i<S.seasonNo?'color:#F2C14B;':i>=CHAPTERS.length?'opacity:.4;':'')+'">'+nm+(i<S.seasonNo?' ✓':'')+'</span>').join('');
   $('weeks').innerHTML=[0,1,2,3].map(i=>'<span class="'+(i===S.week?'now':'')+'">'+(i+1)+'주 '+CH().themes[i]+'</span>').join('');
   $('cal').innerHTML=WD.map((x,i)=>'<i class="'+(i<wd?'done':i===wd?'today':'')+'">'+x+'</i>').join('');
