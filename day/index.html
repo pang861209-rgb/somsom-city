@@ -71,7 +71,7 @@
   .fest img.b{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
   .fest img.l{position:absolute;object-fit:contain;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5));}
   .fest img.l.far{opacity:.55;filter:grayscale(.4) drop-shadow(0 6px 10px rgba(0,0,0,.5));}
-  .fest .win{position:absolute;right:6%;top:9%;width:13%;aspect-ratio:1/1.2;border-radius:6px;background:radial-gradient(circle at 50% 60%,#F7D77A,#C98A2A 70%,transparent 100%);box-shadow:0 0 24px 10px rgba(247,215,122,.45);opacity:0;}
+  .fest .win{position:absolute;right:7%;top:10%;width:9%;aspect-ratio:1/1;border-radius:50%;background:radial-gradient(circle at 50% 60%,#F7D77A,#C98A2A 70%,transparent 100%);box-shadow:0 0 24px 10px rgba(247,215,122,.45);opacity:0;}
   .fest .win.on{opacity:1;} .fest .win.dim{opacity:.18;box-shadow:none;background:#3A2E24;}
   .big{background:#F2C14B;color:#221E18;border:none;border-radius:16px;padding:14px;font-size:16px;font-weight:800;}
   .row{display:flex;gap:8px;}
@@ -1068,11 +1068,11 @@ function renderFest(o){
   const bg=document.createElement('img'); bg.className='b'; bg.src=IMG('r_fest_bg'); bg.onerror=()=>{ bg.onerror=null; bg.src=A+'bg_day_festival.png'; }; st.appendChild(bg);
   const win=document.createElement('div'); win.className='win'+(o.lachil==='window'?' on':o.lachil==='dark'?' dim':''); st.appendChild(win);
   const put=(name,fb,l,b,h,cls)=>{ const img=festImg(name,fb); img.className='l'+(cls?' '+cls:''); img.style.left=l+'%'; img.style.bottom=b+'%'; img.style.height=h+'%'; st.appendChild(img); };
-  if(o.bookgeo==='special') put('fs_bookgeo_booth',SP('bookgeo','ok'),2,10,30); else if(o.bookgeo==='guest') put('fs_bookgeo_bench',SP('bookgeo','sd'),4,5,26);
-  if(o.boneul==='special') put('fs_boneul_booth',SP('boneul','ok'),20,12,34); else if(o.boneul==='guest') put('fs_boneul_guest',SP('boneul','sd'),20,5,32);
-  if(o.ramda==='special') put('fs_ramda_mc',SP('ramda','ok'),58,30,28); else if(o.ramda==='guest') put('fs_ramda_guest',SP('ramda','sd'),62,5,32); else put('fs_ramda_back',SP('ramda','bad'),66,34,24,'far');
-  if(o.lachil==='special'){ put('fs_lachil_cart',SP('lachil','ok'),76,8,30); put('fs_migae_cart',SP('migae','ok'),70,2,13); } else if(o.lachil==='guest') put('fs_lachil_carried',SP('lachil','ok'),76,6,28);
-  if(o.ramda==='special') put('fs_kkito_read',SP('kkito','ok'),40,30,30); else put('fs_kkito_guest',SP('kkito','sd'),40,4,36);
+  if(o.bookgeo==='special') put('fs_bookgeo_booth',SP('bookgeo','ok'),1,14,17); else if(o.bookgeo==='guest') put('fs_bookgeo_bench',SP('bookgeo','sd'),2,12,15);
+  if(o.boneul==='special') put('fs_boneul_booth',SP('boneul','ok'),20,8,34); else if(o.boneul==='guest') put('fs_boneul_guest',SP('boneul','sd'),22,6,32);
+  if(o.ramda==='special') put('fs_ramda_mc',SP('ramda','ok'),56,38,24); else if(o.ramda==='guest') put('fs_ramda_guest',SP('ramda','sd'),62,6,30); else put('fs_ramda_back',SP('ramda','bad'),62,40,20,'far');
+  if(o.lachil==='special'){ put('fs_lachil_cart',SP('lachil','ok'),72,6,26); put('fs_migae_cart',SP('migae','ok'),66,4,11); } else if(o.lachil==='guest') put('fs_lachil_carried',SP('lachil','ok'),76,8,26);
+  if(o.ramda==='special') put('fs_kkito_read',SP('kkito','ok'),38,38,26); else put('fs_kkito_guest',SP('kkito','sd'),40,4,34);
   if(o.lachil!=='special') put('fs_migae',SP('migae','sd'),50,2,12);
 }
 function poemLines(o){ const f=S.flags; const L=[];
