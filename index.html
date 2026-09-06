@@ -278,7 +278,7 @@ function renderDex(){
     }
     list.appendChild(grid);
   }
-  { const dayN=Object.keys(got).filter(k=>k.startsWith('day_')).length, dayT=171; have+=dayN; total+=dayT;
+  { const dayN=Object.keys(got).filter(k=>k.startsWith('day_')).length, dayT=301; have+=dayN; total+=dayT;
     const h3=document.createElement('div'); h3.className='achGrp'; h3.textContent='끼토의 하루 그림 (게임 안 도감에서 크게 보기)'; list.appendChild(h3);
     const r=document.createElement('div'); r.className='cutRow'; r.innerHTML='<span class="nm">아침·낮·씨앗·관계·줄기·위기·원고·솜재페</span><span class="pg">'+dayN+' / '+dayT+'</span>'; list.appendChild(r); }
   const h2=document.createElement('div'); h2.className='achGrp'; h2.textContent='짝맞추기 일상 컷'; list.appendChild(h2);
