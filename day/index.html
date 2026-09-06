@@ -113,6 +113,9 @@
   .poem .ph{font-size:10.5px;font-weight:800;letter-spacing:.14em;color:#B08A3A;margin-bottom:6px;}
   .stat{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;color:#CFC5B0;}
   .stat div{background:rgba(255,255,255,.07);border-radius:10px;padding:8px 10px;line-height:1.45;} .stat b{color:#F2C14B;display:block;font-size:11px;letter-spacing:.06em;}
+  .dexTabs{flex:none;display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none;} .dexTabs::-webkit-scrollbar{display:none;}
+  .dexTabs button{flex:none;background:rgba(255,255,255,.08);border:none;color:#CFC5B0;border-radius:999px;padding:6px 13px;font-size:11.5px;font-weight:700;white-space:nowrap;}
+  .dexTabs button.on{background:#F2C14B;color:#221E18;}
   .dexGrp{font-size:10px;font-weight:700;letter-spacing:.14em;color:#8A8271;margin-top:6px;}
   .dexGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
   .dexCell{background:rgba(255,255,255,.07);border-radius:12px;padding:6px;text-align:center;font-size:10.5px;color:#CFC5B0;}
@@ -193,6 +196,7 @@
 
   <section id="sDex" class="screen">
     <div class="top"><button class="home" data-back>← 뒤로</button><span class="slot" id="dexCount"></span></div>
+    <div class="dexTabs" id="dexTabs" style="padding-left:12px;padding-right:12px;"></div>
     <div class="panel" id="dexPanel"></div>
   </section>
 
@@ -1088,10 +1092,31 @@ function relRows(compact){
 function yearLines(){ const L=[]; const names=['가을','겨울','봄','여름']; (S.seasons||[]).forEach((sz,i)=>{ const o=sz.o||{}; const ci=i%4; const N=(CHAPTERS[ci]&&CHAPTERS[ci].outN)||OUT_N; L.push((i>=4?(Math.floor(i/4)+1)+'년째 ':'')+names[ci]+': '+FRIENDS.map(k=>F[k].n+' · '+((N[k]||{})[o[k]]||'')).join(' / ')+(sz.label?' / 향 「'+sz.label+'」':'')); }); return L; }
 function renderRel(){ $('relList').innerHTML=relRows(false); $('seedList').innerHTML=S.seeds.length?'심어 둔 씨앗: '+S.seeds.map(s=>SEEDS[s.id].n+(s.fuse>0?' ('+s.fuse+'일 뒤)':s.fuse===0?' (오늘)':' (비 오는 날)')).join(', '):'심어 둔 씨앗이 없습니다.';
   const fl=flagLines(); const ing=ingNames(); const yl=yearLines(); $('flagList').innerHTML=(yl.length?'<b style="color:#F2C14B;">한 해의 약속</b><br>'+yl.map(t=>'· '+t).join('<br>')+'<br><br>':'')+'<b style="color:#F2C14B;">이번 시즌의 약속</b><br>'+(fl.length?fl.map(t=>'· '+t).join('<br>'):'아직 없습니다.')+'<br><br><b style="color:#F2C14B;">북거씨 향 재료</b> '+(ing.length?ing.join(', ')+' ('+ing.length+'/5)':'아직 없음')+(S.serialStop?'<br><br>연재 중단 · 원고 압박 없음':'<br><br>원고 '+S.ms+'/5 · 도토리 '+S.acorn); show('sRel'); }
+const DEX_G={
+  fall:['아침','낮','저녁','밤','관계','씨앗','위기','원고','솜재페','한 주'],
+  winter:['겨울 · 아침','겨울 · 낮','겨울 · 저녁','겨울 · 미개','등불 밤','줄기 · 북거씨','줄기 · 보늘','줄기 · 람다','줄기 · 할머니'],
+  spring:['봄 · 아침','봄 · 낮','봄 · 저녁','봄 · 미개','봄 · 한 주','봄 벼룩장','줄기 · 원정대'],
+  summer:['여름 · 아침','여름 · 낮','여름 · 저녁','여름 · 미개','여름 · 한 주','옥상 영화제','줄기 · 두 반장','회상','그림책'],
+};
+const DEX_TABS=[
+  {k:'all',n:'전체',m:()=>true},
+  {k:'fall',n:'가을',m:(g)=>DEX_G.fall.includes(g)},
+  {k:'winter',n:'겨울',m:(g)=>DEX_G.winter.includes(g)},
+  {k:'spring',n:'봄',m:(g)=>DEX_G.spring.includes(g)},
+  {k:'summer',n:'여름',m:(g)=>DEX_G.summer.includes(g)},
+  {k:'inter',n:'막간극',m:(g)=>g.indexOf('막간극')===0},
+  {k:'etc',n:'그 밖',m:(g)=>!DEX_G.fall.includes(g)&&!DEX_G.winter.includes(g)&&!DEX_G.spring.includes(g)&&!DEX_G.summer.includes(g)&&g.indexOf('막간극')!==0},
+];
+let dexTab='all';
 function renderDex(){
   const p=$('dexPanel'); p.innerHTML=''; let n=0,total=0; const groups={};
   for(const id in CUTS){ const c=CUTS[id]; (groups[c.g]=groups[c.g]||[]).push(id); total++; if(S.cuts[id]) n++; }
-  for(const g in groups){ const h=document.createElement('div'); h.className='dexGrp'; h.textContent=g; p.appendChild(h); const grid=document.createElement('div'); grid.className='dexGrid';
+  const tab=DEX_TABS.find(t=>t.k===dexTab)||DEX_TABS[0];
+  const tabs=$('dexTabs'); tabs.innerHTML='';
+  for(const t of DEX_TABS){ const gs=Object.keys(groups).filter(g=>t.m(g)); let tn=0,tt=0; for(const g of gs) for(const id of groups[g]){ tt++; if(S.cuts[id]) tn++; }
+    if(!tt) continue; const b=document.createElement('button'); b.className=(t.k===dexTab?'on':''); b.textContent=t.n+' '+tn+'/'+tt; b.onclick=()=>{ dexTab=t.k; renderDex(); }; tabs.appendChild(b); }
+  for(const g in groups){ if(!tab.m(g)) continue;
+    const h=document.createElement('div'); h.className='dexGrp'; h.textContent=g; p.appendChild(h); const grid=document.createElement('div'); grid.className='dexGrid';
     for(const id of groups[g]){ const c=CUTS[id]; const got=!!S.cuts[id]; const cell=document.createElement('div'); cell.className='dexCell'+(got?' got':''); cell.innerHTML='<img src="'+IMG(id)+'" alt="" onerror="this.onerror=null;this.src=\''+A+'bg_alley.png\'"><span class="n">'+(got?c.n:'？')+'</span>'+(got?'':'<span class="h">'+c.h+'</span>'); if(got) cell.onclick=()=>{ $('viewerImg').src=IMG(id); $('viewerCap').textContent=c.n; $('viewer').classList.add('on'); }; grid.appendChild(cell); }
     p.appendChild(grid); }
   $('dexCount').textContent='그림 '+n+' / '+total; show('sDex');
