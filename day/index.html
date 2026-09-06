@@ -1458,9 +1458,9 @@ const INTER=[
 ];
 let I=null;
 function interludeMenu(){
-  const items=INTER.map(x=>{ const ok=x.unlock(); const done=S.inter&&S.inter[x.id]; return {k:x.k,name:x.n,tier:done?'다시 보기':ok?'열림':'잠김',sub:x.sub,bubble:ok?({ramda:'<q>비 오는 날엔 상점에서 일하는 게 제일 좋아.</q> 종소리, 재즈, 단추. 하루를 람다로 산다.',boneul:'<q>...카메라 켜.</q> 아직 만들지 않은 하루.',bookgeo:'<q>천천히, 천천히.</q> 아직 만들지 않은 하루.',lachil:'<q>아이구, 그래~</q> 아직 만들지 않은 하루.'})[x.k]:'아직 열리지 않았다.',who:F[x.k].n,btn:x.k==='ramda'?'람다로 산다':'아직',disabled:!ok||x.k!=='ramda'}; });
-  const lead={nm:'막간극',tx:'끼토가 아닌 사람의 하루. 시즌이 끝날 때마다 하나씩 열린다. 지금 열린 것은 <b>람다의 비 오는 날</b>.'};
-  stageColumns(items, AD+'bg_alley_rain.jpg', lead, (k)=>{ $('pickCols').classList.add('hidden'); $('pickCols').innerHTML=''; if(k==='ramda') interEp1(); });
+  const items=INTER.map(x=>{ const ok=x.unlock(); const done=S.inter&&S.inter[x.id]; return {k:x.k,name:x.n,tier:done?'다시 보기':ok?'열림':'잠김',sub:x.sub,bubble:ok?({ramda:'<q>비 오는 날엔 상점에서 일하는 게 제일 좋아.</q> 종소리, 재즈, 단추. 하루를 람다로 산다.',boneul:'<q>...카메라 켜.</q> 솜재페 다음 날, 늘보의 식탁 촬영. 카메라 밖에서 보늘이 끼토를 어떻게 보는가.',bookgeo:'<q>천천히, 천천히.</q> 아직 만들지 않은 하루.',lachil:'<q>아이구, 그래~</q> 아직 만들지 않은 하루.'})[x.k]:'아직 열리지 않았다.',who:F[x.k].n,btn:x.k==='ramda'?'람다로 산다':x.k==='boneul'?'보늘로 산다':'아직',disabled:!ok||!['ramda','boneul'].includes(x.k)}; });
+  const lead={nm:'막간극',tx:'끼토가 아닌 사람의 하루. 시즌이 끝날 때마다 하나씩 열린다. 열린 것: '+INTER.filter(x=>x.unlock()&&['ramda','boneul'].includes(x.k)).map(x=>'<b>'+x.n+'</b>').join(', ')+'.'};
+  stageColumns(items, AD+'bg_alley_rain.jpg', lead, (k)=>{ $('pickCols').classList.add('hidden'); $('pickCols').innerHTML=''; if(k==='ramda') interEp1(); else if(k==='boneul') interBon(); });
   $('slotLabel').textContent='막간극';
 }
 // ---- 막간극 0: 람다의 비 오는 날 (소설 ep1) ----
@@ -1504,6 +1504,48 @@ Object.assign(CUTS,{i1_rain_shop:{g:'막간극 · 람다',n:'비 오는 아침',
   i1_grandma:{g:'막간극 · 람다',n:'단추가 괜찮은 게 있나요?????',img:'i1_grandma_0.jpg',h:'람다의 하루'},i1_grandma_nap:{g:'막간극 · 람다',n:'단추 위의 졸음',img:'i1_grandma_nap_0.jpg',h:'람다의 하루'},i1_window_bk:{g:'막간극 · 람다',n:'창밖의 잎',img:'i1_window_bk_0.jpg',h:'람다의 하루'},
   i1_boneul:{g:'막간극 · 람다',n:'단추요',img:'i1_boneul_0.jpg',h:'람다의 하루'},i1_end_ring:{g:'막간극 · 람다',n:'나이테존 앞',img:'i1_end_ring_0.jpg',h:'람다의 하루 끝'}});
 Object.assign(CUT_BG,{i1_rain_shop:'bg_day_acorn_shop.png',i1_kkomeon:'bg_day_acorn_shop.png',i1_kkito_button:'bg_day_acorn_shop.png',i1_grandma:'bg_day_acorn_shop.png',i1_grandma_nap:'bg_day_acorn_shop.png',i1_window_bk:'bg_day_acorn_shop.png',i1_boneul:'bg_day_acorn_shop.png',i1_end_ring:'bg_day_acorn_shop.png'});
+
+// ---- 막간극 1: 보늘의 촬영일 (솜재페 다음 날) ----
+function interBon(){
+  const fall=(S.seasons||[])[0]||{}; const o=fall.o||{}; const booth=o.boneul==='special'; const guest=o.boneul==='guest';
+  I={menu:0,chew:0,kk:0,mg:0,edit:0,title:0}; D=blankDay();
+  const next=(sc)=>{ playScene(Object.assign({who:sc.who||null,cast:sc.cast||['boneul']},sc)); };
+  const s1={cut:'b1_wake',bg:'bg_day_boneul_home.png',name:'솜재페 다음 날 · 대나무숲 빌라',cast:['boneul'],text:'소파에서 눈을 떴다. 어제 골목에서 늦게까지 있었다. '+(booth?'부스 간판이 벽에 기대 있다. 〈'+(fall.label?fall.label:'토스트')+'〉. 팔린 건 서른 장. ':guest?'어제는 손님으로만 갔다. 다음엔 부스를 내 볼까. ':'어제는 안 갔다. 문 앞에 토스트 봉지는 놓고 왔다. ')+'오늘은 촬영일. 늘보의 식탁. 메뉴는.',
+    choices:[{t:'토스트. 어제 남은 것',label:'담백',onPick:()=>I.menu=1,line:'식빵 여덟 장. 버터. 카메라 두 대. 씹는 속도는 평소대로.'},
+      {t:'피자 두 판',label:'느긋',onPick:()=>I.menu=2,line:'배달을 시켰다. 두 판. 한 판은 늘 남긴다. 누가 올지 모르니까.'},
+      {t:'할머니께 받은 은행 구이',label:'가을',onPick:()=>I.menu=3,line:'은행 한 봉지. 어제 5층에서 내려온 것. 껍질 까는 데 십 분씩. 구독자들은 그걸 좋아한다.'}],after:()=>next(s2)};
+  const s2={cut:'b1_shoot',bg:'bg_day_boneul_home.png',name:'촬영 · 씹는 속도',cast:['boneul'],text:'빨간 불. 카메라가 돈다. 첫 입. 댓글이 올라온다. "속도 올려주세요" "아니 이게 힐링임". 보늘은 어느 쪽인가.',
+    choices:[{t:'평소대로 느리게',label:'늘보',onPick:()=>I.chew=1,line:'한 입에 사십 초. 댓글: "잠들었다가 깼는데 아직 첫 조각". 그게 채널이다.'},
+      {t:'음식 앞에선 순발력 3배',label:'순발력',onPick:()=>I.chew=2,line:'두 번째 조각이 십 초 만에 사라졌다. 댓글: "?????" 편집에서 느리게 돌려야겠다.'}],after:()=>next(s3)};
+  const s3={cut:'b1_kkito_door',bg:'bg_day_boneul_home.png',name:'문 두드리는 소리 · 끼토',cast:['boneul','kkito'],who:'kkito',text:'촬영 중에 문 두드리는 소리. 끼토다. '+(booth?'<q>...어제 남은 거, 부스 상자 두고 갔길래.</q> 상자를 들고 서 있다.':guest?'<q>어제... 손님으로 가서 미안. 다음엔 도울게.</q>':'<q>...토스트 봉지, 고마웠어.</q> 문 앞에서 우물쭈물한다.')+' 카메라는 켜져 있다.',
+    choices:[{t:'카메라 안으로 끌어들인다. "우리 반장"',label:'소개',onPick:()=>I.kk=1,line:'끼토 귀가 섰다. 댓글: "반장님 귀 왜 서요". 보늘: <q>...원래 그래.</q>',face:'ok'},
+      {t:'카메라를 끄고 문을 연다',label:'배려',onPick:()=>I.kk=2,line:'빨간 불이 꺼졌다. 끼토가 상자를 놓고 갔다. 카메라 밖의 일이다. 그런 게 있어야 한다.',face:'ok'},
+      {t:'못 들은 척 씹는다',label:'늘보',onPick:()=>I.kk=3,line:'문 두드리는 소리가 세 번. 끼토는 갔다. 댓글: "밖에 누구 있는데요". 알고 있다.',face:'bad'}],after:()=>next(s4)};
+  const s4={cut:'b1_migae_crumbs',bg:'bg_day_boneul_home.png',name:'부스러기 · 미개',cast:['boneul','migae'],text:'끼토가 두고 간 것이 하나 더 있다. 미개. 소파 밑에서 부스러기를 먹는다. 공생이다. 카메라가 미개를 잡았다. 댓글: "개미 귀여워".',
+    choices:[{t:'그냥 둔다',label:'공생',onPick:()=>I.mg=1,line:'미개가 부스러기 열두 개를 치웠다. 청소 끝. 댓글이 미개 얘기뿐이었다.'},
+      {t:'일부러 더 흘린다',label:'늘보',onPick:()=>I.mg=2,line:'부스러기를 한 줌 더 흘렸다. 미개가 더듬이를 하트로 세웠다. 촬영 중 최고 조회수 구간.'}],after:()=>next(s5)};
+  const s5={cut:'b1_edit',bg:'bg_day_boneul_home.png',name:'편집',cast:['boneul'],text:'촬영 끝. 편집. 씹는 소리, 문 두드리는 소리, 미개. 어디를 자를까.',
+    choices:[{t:'끼토가 나온 부분을 남긴다',label:'남김',onPick:()=>I.edit=1,line:'귀가 선 장면을 살렸다. 썸네일로 쓸까 하다가 안 썼다. 그건 끼토 것이다.'},
+      {t:'끼토는 자르고 미개만',label:'미개',onPick:()=>I.edit=2,line:'끼토는 잘랐다. 카메라 밖의 일로 남겼다. 미개는 다섯 컷.'},
+      {t:'통편집 없이 그대로',label:'그대로',onPick:()=>I.edit=3,line:'사십 분 영상. 씹는 소리 그대로. 힐링 채널은 그래야 한다.'}],after:()=>next(s6)};
+  const s6={cut:'b1_upload',bg:'bg_day_boneul_home.png',name:'업로드',cast:['boneul'],text:'제목을 정한다. 새벽 두 시.',
+    choices:[{t:'"솜재페 다음 날 토스트"',label:'담백',onPick:()=>I.title=1,line:'올렸다. 조회수 1. 보늘 본인이다. 소파에 녹아내렸다.'},
+      {t:'"우리 반장이 왔다"',label:'반장',onPick:()=>I.title=2,line:'올렸다. 끼토가 볼까. 볼 것이다. 귀가 설 것이다.'},
+      {t:'"개미가 청소해 줌"',label:'미개',onPick:()=>I.title=3,line:'올렸다. 댓글 첫 줄: "개미 이름이 뭐예요". 미개다. 답은 안 달았다.'}],after:interBonEnd};
+  next(s1);
+}
+function interBonEnd(){
+  S.inter=S.inter||{}; S.inter.bon=1; save();
+  const L=['메뉴: '+['','어제 남은 토스트','피자 두 판','할머니의 은행 구이'][I.menu],I.chew===1?'평소대로 느리게 씹었다. 그게 채널이다.':'음식 앞에서 순발력이 3배가 됐다. 편집에서 느리게 돌렸다.',['','끼토를 카메라 안으로 끌어들였다. "우리 반장".','카메라를 끄고 문을 열었다. 카메라 밖의 일로 남겼다.','못 들은 척 씹었다. 끼토는 갔다.'][I.kk],I.mg===1?'미개가 부스러기 열두 개를 치웠다.':'부스러기를 더 흘렸다. 미개 더듬이가 하트였다.',['','끼토가 나온 부분을 남겼다.','끼토는 자르고 미개만 남겼다.','통편집 없이 사십 분.'][I.edit],'제목: '+['','솜재페 다음 날 토스트','우리 반장이 왔다','개미가 청소해 줌'][I.title]];
+  show('sFest'); $('festStage').innerHTML='<img class="b" src="'+IMG('b1_upload')+'" onerror="this.onerror=null;this.src=\''+A+'bg_day_boneul_home.png\'" style="object-fit:contain;background:#15120E;">';
+  $('festTitle').textContent='보늘의 촬영일'; $('festText').innerHTML='솜재페 다음 날을 보늘로 살았다. 카메라 밖에서 보늘이 끼토를 어떻게 보는지, 끼토는 모른다.';
+  $('festPoem').innerHTML='<div class="ph">보늘의 메모</div>'+L.join('<br>'); $('festStat').innerHTML=''; $('festRel').innerHTML='';
+  D.poemText='[솜솜시티 · 막간극] 보늘의 촬영일\n'+L.join('\n')+'\nhttps://pang861209-rgb.github.io/somsom-city/day/';
+  $('btnNewSeason').hidden=true; $('btnShare').textContent='메모 복사하기';
+}
+Object.assign(CUTS,{b1_wake:{g:'막간극 · 보늘',n:'소파에서 눈을 떴다',img:'b1_wake_0.jpg',h:'보늘의 촬영일'},b1_shoot:{g:'막간극 · 보늘',n:'빨간 불',img:'b1_shoot_0.jpg',h:'보늘의 촬영일'},b1_kkito_door:{g:'막간극 · 보늘',n:'문 두드리는 소리',img:'b1_kkito_door_0.jpg',h:'보늘의 촬영일'},
+  b1_migae_crumbs:{g:'막간극 · 보늘',n:'부스러기 공생',img:'b1_migae_crumbs_0.jpg',h:'보늘의 촬영일'},b1_edit:{g:'막간극 · 보늘',n:'편집',img:'b1_edit_0.jpg',h:'보늘의 촬영일'},b1_upload:{g:'막간극 · 보늘',n:'새벽 두 시',img:'b1_upload_0.jpg',h:'보늘의 촬영일 끝'}});
+Object.assign(CUT_BG,{b1_wake:'bg_day_boneul_home.png',b1_shoot:'bg_day_boneul_home.png',b1_kkito_door:'bg_day_boneul_home.png',b1_migae_crumbs:'bg_day_boneul_home.png',b1_edit:'bg_day_boneul_home.png',b1_upload:'bg_day_boneul_home.png'});
 
 $('btnStart').onclick=newDay; $('btnAgain').onclick=newDay;
 $('btnInter').onclick=()=>{ interludeMenu(); };
