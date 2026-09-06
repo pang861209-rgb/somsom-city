@@ -134,11 +134,11 @@
     <div class="panel">
       <div class="hero"><img id="titleImg" src="" alt=""></div>
       <div class="title"><small>GAME 05 · 시즌 「솜재페에 누가 오나」</small>끼토의 하루</div>
-      <div class="weeks" id="weeks"></div>
+      <div class="weeks" id="yearRow"></div><div class="weeks" id="weeks"></div>
       <div class="cal" id="cal"></div>
       <p class="lead" id="titleLead">4주 뒤 일요일 밤은 솜재페. 누가 어떤 모습으로 올지는 그때까지의 끼토가 정합니다.<br>매주 월요일은 원고 마감. 친구에게 쓴 하루는 원고에 못 쓴 하루입니다.</p>
       <button class="big" id="btnStart">오늘 하루 시작</button>
-      <div class="row"><button class="ghost" id="btnRel">친구들 · 약속</button><button class="ghost" id="btnDex">그림 도감</button></div>
+      <div class="row"><button class="ghost" id="btnRel">친구들 · 약속</button><button class="ghost" id="btnInter">막간극</button><button class="ghost" id="btnDex">그림 도감</button></div>
       <p class="lead" style="font-size:11px;color:#8A8271;" id="titleHint"></p>
     </div>
   </section>
@@ -741,7 +741,7 @@ function seasonName(w){ return SEASON_N[seasonKey(w)]; }
 function seasonBg(base){ const s=seasonKey(S.week); return s?AD+base.replace('.png',s+'.jpg'):A+base; }
 function bgFor(cut){ return CUT_BG[cut]||'bg_alley.png'; }
 function msUI(){ const t=(S.serialStop?'연재 중단':'원고 <b>'+S.ms+'</b>/5')+' · 🌰<b>'+S.acorn+'</b>'+(S.flags.lam_promise==='yes'?' · 낭독 <b>'+S.reading+'</b>/3':''); ['msLabel','msLabel2'].forEach(i=>{ const el=$(i); if(el) el.innerHTML=t; }); }
-function worryUI(){ const pct=Math.round(D.worry/10*100); ['worryBar','worryBar2'].forEach(i=>{ const el=$(i); if(el) el.style.width=pct+'%'; }); const n=$('worryNum'); if(n) n.textContent=' '+D.worry; msUI(); }
+function worryUI(){ if(!D){ msUI(); return; } const pct=Math.round(D.worry/10*100); ['worryBar','worryBar2'].forEach(i=>{ const el=$(i); if(el) el.style.width=pct+'%'; }); const n=$('worryNum'); if(n) n.textContent=' '+D.worry; msUI(); }
 function worryAdd(delta, why){ if(!delta) return; const before=D.worry; D.worry=clamp(D.worry+delta,0,10); const real=D.worry-before; if(real) D.wlog.push({d:real,why}); D.wlast.push({d:real||delta,why}); }
 function worryPopRender(){
   const el=$('worryPop'); if(!el) return;
@@ -927,7 +927,7 @@ function choose(sc,c){
 }
 function renderCast(cast,faces){
   const el=$('cast'); el.innerHTML='';
-  for(const k of cast){ const f=F[k]; if(!f) continue; const img=document.createElement('img'); img.alt=f.n; img.src=SP(k,faces[k]==='ok'?'ok':faces[k]==='bad'?'bad':'sd'); img.onerror=()=>{ img.onerror=null; img.src=A+'sd_'+(k==='lachil'?'lachilchin':k)+'_t.png'; };
+  for(let k of cast){ if(k==='lachilchin') k='lachil'; const f=F[k]; if(!f) continue; const img=document.createElement('img'); img.alt=f.n; img.src=SP(k,faces[k]==='ok'?'ok':faces[k]==='bad'?'bad':'sd'); img.onerror=()=>{ img.onerror=null; img.src=A+'sd_'+(k==='lachil'?'lachilchin':k)+'_t.png'; };
     if(k==='migae') img.className='migae'+(faces[k]?' bump':''); else if(k!=='kkito') img.className='friend'+(faces[k]?' bump':''); el.appendChild(img); }
 }
 // 낮: 골목 어귀 무대를 세로 4칸으로 나눠 오늘의 갈 곳을 고른다. 칸을 누르면 말풍선이 뜨고, 한 번 더 누르면 간다
@@ -1091,6 +1091,7 @@ function renderDex(){
 function renderTitle(){
   const wd=weekday(); const w=Math.floor((S.dayNo-1)/7); S.week=Math.min(3,w);
   $('titleDays').textContent=CH().n+' · '+(S.dayNo===1?'첫날':S.dayNo+'일째')+' · '+seasonName(S.week);
+  $('yearRow').innerHTML=CHAPTERS.map((c,i)=>'<span class="'+(i===S.seasonNo?'now':'')+'" style="'+(i<S.seasonNo?'color:#F2C14B;':'')+'">'+['가을','겨울','봄','여름'][i]+(i<S.seasonNo?' ✓':'')+'</span>').join('')+'<span>봄</span><span>여름</span>';
   $('weeks').innerHTML=[0,1,2,3].map(i=>'<span class="'+(i===S.week?'now':'')+'">'+(i+1)+'주 '+CH().themes[i]+'</span>').join('');
   $('cal').innerHTML=WD.map((x,i)=>'<i class="'+(i<wd?'done':i===wd?'today':'')+'">'+x+'</i>').join('');
   const n=Object.keys(S.cuts).length; $('titleHint').textContent='모은 그림 '+n+'/'+Object.keys(CUTS).length+' · 솜재페까지 '+(29-S.dayNo)+'일 · '+(S.serialStop?'연재 중단':'원고 '+S.ms+'/5')+' · 도토리 '+S.acorn+(S.seeds.length?' · 씨앗 '+S.seeds.length+'개':'');
@@ -1149,7 +1150,7 @@ function festival(){
     const msFinal=S.serialStop?null:(S.ms>=5?'ok':S.ms>=3?'half':'fail'); if(msFinal){ S.msLog.push(msFinal); if(msFinal==='ok') S.acorn+=6; else if(msFinal==='half') S.acorn+=3; }
     achUnlock('day_season'); if(Object.values(o).every(v=>v==='special')) achUnlock('day_full');
     S.seasons.push({o,ty:ty.k,ms:[...S.msLog],label:S.flags.bk_label||''}); S.dayNo=29; save();
-    show('sFest'); renderFest(o);
+    show('sFest'); renderFest(o); $('btnNewSeason').hidden=false; $('btnShare').textContent='낭독문 복사하기';
     const specials=Object.values(o).filter(v=>v==='special').length;
     $('festTitle').textContent=specials===4?'만석':specials===0?'조용한 밤':'솜재페의 밤 · '+specials+'명이 제 자리로';
     $('festText').innerHTML='전구 서른 개가 켜졌다. '+(o.ramda==='special'?'람다가 마이크를 건넸다. 끼토가 읽었다.':'끼토는 벤치에 앉았다. 읽을 글은 집에서 쓴 일기가 됐다.')+'<br>'+FRIENDS.map(k=>'<b>'+F[k].n+'</b> · '+OUT_N[k][o[k]]).join('<br>');
@@ -1164,9 +1165,9 @@ function festival(){
   else showCard();
 }
 function newSeason(){
-  const prev=S; const n=S.seasonNo+1; const year=Object.assign({},prev.year||{});
+  const prev=S; let n=S.seasonNo+1; if(n>=CHAPTERS.length) n=0; const year=Object.assign({},prev.year||{});
   for(const k of ['bk_label','gm_cart','gm_wheels','minwon','booth','lam_promise','migae_found','bon_cold','live','sea_label','pieces']) if(prev.flags[k]!==undefined) year[k+'_'+prev.seasonNo]=prev.flags[k];
-  S=DEF(); S.seasonNo=n; S.cuts=prev.cuts; S.met=prev.met; S.seasons=prev.seasons; S.year=year; S.acorn=Math.max(6,Math.min(20,prev.acorn)); S.sulk=Math.max(0,prev.sulk-1);
+  S=DEF(); S.seasonNo=n; S.cuts=prev.cuts; S.met=prev.met; S.seasons=prev.seasons; S.year=year; S.inter=prev.inter||{}; S.acorn=Math.max(6,Math.min(20,prev.acorn)); S.sulk=Math.max(0,prev.sulk-1);
   // 관계는 이어진다. 계절이 바뀌면 조금 멀어진다
   S.rel={boneul:Math.max(2,prev.rel.boneul-1),ramda:Math.max(1,prev.rel.ramda-1),lachil:Math.max(1,prev.rel.lachil-1)}; S.learn=Math.max(0,prev.learn-1);
   S.stage={boneul:STAGE_IDX.boneul(S.rel.boneul),ramda:STAGE_IDX.ramda(S.rel.ramda),lachil:STAGE_IDX.lachil(S.rel.lachil),bookgeo:STAGE_IDX.bookgeo(S.learn)};
@@ -1387,7 +1388,7 @@ function w_festival(){ const o=w_outcomes(); const hero=w_heroCut(o); S.outcome=
     const msFinal=S.serialStop?null:(S.ms>=5?'ok':S.ms>=3?'half':'fail'); if(msFinal){ S.msLog.push(msFinal); if(msFinal==='ok') S.acorn+=6; else if(msFinal==='half') S.acorn+=3; }
     achUnlock('day_season'); if(pieceCount()>=5) achUnlock('day_sea');
     S.seasons.push({o,ty:ty.k,ms:[...S.msLog],label:S.flags.sea_label||''}); S.dayNo=29; save();
-    show('sFest'); renderFest(o);
+    show('sFest'); renderFest(o); $('btnNewSeason').hidden=false; $('btnShare').textContent='이야기 복사하기';
     const n=pieceCount();
     $('festTitle').textContent=n>=5?'바다':n>=2?'등불 밤 · '+(S.flags.sea_label||'새 향'):'등불 밤 · 조용한 골목';
     $('festText').innerHTML='등불 마흔 개가 켜졌다. '+(o.bookgeo==='special'?'북거씨가 부스에서 새 병을 열었다. 〈'+(S.flags.sea_label||'')+'〉. 그리고 처음으로 이야기를 했다.':'북거씨는 늘 팔던 향을 팔았다. 이야기는 없었다.')+'<br>'+FRIENDS.map(k=>'<b>'+F[k].n+'</b> · '+W_OUT_N[k][o[k]]).join('<br>');
@@ -1441,10 +1442,67 @@ Object.assign(CUT_BG,{w_a_snow:'bg_day_entry.png',w_a_market:'bg_day_market.png'
 WALK.snow={cut:'w_walk_snow',bg:'bg_alley.png',text:'눈 오는 골목. 미개가 부츠로 눈 위에 구멍을 내며 앞장선다. 눈금은 없다. 그냥 같이 있는 시간이다.'};
 ACH.day_sea={n:'바다를 본 적 없는 조향사'};
 
+// ====================== 막간극 (다른 캐릭터로 사는 하루) ======================
+const INTER=[
+  {k:'ramda',id:'ep1',n:'람다의 비 오는 날',sub:'소설 ep1 · 처음부터',unlock:()=>true},
+  {k:'boneul',id:'bon',n:'보늘의 촬영일',sub:'가을 시즌 뒤',unlock:()=>(S.seasons||[]).length>=1||S.seasonNo>=1},
+  {k:'bookgeo',id:'bk',n:'북거씨의 공방',sub:'겨울 시즌 뒤',unlock:()=>(S.seasons||[]).length>=2||S.seasonNo>=2},
+  {k:'lachil',id:'gm',n:'할머니의 5층',sub:'봄 시즌 뒤',unlock:()=>(S.seasons||[]).length>=3||S.seasonNo>=3},
+];
+let I=null;
+function interludeMenu(){
+  const items=INTER.map(x=>{ const ok=x.unlock(); const done=S.inter&&S.inter[x.id]; return {k:x.k,name:x.n,tier:done?'다시 보기':ok?'열림':'잠김',sub:x.sub,bubble:ok?({ramda:'<q>비 오는 날엔 상점에서 일하는 게 제일 좋아.</q> 종소리, 재즈, 단추. 하루를 람다로 산다.',boneul:'<q>...카메라 켜.</q> 아직 만들지 않은 하루.',bookgeo:'<q>천천히, 천천히.</q> 아직 만들지 않은 하루.',lachil:'<q>아이구, 그래~</q> 아직 만들지 않은 하루.'})[x.k]:'아직 열리지 않았다.',who:F[x.k].n,btn:x.k==='ramda'?'람다로 산다':'아직',disabled:!ok||x.k!=='ramda'}; });
+  const lead={nm:'막간극',tx:'끼토가 아닌 사람의 하루. 시즌이 끝날 때마다 하나씩 열린다. 지금 열린 것은 <b>람다의 비 오는 날</b>.'};
+  stageColumns(items, AD+'bg_alley_rain.jpg', lead, (k)=>{ $('pickCols').classList.add('hidden'); $('pickCols').innerHTML=''; if(k==='ramda') interEp1(); });
+  $('slotLabel').textContent='막간극';
+}
+// ---- 막간극 0: 람다의 비 오는 날 (소설 ep1) ----
+function blankDay(){ return {ev:'sun',weather:'rain',worry:3,worry0:3,worry0why:'',wlog:[],wlast:[],curChoice:'',late:0,bread:0,wet:0,walk:0,forceWalk:0,coins:0,met:null,fix:null,planted:[],flagNotes:[],newCuts:0,storyLine:'',morningSeeds:[],eveningSeeds:[],noonSeed:null,consume:0,follow:null,arcEnd:null,skipNight:0,msGain:0,readGain:0}; }
+function interEp1(){
+  I={line:0,kkomeon:0,answer:0,gm:0,bk:0,bon:0,cuts:0}; D=blankDay();
+  const next=(sc)=>{ playScene(Object.assign({who:sc.who||null,cast:sc.cast||['ramda']},sc)); };
+  const s1={cut:'i1_rain_shop',bg:'bg_day_acorn_shop.png',name:'비 오는 아침 · 도토리 상점',cast:['ramda'],text:'또로롱. 문을 열자 비 냄새. 물과 식물이 만나서 만드는 싱그러운 냄새. 람다는 심호흡을 한 번 하고 \'주인장의 한줄\' 가판대 앞에 섰다. 오늘 한 줄은.',
+    choices:[{t:'"내가 좋아하는 도토리 상점. 따뜻하고 아늑한 이곳이 너무 좋아요."',label:'소설',onPick:()=>I.line=1,line:'분필로 썼다. 비가 유리창을 두드렸다. 재즈를 틀었다. 날이 좋아서.'},
+      {t:'"비 오는 날엔 단추가 더 잘 보여요."',label:'람다',onPick:()=>I.line=2,line:'분필로 썼다. 정말 그렇다. 젖은 유리창 너머로 단추 바구니가 반짝였다.'},
+      {t:'"잘 팔리지 않는 물건도 누군가에게 필요할 수 있어요."',label:'철학',onPick:()=>I.line=3,line:'분필로 썼다. 나이테존 쪽을 한 번 봤다. 오늘도 안 치운다.'}],after:()=>next(s2)};
+  const s2={cut:'i1_kkomeon',bg:'bg_day_acorn_shop.png',name:'청소 · 꼬먼',cast:['ramda'],text:'먼지털이로 선반을 턴다. 재즈. 그러다 문득 꼬리를 잡았다. 꼬리로 먼지를 털면... 꼬먼.',
+    choices:[{t:'꼬먼을 한다',label:'꼬먼',onPick:()=>I.kkomeon=1,line:'꼬리로 선반을 한 번 쓸었다. 먼지가 날렸다. 픽, 웃음이 났다. <q>다음에도 꼬먼해야지. 큭!</q>'},
+      {t:'참는다. 손님이 올지도 모른다',label:'신중',line:'먼지털이로 마저 털었다. 꼬리는 S자로 살랑거렸다. 참은 티가 났다.'}],after:()=>next(s3)};
+  const s3={cut:'i1_kkito_button',bg:'bg_day_acorn_shop.png',name:'끼토 · 단추와 나이테존',cast:['ramda','kkito'],who:'kkito',text:'또로롱. <q>나 왔어.</q> 끼토가 청소에 합류한다. 단추를 닦다가 하나를 든다. <q>이 단추는 이제 나이테 구역으로 가야 할 거 같은데? ...아예 치우는 게 낫지 않을까?</q> 왕금박 볼록 단추다.',
+    choices:[{t:'"그래.. 생각해볼게"',label:'소설',onPick:()=>I.answer=1,line:'속마음: 치울 생각 없음. 끼토는 모른다. 단추를 닦았다.',face:'ok'},
+      {t:'"안 치울 거야. 나이는 흠이 아니야"',label:'직설',onPick:()=>I.answer=2,line:'끼토 귀가 섰다. <q>...어, 그래.</q> 잠깐 조용했다. 끼토가 단추를 하나 더 닦았다.',face:'bad'},
+      {t:'"이거 이름이 왕금박 볼록 단추야"',label:'딴청',onPick:()=>I.answer=3,line:'끼토: <q>이름이 있어?</q> 있다. 다 있다. 나이테존 얘기는 그렇게 지나갔다.',face:'ok'}],after:()=>next(s4)};
+  const s4={cut:'i1_grandma',bg:'bg_day_acorn_shop.png',name:'할머니 · 단추',cast:['ramda','lachilchin'],who:'lachil',text:'또로롱. 잎사귀 우산을 접으며 할머니가 들어온다. <q>비가 비가 얼마나 오는지.</q> 끼토가 카펫부터 급히 치운다. 아끼는 옷의 단추가 떨어졌다고 하신다. <q>잘 맞을만한 게 있을까요?</q> 못 들으셨다.',
+    choices:[{t:'"단추가 괜찮은 게 있나요?????" 크게',label:'소설',onPick:()=>I.gm=1,line:'할머니가 돋보기를 내려 쓰고 바구니를 뒤졌다. 아쉬운 도리도리. 그러다 꾸벅.'},
+      {t:'바구니를 통째로 무릎에 올려 드린다',label:'나눔',onPick:()=>I.gm=2,line:'할머니가 단추를 하나씩 옷에 대 봤다. 오래 걸렸다. 그러다 꾸벅.'},
+      {t:'음악을 줄이고 기다린다',label:'느긋',onPick:()=>I.gm=3,line:'끼토와 눈이 마주쳤다. 둘 다 작게 웃으며 볼륨을 줄였다. 할머니는 단추 위에서 잠드셨다.'}],after:()=>playCut({cut:'i1_grandma_nap',name:'할머니 · 졸음',text:'단추 바구니 위에서 할머니가 꾸벅꾸벅. 람다와 끼토가 눈을 맞추고 볼륨을 줄였다. 빗소리만 남았다.',migae:''},()=>next(s5))};
+  const s5={cut:'i1_window_bk',bg:'bg_day_acorn_shop.png',name:'창밖 · 북거씨',cast:['ramda','kkito'],who:'kkito',text:'창밖. 잎사귀 우산을 쓴 주민들. 그 사이로 유칼립투스 잎을 머리에 얹고 기어가는 북거씨. 잎이 작아서 눈을 거의 못 뜬다. 끼토: <q>큰 잎 빌려드릴까요?</q>',
+    choices:[{t:'끼토와 같이 나가 잎을 권한다',label:'나눔',onPick:()=>I.bk=1,line:'북거씨는 휘이휘이 고개를 저었다. <q>이건 제 잎이라서요.</q> 그래도 기억하는 눈이었다.',face:'ok'},
+      {t:'창가에서 지켜본다',label:'느긋',onPick:()=>I.bk=2,line:'북거씨는 아주 천천히 지나갔다. 비 오는 날 산책을 좋아한다고 들었다. 정말 그런가 보다.',face:'ok'}],after:()=>next(s6)};
+  const s6={cut:'i1_boneul',bg:'bg_day_acorn_shop.png',name:'다음 날 · 보늘',cast:['ramda','boneul'],who:'boneul',text:'맑게 갠 아침. 또로롱. <q>어서오…세요.</q> 대나무숲 빌라 반장 보늘. 쑥스럽게 들어온다. <q>단추요.</q> 입간판 사진을 내민다. 〈대나무숲 빌라 주민님, 오늘도 담백한 하루 보내세요〉',
+    choices:[{t:'화려한 단추를 추천한다',label:'상인',onPick:()=>I.bon=1,line:'보늘이 느린 동작으로 단추를 사진에 대 봤다. 오래 고민했다. 마음에 드는 게 없어 머쓱해했다.',face:'ok'},
+      {t:'나이테존을 보여 준다',label:'철학',onPick:()=>I.bon=2,line:'보늘이 고개를 돌리다 나무 밑동 가판대 앞에 섰다. 3년, 5년, 6년. 한참 서 있었다.',face:'ok'}],after:()=>playCut({cut:'i1_end_ring',name:'또로롱',text:(I.bon===2?'보늘이 나이테존 앞에서 왕금박 볼록 단추를 집었다. 3년 된 단추. <q>...이거요.</q> 주민증을 꺼냈다.':'보늘은 빈손으로 문을 열다가 멈췄다. 나이테존. 3년, 5년, 6년. 다음에 다시 오겠다고 했다.')+'<br>람다의 하루가 끝났다.',migae:''},interEnd)};
+  next(s1);
+}
+function interEnd(){
+  S.inter=S.inter||{}; S.inter.ep1=1; save();
+  const lines=['오늘의 한 줄: '+['','내가 좋아하는 도토리 상점. 따뜻하고 아늑한 이곳이 너무 좋아요.','비 오는 날엔 단추가 더 잘 보여요.','잘 팔리지 않는 물건도 누군가에게 필요할 수 있어요.'][I.line],I.kkomeon?'꼬먼을 했다. 다음에도 할 것이다.':'꼬먼을 참았다. 꼬리가 아쉬워했다.',['','끼토에게 "생각해 볼게"라고 했다. 치울 생각은 없다.','끼토에게 안 치운다고 말했다. 끼토 귀가 섰다.','단추 이름으로 말을 돌렸다.'][I.answer],['','할머니께 크게 다시 물었다.','바구니를 통째로 드렸다.','음악을 줄이고 기다렸다.'][I.gm],I.bk===1?'북거씨에게 잎을 권했다. 사양하셨다.':'북거씨를 창가에서 지켜봤다.',I.bon===2?'보늘에게 나이테존을 보여 줬다. 보늘이 3년 된 단추를 골랐다.':'보늘에게 단추를 추천했다. 다음에 다시 온다고 했다.'];
+  show('sFest'); $('festStage').innerHTML='<img class="b" src="'+IMG('i1_end_ring')+'" onerror="this.onerror=null;this.src=\''+A+'bg_day_acorn_shop.png\'" style="object-fit:contain;background:#15120E;">';
+  $('festTitle').textContent='람다의 비 오는 날'; $('festText').innerHTML='소설 ep1 「잘 팔리지 않는 물건도 누군가에게 필요할 수 있어」를 람다로 살았다. 이 하루가 끼토의 첫 시즌 하루 전이다.';
+  $('festPoem').innerHTML='<div class="ph">람다의 일기</div>'+lines.join('<br>'); $('festStat').innerHTML=''; $('festRel').innerHTML='';
+  D=D||{}; D.poemText='[솜솜시티 · 막간극] 람다의 비 오는 날\n'+lines.join('\n')+'\nhttps://pang861209-rgb.github.io/somsom-city/day/';
+  $('btnNewSeason').hidden=true; $('btnShare').textContent='일기 복사하기';
+}
+Object.assign(CUTS,{i1_rain_shop:{g:'막간극 · 람다',n:'비 오는 아침',img:'i1_rain_shop_0.jpg',h:'람다의 하루'},i1_kkomeon:{g:'막간극 · 람다',n:'꼬먼',img:'i1_kkomeon_0.jpg',h:'람다의 하루'},i1_kkito_button:{g:'막간극 · 람다',n:'왕금박 볼록 단추',img:'i1_kkito_button_0.jpg',h:'람다의 하루'},
+  i1_grandma:{g:'막간극 · 람다',n:'단추가 괜찮은 게 있나요?????',img:'i1_grandma_0.jpg',h:'람다의 하루'},i1_grandma_nap:{g:'막간극 · 람다',n:'단추 위의 졸음',img:'i1_grandma_nap_0.jpg',h:'람다의 하루'},i1_window_bk:{g:'막간극 · 람다',n:'창밖의 잎',img:'i1_window_bk_0.jpg',h:'람다의 하루'},
+  i1_boneul:{g:'막간극 · 람다',n:'단추요',img:'i1_boneul_0.jpg',h:'람다의 하루'},i1_end_ring:{g:'막간극 · 람다',n:'나이테존 앞',img:'i1_end_ring_0.jpg',h:'람다의 하루 끝'}});
+Object.assign(CUT_BG,{i1_rain_shop:'bg_day_acorn_shop.png',i1_kkomeon:'bg_day_acorn_shop.png',i1_kkito_button:'bg_day_acorn_shop.png',i1_grandma:'bg_day_acorn_shop.png',i1_grandma_nap:'bg_day_acorn_shop.png',i1_window_bk:'bg_day_acorn_shop.png',i1_boneul:'bg_day_acorn_shop.png',i1_end_ring:'bg_day_acorn_shop.png'});
+
 $('btnStart').onclick=newDay; $('btnAgain').onclick=newDay;
+$('btnInter').onclick=()=>{ interludeMenu(); };
 $('btnRel').onclick=()=>{ backTo='sTitle'; renderRel(); };
 $('btnDex').onclick=()=>{ backTo='sTitle'; renderDex(); }; $('btnDex2').onclick=()=>{ backTo='sResult'; renderDex(); }; $('btnDex3').onclick=()=>{ backTo='sFest'; renderDex(); };
-$('btnNewSeason').onclick=()=>{ if(confirm('새 시즌을 시작할까요? 그림 도감은 남고 관계와 약속은 처음으로 돌아갑니다. 계절 순서가 바뀝니다.')) newSeason(); };
+$('btnNewSeason').onclick=()=>{ if(S.seasonNo>=CHAPTERS.length-1){ alert('봄 시즌은 준비 중입니다. 관계를 이어받은 채 가을부터 다시 삽니다.'); } if(confirm('새 시즌을 시작할까요? 그림 도감은 남고 관계와 약속은 처음으로 돌아갑니다. 계절 순서가 바뀝니다.')) newSeason(); };
 $('btnShare').onclick=()=>{ const t=D&&D.poemText?D.poemText:''; const done=()=>toast('복사 완료','낭독문을 붙여넣어 공유하세요'); if(navigator.share){ navigator.share({text:t}).catch(()=>{}); return; } if(navigator.clipboard){ navigator.clipboard.writeText(t).then(done).catch(()=>{ prompt('복사해서 공유하세요', t); }); } else prompt('복사해서 공유하세요', t); };
 $('sceneHome').onclick=()=>{ if(confirm('오늘 하루를 중단하고 마을로 갈까요? 관계와 씨앗은 저장됩니다.')) location.href='../'; }; $('pickHome').onclick=$('sceneHome').onclick;
 document.querySelectorAll('[data-back]').forEach(b=> b.onclick=()=>{ if(backTo==='sTitle') renderTitle(); else show(backTo); });
