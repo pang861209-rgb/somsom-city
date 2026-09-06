@@ -136,7 +136,7 @@
     <div class="top"><a class="home" href="../" style="text-decoration:none;">← 마을</a><span class="slot" id="titleDays"></span></div>
     <div class="panel">
       <div class="hero"><img id="titleImg" src="" alt=""></div>
-      <div class="title"><small>GAME 05 · 시즌 「솜재페에 누가 오나」</small>끼토의 하루</div>
+      <div class="title"><small id="titleSub">GAME 05 · 시즌 「솜재페에 누가 오나」</small>끼토의 하루</div>
       <div class="weeks" id="yearRow"></div><div class="weeks" id="weeks"></div>
       <div class="cal" id="cal"></div>
       <p class="lead" id="titleLead">4주 뒤 일요일 밤은 솜재페. 누가 어떤 모습으로 올지는 그때까지의 끼토가 정합니다.<br>매주 월요일은 원고 마감. 친구에게 쓴 하루는 원고에 못 쓴 하루입니다.</p>
@@ -1126,9 +1126,15 @@ function renderDex(){
     p.appendChild(grid); }
   $('dexCount').textContent='그림 '+n+' / '+total; show('sDex');
 }
+const CH_LEAD={fall:'4주 뒤 일요일 밤은 솜재페. 누가 어떤 모습으로 올지는 그때까지의 끼토가 정합니다.<br>매주 월요일은 원고 마감. 친구에게 쓴 하루는 원고에 못 쓴 하루입니다.',
+  winter:'4주 뒤 동짓날 밤은 등불 밤. 북거씨의 바다향이 다시 나올지는 골목이 어떤 냄새를 내는가에 달렸습니다.<br>냄새는 이웃에게서 옵니다. 어디에 있었는지가 재료가 됩니다.',
+  spring:'4주 뒤 일요일은 봄 벼룩장. 나이테존 물건 다섯이 주인을 만나지 못하면 그 자리는 사라집니다.<br>이번엔 끼토가 대신 말해야 할 날이 옵니다. 걱정이 낮아야 말이 나옵니다.',
+  summer:'4주 뒤 일요일 밤은 합동 옥상 영화제. 두 반장이 같이 준비해야 열립니다.<br>준비하는 동안 왜 앙숙이 됐는지가 하나씩 떠오릅니다. 한 해의 마지막 밤입니다.'};
 function renderTitle(){
   const wd=weekday(); const w=Math.floor((S.dayNo-1)/7); S.week=Math.min(3,w);
   $('titleDays').textContent=(yearNo()>1?yearNo()+'년째 · ':'')+CH().n+' · '+(S.dayNo===1?'첫날':S.dayNo+'일째')+' · '+seasonName(S.week);
+  $('titleSub').textContent='GAME 05 · 시즌 「'+CH().n.split(' · ')[1]+'」';
+  $('titleLead').innerHTML=CH_LEAD[CH().id]||CH_LEAD.fall;
   $('yearRow').innerHTML=['가을','겨울','봄','여름'].map((nm,i)=>'<span class="'+(i===S.seasonNo?'now':'')+'" style="'+(i<S.seasonNo?'color:#F2C14B;':i>=CHAPTERS.length?'opacity:.4;':'')+'">'+nm+(i<S.seasonNo?' ✓':'')+'</span>').join('');
   $('weeks').innerHTML=[0,1,2,3].map(i=>'<span class="'+(i===S.week?'now':'')+'">'+(i+1)+'주 '+CH().themes[i]+'</span>').join('');
   $('cal').innerHTML=WD.map((x,i)=>'<i class="'+(i<wd?'done':i===wd?'today':'')+'">'+x+'</i>').join('');
