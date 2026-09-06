@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>솜솜시티 — 미니게임 마을</title>
-<meta name="description" content="솜솜시티 친구들과 즐기는 미니게임 5종: 낙엽피하기 · 달리기 · 짝맞추기 · 방범대 · 끼토의 하루">
+<meta name="description" content="솜솜시티 친구들과 즐기는 미니게임 5종: 낙엽피하기 · 달리기 · 짝맞추기 · 방범대 · 끼토의 하루(시즌)">
 <meta name="theme-color" content="#221E18">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -150,7 +150,7 @@
     </a>
     <a class="blk" href="day/" style="background:#E9B7C6;color:#3A1F2C;grid-column:1 / -1;">
       <div class="mask"><img src="assets/ending_e5_leafpile.png" alt="" style="object-position:center 30%;"></div>
-      <div class="txt"><div class="no">GAME 05 · NEW</div><div class="nm">끼토의 하루</div><div class="ds">세 번의 선택, 달라지는 저녁. 친구들과의 관계가 남습니다</div></div>
+      <div class="txt"><div class="no">GAME 05 · NEW</div><div class="nm">끼토의 하루</div><div class="ds">4주 뒤 솜재페에 누가 올까. 원고 마감과 친구 사이에서 고르는 끼토의 한 시즌</div></div>
       <img class="ch" src="assets/sd_kkito_win_t.png" alt="" style="height:96%;max-height:120px;right:10px;">
     </a>
   </nav>
@@ -210,10 +210,15 @@ const ACH = [
   {id:'defense_allclear', g:'방범대', n:'골목 어귀 평정', d:'네 스테이지를 모두 클리어'},
   {id:'defense_endless10',g:'방범대', n:'끝없는 방범',   d:'무한 골목 10웨이브 돌파'},
   {id:'day_first',      g:'끼토의 하루', n:'끼토의 첫 하루',   d:'하루를 처음 살아봤어요'},
-  {id:'day_all_friends',g:'끼토의 하루', n:'다섯 골목',        d:'다섯 만남을 모두 경험했어요'},
-  {id:'day_ending5',    g:'끼토의 하루', n:'다섯 개의 저녁',   d:'결말 5종을 모았어요'},
+  {id:'day_week',       g:'끼토의 하루', n:'한 주를 살았다',    d:'일요일 밤 주간 카드를 받았어요'},
+  {id:'day_all_friends',g:'끼토의 하루', n:'다섯 골목',        d:'네 친구를 모두 만났어요'},
+  {id:'day_seed5',      g:'끼토의 하루', n:'씨앗 다섯 개',     d:'심어 둔 씨앗이 다섯 번 터졌어요'},
+  {id:'day_cuts30',     g:'끼토의 하루', n:'그림 서른 장',     d:'도감에 그림 30장을 모았어요'},
   {id:'day_bookgeo5',   g:'끼토의 하루', n:'바다향의 비밀',    d:'북거씨 이야기를 끝까지 들었어요'},
-  {id:'day_ramda_mend', g:'끼토의 하루', n:'단추 하나만큼 가까이', d:'람다의 서운함을 풀어줬어요'},
+  {id:'day_ramda_mend', g:'끼토의 하루', n:'단추 하나만큼 가까이', d:'거리를 둔 람다와 화해했어요'},
+  {id:'day_migae',      g:'끼토의 하루', n:'미개를 찾았다',    d:'장날에 사라진 미개를 찾았어요'},
+  {id:'day_season',     g:'끼토의 하루', n:'솜재페의 밤',      d:'한 시즌을 끝까지 살았어요'},
+  {id:'day_full',       g:'끼토의 하루', n:'만석',             d:'솜재페에 넷이 다 제 자리로 왔어요'},
   {id:'all_three',  g:'솜솜시티',  n:'마을 한 바퀴',  d:'세 게임을 모두 해봤어요'},
   {id:'all_four',   g:'솜솜시티',  n:'네 골목 제패',  d:'네 게임을 모두 해봤어요'},
   {id:'all_chars',  g:'솜솜시티',  n:'여섯 친구',     d:'여섯 주민 모두와 놀았어요'},
@@ -272,9 +277,9 @@ function renderDex(){
     }
     list.appendChild(grid);
   }
-  { const dayN=Object.keys(got).filter(k=>k.startsWith('day_')).length, dayT=67; have+=dayN; total+=dayT;
+  { const dayN=Object.keys(got).filter(k=>k.startsWith('day_')).length, dayT=109; have+=dayN; total+=dayT;
     const h3=document.createElement('div'); h3.className='achGrp'; h3.textContent='끼토의 하루 그림 (게임 안 도감에서 크게 보기)'; list.appendChild(h3);
-    const r=document.createElement('div'); r.className='cutRow'; r.innerHTML='<span class="nm">아침·낮·씨앗·관계·저녁·한 주</span><span class="pg">'+dayN+' / '+dayT+'</span>'; list.appendChild(r); }
+    const r=document.createElement('div'); r.className='cutRow'; r.innerHTML='<span class="nm">아침·낮·씨앗·관계·줄기·위기·원고·솜재페</span><span class="pg">'+dayN+' / '+dayT+'</span>'; list.appendChild(r); }
   const h2=document.createElement('div'); h2.className='achGrp'; h2.textContent='짝맞추기 일상 컷'; list.appendChild(h2);
   for(const k in CUT_POOL){
     const n=(cuts[k]||[]).length, p=CUT_POOL[k]; have+=n; total+=p;
