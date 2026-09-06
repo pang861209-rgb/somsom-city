@@ -171,7 +171,7 @@
   </section>
 
   <section id="sFest" class="screen">
-    <div class="top"><span class="slot" style="margin-left:0;">솜재페의 밤</span></div>
+    <div class="top"><span class="slot" id="festSlot" style="margin-left:0;">솜재페의 밤</span></div>
     <div class="panel">
       <div class="fest" id="festStage"></div>
       <div class="title" style="font-size:22px;" id="festTitle"></div>
@@ -959,7 +959,7 @@ function stageColumns(items, bgn, lead, go){
   const cast=$('cast'); cast.classList.add('hidden'); $('badge').hidden=true;
   const img=$('bgImg'); img.onerror=()=>{ img.onerror=null; img.src=A+'bg_alley.png'; }; img.src=bgn;
   $('dNm').textContent=lead.nm; $('dTx').innerHTML=lead.tx; $('dExtra').innerHTML=''; $('choices').innerHTML='';
-  const cols=$('pickCols'); cols.innerHTML=''; cols.classList.remove('hidden');
+  const cols=$('pickCols'); cols.innerHTML=''; cols.classList.remove('hidden'); cols.style.gridTemplateColumns='repeat('+Math.max(1,items.length)+',1fr)';
   const stage=cols.parentElement; const stH=stage.clientHeight||Math.round(window.innerHeight*0.55);
   const HR={boneul:.54,kkito:.48,ramda:.37,lachil:.27,bookgeo:.23,migae:.13}; const scale=items.length>4?0.8:1;
   let sel=null;
@@ -1158,7 +1158,7 @@ function festival(){
     const msFinal=S.serialStop?null:(S.ms>=5?'ok':S.ms>=3?'half':'fail'); if(msFinal){ S.msLog.push(msFinal); if(msFinal==='ok') S.acorn+=6; else if(msFinal==='half') S.acorn+=3; }
     achUnlock('day_season'); if(Object.values(o).every(v=>v==='special')) achUnlock('day_full');
     S.seasons.push({o,ty:ty.k,ms:[...S.msLog],label:S.flags.bk_label||''}); S.dayNo=29; save();
-    show('sFest'); renderFest(o); $('btnNewSeason').hidden=false; $('btnShare').textContent='낭독문 복사하기';
+    show('sFest'); $('festSlot').textContent=CH().finaleBtn; renderFest(o); $('btnNewSeason').hidden=false; $('btnShare').textContent='낭독문 복사하기';
     const specials=Object.values(o).filter(v=>v==='special').length;
     $('festTitle').textContent=specials===4?'만석':specials===0?'조용한 밤':'솜재페의 밤 · '+specials+'명이 제 자리로';
     $('festText').innerHTML='전구 서른 개가 켜졌다. '+(o.ramda==='special'?'람다가 마이크를 건넸다. 끼토가 읽었다.':'끼토는 벤치에 앉았다. 읽을 글은 집에서 쓴 일기가 됐다.')+'<br>'+FRIENDS.map(k=>'<b>'+F[k].n+'</b> · '+OUT_N[k][o[k]]).join('<br>');
@@ -1397,7 +1397,7 @@ function w_festival(){ const o=w_outcomes(); const hero=w_heroCut(o); S.outcome=
     const msFinal=S.serialStop?null:(S.ms>=5?'ok':S.ms>=3?'half':'fail'); if(msFinal){ S.msLog.push(msFinal); if(msFinal==='ok') S.acorn+=6; else if(msFinal==='half') S.acorn+=3; }
     achUnlock('day_season'); if(pieceCount()>=5) achUnlock('day_sea');
     S.seasons.push({o,ty:ty.k,ms:[...S.msLog],label:S.flags.sea_label||''}); S.dayNo=29; save();
-    show('sFest'); renderFest(o); $('btnNewSeason').hidden=false; $('btnShare').textContent='이야기 복사하기';
+    show('sFest'); $('festSlot').textContent=CH().finaleBtn; renderFest(o); $('btnNewSeason').hidden=false; $('btnShare').textContent='이야기 복사하기';
     const n=pieceCount();
     $('festTitle').textContent=n>=5?'바다':n>=2?'등불 밤 · '+(S.flags.sea_label||'새 향'):'등불 밤 · 조용한 골목';
     $('festText').innerHTML='등불 마흔 개가 켜졌다. '+(o.bookgeo==='special'?'북거씨가 부스에서 새 병을 열었다. 〈'+(S.flags.sea_label||'')+'〉. 그리고 처음으로 이야기를 했다.':'북거씨는 늘 팔던 향을 팔았다. 이야기는 없었다.')+'<br>'+FRIENDS.map(k=>'<b>'+F[k].n+'</b> · '+W_OUT_N[k][o[k]]).join('<br>');
@@ -1666,7 +1666,7 @@ function sp_festival(){ const o=sp_outcomes(); const hero=sp_heroCut(o); S.outco
     achUnlock('day_season'); if(n>=5) achUnlock('day_owner');
     S.flags.zone_kept=(o.ramda==='special')?1:0;
     S.seasons.push({o,ty:ty.k,ms:[...S.msLog],label:S.flags.zone_label||''}); S.dayNo=29; save();
-    show('sFest'); renderFest(o); $('btnNewSeason').hidden=false; $('btnShare').textContent='이야기 복사하기';
+    show('sFest'); $('festSlot').textContent=CH().finaleBtn; renderFest(o); $('btnNewSeason').hidden=false; $('btnShare').textContent='이야기 복사하기';
     $('festTitle').textContent=o.ramda==='special'?'나이테존은 남는다':n>=1?'벼룩장 · 물건 '+n+'개가 집으로':'벼룩장 · 조용한 골목';
     $('festText').innerHTML='천막 열두 개. '+(o.ramda==='special'?'람다가 새 팻말을 세웠다. 〈'+(S.flags.zone_label||'나이테존')+'〉. 시티청 담당자가 와서 봤다. 셋 이상. 유지.':o.ramda==='far'?'나이테존 자리는 비어 있었다. 상점 셔터가 반만 올라가 있었다.':'나이테존 자리에 물건이 놓였다. 팻말은 없었다. 시티청 회신은 다음 주다.')+'<br>'+FRIENDS.map(k=>'<b>'+F[k].n+'</b> · '+SP_OUT_N[k][o[k]]).join('<br>');
     $('festPoem').innerHTML='<div class="ph">다섯 물건의 행방</div>'+lines.join('<br>');
@@ -1925,7 +1925,7 @@ function u_festival(){ const o=u_outcomes(); const hero=u_heroCut(o); S.outcome=
     achUnlock('day_season'); if(o.boneul==='bff') achUnlock('day_bff'); if(bookCount()>=4) achUnlock('day_book');
     S.flags.bff=o.boneul==='bff'?1:0;
     S.seasons.push({o,ty:ty.k,ms:[...S.msLog],label:S.flags.film==='book'?'골목 이야기':''}); S.dayNo=29; save();
-    show('sFest'); renderFest(o); $('btnNewSeason').hidden=false; $('btnShare').textContent='이야기 복사하기';
+    show('sFest'); $('festSlot').textContent=CH().finaleBtn; renderFest(o); $('btnNewSeason').hidden=false; $('btnShare').textContent='이야기 복사하기';
     $('festTitle').textContent=o.boneul==='bff'?'둘도 없는 절친':held?'옥상 영화제 · '+(S.flags.film==='book'?'골목 이야기':S.flags.film==='old'?'옛날 영화':'늘보의 식탁'):'골목 벽의 밤';
     $('festText').innerHTML=(held?'옥상에 의자 열두 개. 스크린에 빛이 떴다. '+(S.flags.mc==='both'?'두 반장이 나란히 인사했다. 둘 다 짧게.':S.flags.mc==='boneul'?'보늘이 인사했다. 카메라 없이도 됐다.':S.flags.mc==='ramda'?'람다가 마이크를 잡았다. 가을 무대처럼.':'인사는 없었다. 바로 영화.'):'옥상은 못 썼다. 람다가 골목 벽에 빛을 비췄다. 의자는 벤치였다.')+'<br>'+FRIENDS.map(k=>'<b>'+F[k].n+'</b> · '+U_OUT_N[k][o[k]]).join('<br>');
     $('festPoem').innerHTML='<div class="ph">한 해의 끝 · 골목 이야기</div>'+lines.join('<br>');
@@ -2040,7 +2040,7 @@ function interEp1(){
 function interEnd(){
   S.inter=S.inter||{}; S.inter.ep1=1; save();
   const lines=['오늘의 한 줄: '+['','내가 좋아하는 도토리 상점. 따뜻하고 아늑한 이곳이 너무 좋아요.','비 오는 날엔 단추가 더 잘 보여요.','잘 팔리지 않는 물건도 누군가에게 필요할 수 있어요.'][I.line],I.kkomeon?'꼬먼을 했다. 다음에도 할 것이다.':'꼬먼을 참았다. 꼬리가 아쉬워했다.',['','끼토에게 "생각해 볼게"라고 했다. 치울 생각은 없다.','끼토에게 안 치운다고 말했다. 끼토 귀가 섰다.','단추 이름으로 말을 돌렸다.'][I.answer],['','할머니께 크게 다시 물었다.','바구니를 통째로 드렸다.','음악을 줄이고 기다렸다.'][I.gm],I.bk===1?'북거씨에게 잎을 권했다. 사양하셨다.':'북거씨를 창가에서 지켜봤다.',I.bon===2?'보늘에게 나이테존을 보여 줬다. 보늘이 3년 된 단추를 골랐다.':'보늘에게 단추를 추천했다. 다음에 다시 온다고 했다.'];
-  show('sFest'); $('festStage').innerHTML='<img class="b" src="'+IMG('i1_end_ring')+'" onerror="this.onerror=null;this.src=\''+A+'bg_day_acorn_shop.png\'" style="object-fit:contain;background:#15120E;">';
+  show('sFest'); $('festSlot').textContent='막간극'; $('festStage').innerHTML='<img class="b" src="'+IMG('i1_end_ring')+'" onerror="this.onerror=null;this.src=\''+A+'bg_day_acorn_shop.png\'" style="object-fit:contain;background:#15120E;">';
   $('festTitle').textContent='람다의 비 오는 날'; $('festText').innerHTML='소설 ep1 「잘 팔리지 않는 물건도 누군가에게 필요할 수 있어」를 람다로 살았다. 이 하루가 끼토의 첫 시즌 하루 전이다.';
   $('festPoem').innerHTML='<div class="ph">람다의 일기</div>'+lines.join('<br>'); $('festStat').innerHTML=''; $('festRel').innerHTML='';
   D=D||{}; D.poemText='[솜솜시티 · 막간극] 람다의 비 오는 날\n'+lines.join('\n')+'\nhttps://pang861209-rgb.github.io/somsom-city/day/';
@@ -2083,7 +2083,7 @@ function interBon(){
 function interBonEnd(){
   S.inter=S.inter||{}; S.inter.bon=1; save();
   const L=['메뉴: '+['','어제 남은 토스트','피자 두 판','할머니의 은행 구이'][I.menu],I.chew===1?'평소대로 느리게 씹었다. 그게 채널이다.':'음식 앞에서 순발력이 3배가 됐다. 편집에서 느리게 돌렸다.',['','끼토를 카메라 안으로 끌어들였다. "우리 반장".','카메라를 끄고 문을 열었다. 카메라 밖의 일로 남겼다.','못 들은 척 씹었다. 끼토는 갔다.'][I.kk],I.mg===1?'미개가 부스러기 열두 개를 치웠다.':'부스러기를 더 흘렸다. 미개 더듬이가 하트였다.',['','끼토가 나온 부분을 남겼다.','끼토는 자르고 미개만 남겼다.','통편집 없이 사십 분.'][I.edit],'제목: '+['','솜재페 다음 날 토스트','우리 반장이 왔다','개미가 청소해 줌'][I.title]];
-  show('sFest'); $('festStage').innerHTML='<img class="b" src="'+IMG('b1_upload')+'" onerror="this.onerror=null;this.src=\''+A+'bg_day_boneul_home.png\'" style="object-fit:contain;background:#15120E;">';
+  show('sFest'); $('festSlot').textContent='막간극'; $('festStage').innerHTML='<img class="b" src="'+IMG('b1_upload')+'" onerror="this.onerror=null;this.src=\''+A+'bg_day_boneul_home.png\'" style="object-fit:contain;background:#15120E;">';
   $('festTitle').textContent='보늘의 촬영일'; $('festText').innerHTML='솜재페 다음 날을 보늘로 살았다. 카메라 밖에서 보늘이 끼토를 어떻게 보는지, 끼토는 모른다.';
   $('festPoem').innerHTML='<div class="ph">보늘의 메모</div>'+L.join('<br>'); $('festStat').innerHTML=''; $('festRel').innerHTML='';
   D.poemText='[솜솜시티 · 막간극] 보늘의 촬영일\n'+L.join('\n')+'\nhttps://pang861209-rgb.github.io/somsom-city/day/';
@@ -2123,7 +2123,7 @@ function interBk(){
 function interBkEnd(){
   S.inter=S.inter||{}; S.inter.bk=1; save();
   const L=['병을 여는 순서: '+['','제일 오래된 것부터','어젯밤 병부터','미개가 고른 라벤더'][I.order],['','라벨은 그대로 뒀다.','라벨 구석에 끼토 이름을 작게 덧썼다.','라벨에 〈내년〉이라고 썼다.'][I.label],['','람다에게 오렌지를 건넸다. 틀렸다.','람다에게 라벤더를 건넸다. 맞혔다.','람다에게 등불을 물었다. 하나 남겨 뒀다고 했다.'][I.cust],['','끼토에게 "잠겨 있어요"라고 했다.','끼토에게 시향지만 건넸다.','끼토에게 고맙다고 했다.'][I.kk],I.mg===1?'미개가 등딱지 위에서 잤다.':'미개를 내려 줬다. 다시 올라왔다.',['','새 병: 〈이 골목이 바다였어요〉','새 병: 〈끼토 씨의 가스 불도 잠겨 있어요〉','새 병: 라벨을 비워 뒀다'][I.word]];
-  show('sFest'); $('festStage').innerHTML='<img class="b" src="'+IMG('b2_close')+'" onerror="this.onerror=null;this.src=\''+A+'bg_day_perfume_atelier.png\'" style="object-fit:contain;background:#15120E;">';
+  show('sFest'); $('festSlot').textContent='막간극'; $('festStage').innerHTML='<img class="b" src="'+IMG('b2_close')+'" onerror="this.onerror=null;this.src=\''+A+'bg_day_perfume_atelier.png\'" style="object-fit:contain;background:#15120E;">';
   $('festTitle').textContent='북거씨의 공방'; $('festText').innerHTML='등불 밤 다음 날을 북거씨로 살았다. 병을 여는 순서, 손님의 꼬리, 등딱지 위의 개미. 끼토는 이 하루를 모른다.';
   $('festPoem').innerHTML='<div class="ph">북거씨의 메모</div>'+L.join('<br>'); $('festStat').innerHTML=''; $('festRel').innerHTML='';
   D.poemText='[솜솜시티 · 막간극] 북거씨의 공방\n'+L.join('\n')+'\nhttps://pang861209-rgb.github.io/somsom-city/day/';
@@ -2163,7 +2163,7 @@ function interGm(){
 function interGmEnd(){
   S.inter=S.inter||{}; S.inter.gm=1; save();
   const L=['아침에 제일 먼저: '+['','창문','라디오','사진'][I.first],'간식: '+['','쑥떡, 걱정 많은 애에게','고구마, 말 없는 애에게','은행 구이, 옛 친구에게'][I.snack],['','뛰어가는 애에게 손을 흔들었다. 개미가 대신 봤다.','거북이에게 손을 흔들었다. 서른 해 만에 답이 왔다.','보기만 했다. 골목이 다 보이는 자리.'][I.wave],['','람다에게 단추를 코트에 달았다고 했다.','람다에게 어디 뒀더라 했다.','람다 손을 잡고 서른 계단.'][I.stairs],['','"오늘도 뛰었네, 그래~"','"가스 불은 내가 봐 줄게"','말없이 접시만'][I.give],['','"올해도 늦네, 그래~"','"은행 구이, 아직 좋아하나"','노래 두 소절'][I.word]];
-  show('sFest'); $('festStage').innerHTML='<img class="b" src="'+IMG('b3_evening')+'" onerror="this.onerror=null;this.src=\''+A+'bg_day_grandma_room.png\'" style="object-fit:contain;background:#15120E;">';
+  show('sFest'); $('festSlot').textContent='막간극'; $('festStage').innerHTML='<img class="b" src="'+IMG('b3_evening')+'" onerror="this.onerror=null;this.src=\''+A+'bg_day_grandma_room.png\'" style="object-fit:contain;background:#15120E;">';
   $('festTitle').textContent='할머니의 5층'; $('festText').innerHTML='봄 아침을 할머니로 살았다. 창문에서 골목이 다 보인다. 끼토가 문 앞에서 세 번 돌아서는 것도.';
   $('festPoem').innerHTML='<div class="ph">할머니의 메모</div>'+L.join('<br>'); $('festStat').innerHTML=''; $('festRel').innerHTML='';
   D.poemText='[솜솜시티 · 막간극] 할머니의 5층\n'+L.join('\n')+'\nhttps://pang861209-rgb.github.io/somsom-city/day/';
@@ -2202,7 +2202,7 @@ function interMg(){
 function interMgEnd(){
   S.inter=S.inter||{}; S.inter.mg=1; save();
   const L=[['','창문으로 나갔다.','끼토 얼굴을 한 번 보고 나갔다.','삼 분 참다가 나갔다.'][I.out],['','상점 창고. 람다 잠꼬대: "환불..."','대나무숲. 새벽 라이브에 개미가 나왔다.','은행나무 뿌리 한 바퀴.'][I.first],['','북거씨 등딱지 위에서 삼십 분.','북거씨가 박자에 맞춰 병을 닦았다. 인생 최고 속도.','유리창 너머로 삼십 분. 북거씨는 모른 척했다.'][I.bk],I.trash===1?'쓰레기장 그 자리. 김치 통. 미개는 처음부터 알았다.':'쓰레기장은 지나갔다.',['','더듬이 하트를 5층 창문에.','더듬이 하트를 대나무숲 창문에. 보늘이 손을 들었다.','더듬이 하트를 불 꺼진 901호 창문에.'][I.heart],['','가스 밸브에 더듬이. 잠겨 있다. 늘.','끼토 귀에 더듬이. 잠이 깊어졌다.','배 위에서 잤다. 골목 냄새를 묻힌 채.'][I.home]];
-  show('sFest'); $('festStage').innerHTML='<img class="b" src="'+IMG('b4_home')+'" onerror="this.onerror=null;this.src=\''+A+'bg_day_studio.png\'" style="object-fit:contain;background:#15120E;">';
+  show('sFest'); $('festSlot').textContent='막간극'; $('festStage').innerHTML='<img class="b" src="'+IMG('b4_home')+'" onerror="this.onerror=null;this.src=\''+A+'bg_day_studio.png\'" style="object-fit:contain;background:#15120E;">';
   $('festTitle').textContent='미개의 골목 한 바퀴'; $('festText').innerHTML='끼토가 자는 사이를 미개로 살았다. 더듬이로만 말했다. 다 전해졌다.';
   $('festPoem').innerHTML='<div class="ph">미개의 더듬이 기록</div>'+L.join('<br>'); $('festStat').innerHTML=''; $('festRel').innerHTML='';
   D.poemText='[솜솜시티 · 막간극] 미개의 골목 한 바퀴\n'+L.join('\n')+'\nhttps://pang861209-rgb.github.io/somsom-city/day/';
