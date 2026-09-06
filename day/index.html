@@ -723,7 +723,7 @@ function arcForce(){ const d=S.dayNo, f=S.flags; const r=[];
 // ====================== 저장 ======================
 const KEY='somsom_day';
 const DEF=()=>({v:5,seasonNo:0,rel:{boneul:3,ramda:2,lachil:1},learn:0,story:0,sulk:0,mended:0,dayNo:1,week:0,seeds:[],cuts:{},met:{},fired:[],weekFired:[],stage:{boneul:1,ramda:0,lachil:0,bookgeo:0},sickUsedWeek:-1,
-  ms:0,msLog:[],msFail:0,reading:0,acorn:10,flags:{},ing:{},visits:{},tags:{},evCount:{},nightMod:0,letterTo:null,serialStop:0,seasons:[],year:{},inter:{}});
+  ms:0,msLog:[],msFail:0,reading:0,acorn:10,flags:{},ing:{},visits:{},tags:{},evCount:{},nightMod:0,letterTo:null,serialStop:0,seasons:[],year:{},inter:{},round:0});
 function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY)||'{}'); if(s.v===4){ const d=DEF(); d.cuts=s.cuts||{}; d.met=s.met||{}; return d; } if(s.v!==5) return DEF(); return Object.assign(DEF(),s); }catch(e){ return DEF(); } }
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 function statsLoad(){ try{ return JSON.parse(localStorage.getItem('somsom_stats')||'{}'); }catch(e){ return {}; } }
@@ -1014,7 +1014,7 @@ function searchScene(){ D.met='search'; const sc=ARC.search(); playScene(Object.
 function evening(){
   $('slotLabel').textContent=WD[weekday()]+'요일 · 저녁';
   const stNow={boneul:STAGE_IDX.boneul(S.rel.boneul),ramda:STAGE_IDX.ramda(S.rel.ramda),lachil:STAGE_IDX.lachil(S.rel.lachil),bookgeo:STAGE_IDX.bookgeo(S.learn)};
-  let up=null; for(const k of ['boneul','ramda','bookgeo','lachil']){ if(!up&&stNow[k]>S.stage[k]){ const u=(UPS[k]||[]).find(u=>u.at===stNow[k]); if(u) up={...u,who:k}; } if(stNow[k]<S.stage[k]) S.stage[k]=stNow[k]; }
+  let up=null; for(const k of ['boneul','ramda','bookgeo','lachil']){ if(!up&&stNow[k]>S.stage[k]){ const T=(CH().ups&&CH().ups[k])||UPS[k]||[]; const u=T.find(u=>u.at===stNow[k])||(UPS[k]||[]).find(u=>u.at===stNow[k]); if(u) up={...u,who:k}; } if(stNow[k]<S.stage[k]) S.stage[k]=stNow[k]; }
   let end;
   if(D.arcEnd) end={...D.arcEnd,key:D.met||'kkito',kind:'이야기'};
   else if(up){ S.stage[up.who]=stNow[up.who]; end={cut:up.cut,n:up.n,text:up.text,migae:up.migae,key:up.who,kind:'관계'}; }
@@ -1044,7 +1044,7 @@ function night(){
     choices.push({t:'편지를 쓴다 · 내일 만날 사람에게',label:'편지',cost:1,follow:'letter',line:'',migae:''});
     choices.push({t:'일찍 잔다',label:'느긋',direct:{nightMod:-2},line:'아홉 시. 가스 불은 한 번만 확인했다. 내일 아침이 조금 가벼울 것이다.',migae:'미개가 베개 옆에 자리를 잡았다.'});
   }
-  const sc={bg:'bg_day_studio.png',cut:S.dayNo===27?((CH().eveNight&&CH().eveNight.cut)||'r_lights_test'):'r_nt_desk',name:'밤 · 901호',cast:['kkito','migae'],who:null,text:S.dayNo===27?((CH().eveNight&&CH().eveNight.text)||'전야. 창밖으로 시험 점등한 전구가 보인다. 잠이 안 온다.'):'밤. 오늘 낮은 지나갔다. 책상 스탠드가 켜져 있고, 내일 골목에 누가 나올지는 아직 안 정해졌다.'+(S.ms<5&&!S.serialStop?' 원고 '+S.ms+'/5.':''),choices,
+  const sc={bg:'bg_day_studio.png',cut:S.dayNo===27?((CH().eveNight&&CH().eveNight.cut)||'r_lights_test'):'r_nt_desk',name:'밤 · 901호',cast:['kkito','migae'],who:null,text:S.dayNo===27?((CH().eveNight&&CH().eveNight.text)||'전야. 창밖으로 시험 점등한 전구가 보인다. 잠이 안 온다.'):(CH().nightLine||'밤. 오늘 낮은 지나갔다. 책상 스탠드가 켜져 있고, 내일 골목에 누가 나올지는 아직 안 정해졌다.')+(S.ms<5&&!S.serialStop?' 원고 '+S.ms+'/5.':''),choices,
     after:()=>{ if(D.follow==='letter'){ D.follow=null; return letterPick(); } finishDay(); }};
   playScene(sc);
 }
@@ -1387,6 +1387,38 @@ const FS_U={
         {t:'"위험해요. 여기 계세요"',direct:{lachil:-1},line:'<q>아이구, 그래~</q> 창문 쪽으로 돌아앉으셨다.',face:'bad'}]}],
 };
 
+// 계절별 관계 단계 상승 저녁 장면 (없으면 가을 것을 씁니다)
+const UPS_W={
+  boneul:[{at:1,cut:'w_bon_cough',n:'담요 한 장',text:'보늘이 담요를 한 장 밀어 줬다. 처음이었다. <q>...덮어.</q> 그 한마디에 서먹함이 담요 밑으로 들어갔다.',migae:'미개가 담요 끝에 자리를 잡았다.'},
+    {at:2,cut:'w_bon_soup',n:'죽 두 그릇',text:'죽이 두 그릇이었다. <q>네 것도 끓였어. 안 먹을 줄 알고.</q> 보늘은 그 말을 하고 다시 무덤덤해졌다. 그게 보늘식 위로라는 걸 이제 안다.',migae:'미개는 그릇 사이에서 잠들었다.'}],
+  ramda:[{at:1,cut:'w_lam_shop',n:'의자를 하나 더',text:'상점. 난로 앞에 의자가 하나 늘어 있었다. <q>겨울엔 앉을 데가 있어야지. 네 자리야.</q>',migae:'미개가 의자 밑에 자리를 잡는다.'},
+    {at:2,cut:'w_lam_lantern',n:'네 이름 붙인 등',text:'람다가 등 하나에 이름표를 붙였다. 끼토 글씨가 아니라 람다 글씨로 끼토 이름이. <q>이건 안 팔 거야.</q>',migae:'미개가 등불 밑에서 그림자를 봤다.'}],
+  bookgeo:[{at:1,cut:'w_v_bkslow',n:'눈길의 속도',text:'눈길을 북거씨 속도로 걸었다. 사십 분. 미끄러지지 않았다. <q>보세요. 겨울엔 반만 걸으면 돼요.</q>',migae:'미개가 등딱지 위에서 눈을 맞았다.'},
+    {at:2,cut:'w_bk_blend',n:'병을 맡기다',text:'북거씨가 새 병 하나를 끼토에게 맡겼다. <q>이건 끼토 씨가 들고 있어요. 저는 자꾸 열어 봐서요.</q>',migae:'미개가 병 옆에서 잤다.'}],
+  lachil:[{at:1,cut:'w_v_snack',n:'고구마 두 개',text:'5층 문이 먼저 열렸다. <q>아이구, 그래~ 들어와.</q> 고구마는 두 개였다. 처음부터.',migae:'미개가 발 사이로 먼저 들어갔다.'},
+    {at:2,cut:'w_gm_album',n:'사진첩 사이',text:'할머니가 사진첩을 무릎에 놓고 끼토 쪽으로 반쯤 돌리셨다. 젊은 할머니, 젊은 거북이. <q>이제 너도 여기 사람이지, 그래~</q>',migae:'미개가 사진첩 모서리에 앉았다.'}],
+};
+const UPS_P={
+  boneul:[{at:1,cut:'p_v_sign',n:'빗자루 한 자루',text:'보늘이 빗자루를 하나 더 꺼내 왔다. 처음이었다. <q>...같이 쓸어.</q> 꽃잎이 두 배로 빨리 치워졌다.',migae:'미개가 꽃잎 더미 위에 앉았다.'},
+    {at:2,cut:'p_bon_photo',n:'화면 안의 자리',text:'보늘이 카메라 각도를 옆으로 조금 옮겼다. 끼토가 화면에 들어오도록. 말은 안 했다. 끼토도 안 물었다.',migae:'미개는 화면 정중앙에 있었다.'}],
+  ramda:[{at:1,cut:'p_v_shop',n:'볕 좋은 자리',text:'상점 앞. 람다가 제일 볕 좋은 자리를 비워 뒀다. <q>물건은 저쪽. 여긴 네 자리.</q>',migae:'미개가 그 자리에 먼저 누웠다.'},
+    {at:2,cut:'p_lam_poster',n:'네 글씨로',text:'람다가 포스터 마지막 줄을 끼토에게 넘겼다. <q>여긴 네가 써. 내 글씨는 너무 커.</q> 자기 상점 포스터인데.',migae:'미개가 연필을 굴려 왔다.'}],
+  bookgeo:[{at:1,cut:'p_v_bkdry',n:'섞이는 냄새',text:'처마 밑. 시향지 스무 장을 같이 널었다. 봄 냄새가 겨울 냄새 위에 앉았다. <q>보세요. 섞여도 없어지지 않아요.</q>',migae:'미개가 시향지 밑을 지나다녔다.'},
+    {at:2,cut:'p_bk_paper',n:'첫 병 얘기',text:'북거씨가 선반 맨 아래 병을 가리켰다. <q>제 첫 병이에요. 아무한테도 안 보여줬어요.</q> 오늘은 보여줬다.',migae:'미개가 병 앞에서 더듬이를 세웠다.'}],
+  lachil:[{at:1,cut:'p_v_snack',n:'창턱 두 자리',text:'5층 창턱에 방석이 두 개 놓여 있었다. <q>아이구, 그래~ 앉아.</q> 하나는 처음부터 끼토 것이었다.',migae:'미개가 방석 사이에 자리를 잡았다.'},
+    {at:2,cut:'p_gm_frame',n:'서랍을 열어 두고',text:'할머니가 서랍을 열어 둔 채 나가셨다. <q>봐도 돼, 그래~</q> 사진 한 장이 위에 있었다. 높은 데서 찍은 것.',migae:'미개가 사진 위에 앉았다가 비켰다.'}],
+};
+const UPS_U={
+  boneul:[{at:1,cut:'u_v_tomato',n:'그늘 반쪽',text:'보늘이 그늘에서 반 발짝 옆으로 비켰다. 처음이었다. <q>...서.</q> 둘 다 반쪽씩 젖었다.',migae:'미개가 그늘 제일 안쪽을 차지했다.'},
+    {at:2,cut:'u_bon_meeting',n:'가운데 선풍기',text:'보늘이 선풍기를 가운데로 돌려놓고 그대로 뒀다. <q>...공평하지.</q> 그 말을 하고 다시 무덤덤해졌다.',migae:'미개는 바람 끝에서 더듬이를 날렸다.'}],
+  ramda:[{at:1,cut:'u_v_fan',n:'그늘 무료',text:'상점 칠판. 〈그늘 무료〉 밑에 작은 글씨가 늘었다. "반장은 물도."',migae:'미개가 칠판 밑 그늘에 누웠다.'},
+    {at:2,cut:'u_lam_projector',n:'렌즈를 맡기다',text:'람다가 영사기 렌즈를 끼토에게 맡겼다. <q>이거 깨지면 영화제 없어. 네가 들어.</q> 그게 람다식 신뢰다.',migae:'미개가 렌즈 케이스 위에 앉았다.'}],
+  bookgeo:[{at:1,cut:'u_v_bkshade',n:'등딱지 그늘',text:'북거씨가 등딱지 그늘 쪽으로 조금 움직였다. 끼토 발이 들어가도록. 아주 천천히.',migae:'미개가 이미 거기 있었다.'},
+    {at:2,cut:'u_mg_cool',n:'두 시간',text:'북거씨가 두 시간을 움직이지 않았다. 미개가 그늘에서 자는 동안. <q>등딱지 위에 얹는 건 다 가벼워요.</q>',migae:'미개는 끝까지 깨지 않았다.'}],
+  lachil:[{at:1,cut:'u_v_ice',n:'얼음 두 컵',text:'5층 문이 먼저 열렸다. <q>아이구, 그래~ 얼음 깨 놨어.</q> 컵은 두 개였다. 처음부터.',migae:'미개가 얼음 하나를 안고 갔다.'},
+    {at:2,cut:'u_gm_plates',n:'맞바람 자리',text:'할머니가 창문 둘 사이 제일 시원한 자리를 내주셨다. <q>여기가 우리 집 명당이야, 그래~</q> 명당을 내주는 사이가 됐다.',migae:'미개가 바람길에 누웠다.'}],
+};
+
 // ====================== 시즌(챕터) 묶음 ======================
 const CHAPTERS=[
   {id:'fall',n:'가을 · 솜재페에 누가 오나',season:['','_ginkgo','_dusk','_winter'],themes:['부탁','비밀','위기','약속'],finaleBtn:'솜재페의 밤',until:'솜재페까지',outN:OUT_N,
@@ -1616,7 +1648,7 @@ function w_festival(){ const o=w_outcomes(); const hero=w_heroCut(o); S.outcome=
   if(hero) playCut({cut:hero,bg:AD+'bg_alley_night.jpg',name:'등불 밤 · '+CUTS[hero].n,text:{w_fest_sea:'등불이 켜지자 골목이 조용해졌다. 북거씨가 병을 열었다. 젖은 은행잎, 소금, 빨래, 노래, 골목 끝의 벽. 다 있었다. <q>이 골목이 바다였어요.</q> 5층 창문에서 노래가 내려왔다.',w_fest_alone:'등불 마흔 개. 끼토와 미개. 공방은 닫혀 있고, 대나무숲 빌라는 불이 꺼져 있고, 람다는 무대 뒤였다. 그래도 끼토 이름 등은 켜졌다.',w_fest_song:'등불 밑에서 다들 위를 봤다. 5층 창문. 할머니가 노래를 불렀다. 서른 해 전 그 노래. 북거씨가 목을 길게 뺐다.',w_fest_live:'보늘이 등불 밑에 서 있었다. 감기는 나았고, 카메라는 없었다. <q>...라이브에서 한 말, 진짜야.</q> 그러고는 토스트를 꺼냈다.',w_fest_lanterns:'골목 양쪽에 람다의 등. 3년 된 병, 5년 된 단추, 6년 된 시향지가 불을 담고 있었다. 나이테존이 처음으로 골목 전체가 됐다.'}[hero],migae:'미개가 목도리를 하고 등불을 올려다봤다.',btn:'결산 카드'},showCard); else showCard(); }
 const W_WEEK_TITLE=(w)=>{ const f=S.flags; if(w===0) return f.note_asked?'쪽지의 주':'첫눈의 주'; if(w===1) return pieces().leaf?'조각의 주':f.live==='yes'?'약속의 주':'눈 쌓인 주'; if(w===2) return f.soup?'죽 한 그릇의 주':pieces().road?'골목 끝의 주':'얼음의 주'; return '등불의 주'; };
 const W_PREVIEW=['다음 주 예고: 북거씨가 선반 맨 뒤에서 라벨 없는 병을 꺼낸다.','다음 주 예고: 보늘이 열이 난다. 라이브 사흘 전.','다음 주 예고: 동짓날 밤, 등불 마흔 개.'];
-CHAPTERS.push({fs:FS_W,id:'winter',n:'겨울 · 바다향의 비밀',season:['_winter','_winter','_winter','_night'],themes:['쪽지','조각','위기','등불'],finaleBtn:'등불 밤',until:'등불 밤까지',outN:W_OUT_N,festBg:'w_fest_bg',festBgFb:AD+'bg_alley_night.jpg',
+CHAPTERS.push({ups:UPS_W,nightLine:'밤. 보일러가 한 번 돌고 멈춘다. 창에 성에. 책상 스탠드 하나만 켜져 있다. 내일 골목에 누가 나올지는 아직 안 정해졌다.',fs:FS_W,id:'winter',n:'겨울 · 바다향의 비밀',season:['_winter','_winter','_winter','_night'],themes:['쪽지','조각','위기','등불'],finaleBtn:'등불 밤',until:'등불 밤까지',outN:W_OUT_N,festBg:'w_fest_bg',festBgFb:AD+'bg_alley_night.jpg',
   arcDays:[1,5,13,16,17,18,19,20,26,27],arcMorning:w_arcMorning,arcNoon:w_arcNoon,arcForce:w_arcForce,weekTitle:W_WEEK_TITLE,preview:W_PREVIEW,types:W_TYPES,finaleStart:w_finaleStart,
   events:W_EVENTS,variant:W_VARIANT,eventEnd:W_EVENT_END,pool:{mon:['boneul','ramda'],tue:['bookgeo','lachil'],wed:['ramda','lachil'],thu:['boneul','bookgeo'],fri:['lachil','bookgeo'],sat:['ramda','bookgeo'],sun:['boneul','ramda','bookgeo','lachil'],sick:['bookgeo','lachil']},
   weather:(ev,sk,r)=> ev==='tue'?'snow': r<0.5?'snow': r<0.7?'wind':'sunny',
@@ -1885,7 +1917,7 @@ function sp_festival(){ const o=sp_outcomes(); const hero=sp_heroCut(o); S.outco
   else showCard(); }
 const SP_WEEK_TITLE=(w)=>{ const f=S.flags; if(w===0) return f.quest==='find'?'원정대의 주':f.quest==='sell'?'벼룩장의 주':'공고의 주'; if(w===1) return itemCount()>=2?'주인의 주':'벚꽃의 주'; if(w===2) return f.spoke==='kkito'?'말한 주':f.roof_open?'옥상의 주':'봄비의 주'; return '팻말의 주'; };
 const SP_PREVIEW=['다음 주 예고: 나이테존 물건 다섯이 하나씩 골목으로 나온다. 단추, 상자, 찻잔, 사진틀.','다음 주 예고: 미개가 꽃잎을 따라간다. 그리고 금요일, 시티청 창구.','다음 주 예고: 일요일, 봄 벼룩장. 팻말이 남는가.'];
-CHAPTERS.push({fs:FS_P,id:'spring',n:'봄 · 환불 원정대',season:['_spring','_petal','_may','_green'],themes:['공고','주인','창구','팻말'],finaleBtn:'봄 벼룩장',until:'벼룩장까지',outN:SP_OUT_N,festBg:'p_fest_bg',festBgFb:AD+'bg_alley_green.jpg',
+CHAPTERS.push({ups:UPS_P,nightLine:'밤. 창문을 열어 뒀다. 꽃잎이 한 장 책상 위로 들어왔다. 스탠드 하나. 내일 골목에 누가 나올지는 아직 안 정해졌다.',fs:FS_P,id:'spring',n:'봄 · 환불 원정대',season:['_spring','_petal','_may','_green'],themes:['공고','주인','창구','팻말'],finaleBtn:'봄 벼룩장',until:'벼룩장까지',outN:SP_OUT_N,festBg:'p_fest_bg',festBgFb:AD+'bg_alley_green.jpg',
   arcDays:[1,3,4,5,9,10,11,12,17,18,19,20,24,25,26,27],arcMorning:sp_arcMorning,arcNoon:sp_arcNoon,arcForce:sp_arcForce,weekTitle:SP_WEEK_TITLE,preview:SP_PREVIEW,types:SP_TYPES,finaleStart:sp_finaleStart,
   events:SP_EVENTS,variant:SP_VARIANT,eventEnd:SP_EVENT_END,pool:{mon:['boneul','ramda'],tue:['bookgeo','lachil'],wed:['ramda','lachil'],thu:['boneul','bookgeo'],fri:['lachil','bookgeo'],sat:['ramda','bookgeo'],sun:['boneul','ramda','bookgeo','lachil'],sick:['bookgeo','lachil']},
   weather:(ev,sk,r)=> ev==='tue'?'rain': sk==='_may'?(r<0.6?'rain':'sunny'): r<0.2?'rain': r<0.45?'wind':'sunny',
@@ -2143,7 +2175,7 @@ function u_festival(){ const o=u_outcomes(); const hero=u_heroCut(o); S.outcome=
   playCut({cut:hero,bg:AD+'bg_alley_night.jpg',name:'영화제의 밤 · '+CUTS[hero].n,text:{u_fest_full:'옥상. 의자 열두 개가 다 찼다. 람다가 영사기를 돌리고, 북거씨가 그 옆에서 렌즈를 봤고, 할머니는 맨 앞줄에서 얼음 쑥떡을 돌렸다. 스크린에 골목이 떴다. 끼토와 보늘은 맨 뒷줄. 나란히. 보늘: <q>...내년에도 해.</q> 절친이 된 밤.',u_fest_alone:'골목 벽에 빛. 의자 대신 벤치. 끼토와 미개. 람다는 상점 안에서 나오지 않았고, 대나무숲 빌라 창문은 어두웠다. 그래도 빛은 벽에 떴다. 골목이 잠깐 환했다.',u_fest_bff:'영화가 끝나고 다들 내려간 옥상. 난간에 끼토와 보늘. 골목에 불이 하나씩 꺼졌다. 보늘: <q>...김치 통.</q> 끼토: <q>...김치 통.</q> 둘 다 웃었다. 둘도 없는 절친이 된 밤.',u_fest_book:'스크린에 그림책 「골목 이야기」가 떴다. 한 장에 한 계절. 끼토가 읽었다. 목소리가 갈라졌다. 객석에서 누가 웃었다. 보늘이었다. 마지막 장은 오늘 밤이었다.',u_fest_screen:'옥상. 스크린에 빛이 떴다. 의자 열두 개. 두 빌라가 처음으로 같은 화면을 봤다. 매미가 그쳤다. 미개가 스크린 앞을 지나가서 그림자가 됐다. 다들 웃었다.',u_fest_window:'옥상은 못 썼다. 골목 벽에 빛. 5층 창문이 열리고 할머니가 내려다봤다. 벽에 뜬 빛이 창문까지 닿았다. 할머니가 손을 흔들었다. 끼토도, 미개도.',u_fest_wall:'골목 벽에 빛. 벤치 세 개. 람다가 빔을 돌렸다. 옥상은 아니었지만 골목이 잠깐 극장이 됐다. 북거씨가 계단 밑에서 봤다.'}[hero],migae:'미개가 스크린 앞을 지나갔다. 그림자가 제일 컸다.',btn:'결산 카드'},showCard); }
 const U_WEEK_TITLE=(w)=>{ const f=S.flags; if(w===0) return f.movie==='yes'?'두 반장의 주':f.movie==='solo'?'따로의 주':'더위의 주'; if(w===1) return f.mem2&&f.mem2!=='skip'?'회상의 주':f.projector==='ok'?'영사기의 주':'스크린의 주'; if(w===2) return f.migae_cool?'그늘의 주':f.permit_roof?'허가의 주':'폭염의 주'; return '영화제의 주'; };
 const U_PREVIEW=['다음 주 예고: 람다 창고에서 영사기가 나온다. 돌아갈까.','다음 주 예고: 미개가 더위를 먹는다. 그리고 시티청, 다시.','다음 주 예고: 전야, 옥상, 둘. 일요일 밤 영화제.'];
-CHAPTERS.push({fs:FS_U,id:'summer',n:'여름 · 두 반장 이야기',season:['_summer','_rain','_heat','_night'],themes:['더위','회상','폭염','영화제'],finaleBtn:'옥상 영화제',until:'영화제까지',outN:U_OUT_N,festBg:'u_fest_bg',festBgFb:AD+'bg_alley_night.jpg',
+CHAPTERS.push({ups:UPS_U,nightLine:'밤. 선풍기가 목을 돌린다. 매미는 그쳤다. 스탠드 하나. 내일 골목에 누가 나올지는 아직 안 정해졌다.',fs:FS_U,id:'summer',n:'여름 · 두 반장 이야기',season:['_summer','_rain','_heat','_night'],themes:['더위','회상','폭염','영화제'],finaleBtn:'옥상 영화제',until:'영화제까지',outN:U_OUT_N,festBg:'u_fest_bg',festBgFb:AD+'bg_alley_night.jpg',
   arcDays:[1,4,6,10,11,13,17,18,19,20,24,25,26,27],arcMorning:u_arcMorning,arcNoon:u_arcNoon,arcForce:u_arcForce,weekTitle:U_WEEK_TITLE,preview:U_PREVIEW,types:U_TYPES,finaleStart:u_finaleStart,
   events:U_EVENTS,variant:U_VARIANT,eventEnd:U_EVENT_END,pool:{mon:['boneul','ramda'],tue:['bookgeo','lachil'],wed:['ramda','lachil'],thu:['boneul','bookgeo'],fri:['lachil','bookgeo'],sat:['ramda','bookgeo'],sun:['boneul','ramda','bookgeo','lachil'],sick:['bookgeo','lachil']},
   weather:(ev,sk,r)=> ev==='tue'?'rain': sk==='_rain'?(r<0.7?'rain':'sunny'): sk==='_heat'?(r<0.1?'wind':'sunny'): r<0.2?'rain': r<0.35?'wind':'sunny',
