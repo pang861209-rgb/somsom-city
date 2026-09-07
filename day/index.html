@@ -1584,11 +1584,13 @@ function visitorsScene(){ D.met='visit';
   const helpers=FRIENDS.filter(k=>(k==='bookgeo'?STAGE_IDX.bookgeo(S.learn):STAGE_IDX[k](S.rel[k]))>=1 && !(k==='ramda'&&S.sulk>=2) && !(k==='boneul'&&(S.flags.bon_alone||S.flags.bon_cold)));
   const gift={boneul:'보늘: <q>...죽.</q> 어제 받은 걸 갚으러 온 얼굴이었다.',ramda:'람다: <q>담요! 단추 달린 거!</q>',bookgeo:'북거씨: <q>라벤더예요. 놀란 거예요.</q>',lachil:'할머니: <q>아이구, 따뜻한 물 한 방울씩, 그래~</q>'};
   S.flags.visitN=helpers.length; D.arcEnd=ARC2_END.visit(helpers.length);
-  const cw=crisisWhat(); const cl=cw?'<br><span class="sub" style="color:#E07A5F;">'+cw+(helpers.length?' 온 사람 중 한 명이 대신 가 주기로 했다.':' 대신 가 줄 사람이 없다. 그래도 미개가 먼저다.')+'</span>':'';
-  if(cw&&!helpers.length) crisisCost();
+  const cw=crisisWhat(); const others=helpers.filter(k=>k!=='boneul');
+  const cl=cw?'<br><span class="sub" style="color:#E07A5F;">'+cw+(others.length?' '+F[others[0]].n+'에게 미개를 맡기면 다녀올 수는 있다.':' 미개를 맡길 사람이 없다.')+'</span>':'';
   const text='미개 더듬이가 축 처졌다. 열이 있다. 밥그릇을 세 번 갈았다. 오후.<br>'+(helpers.length?'문 두드리는 소리. <b>'+helpers.map(k=>F[k].n).join(', ')+'</b>.<br>'+helpers.map(k=>gift[k]).join('<br>'):'아무도 오지 않았다. 문자를 보낼 사람이 떠오르지 않았다.')+cl;
   playScene({cut:'w_mg_sick',bg:'bg_day_studio.png',name:'미개가 아프다',cast:['kkito'].concat(helpers),who:null,text,
-    choices:[{t:'밤새 곁을 지킨다',direct:{worry:-1},line:'새벽 세 시. 더듬이가 조금 올라왔다.',face:'ok'},{t:'북gpt에 묻는다',direct:{worry:1},line:'답은 "지켜보세요"였다. 지켜봤다.',face:'ok'}],after:()=>{ D.skipNight=1; evening(); }}); }
+    choices:[{t:'밤새 곁을 지킨다',fn:()=>{ if(cw) crisisCost(); return {eff:{worry:-1},line:'새벽 세 시. 더듬이가 조금 올라왔다.'+(cw?' 그 시간에 대나무숲 빌라 옥상에는 카메라가 두 대 서 있었다.':''),face:'ok'}; }},
+      {t:'북gpt에 묻는다',fn:()=>{ if(cw) crisisCost(); return {eff:{worry:1},line:'답은 "지켜보세요"였다. 지켜봤다.',face:'ok'}; }},
+      {t:'미개를 맡기고 리허설에 간다',tag:'대담',ifFn:()=>!!cw&&others.length>0,fn:()=>{ S.flags.live_kept=1; return {eff:{worry:2,boneul:1},line:F[others[0]].n+'이(가) 담요 옆에 앉았다. <q>다녀와요.</q> 옥상에서 카메라 두 대를 같이 세웠다. 보늘: <q>...올 줄 알았어.</q><br>돌아오니 미개는 자고 있었다. 더듬이는 아직 처져 있었다.',face:'ok'}; }}],after:()=>{ D.skipNight=1; evening(); }}); }
 // 3주 목: 골목 끝까지 (아침)
 ARC2.road=()=>({cut:'w_bk_walk',bg:'bg_alley.png',name:'목요일 · 골목 끝',cast:['kkito','migae','bookgeo'],who:'bookgeo',
   text:'얼음길. 북거씨가 공방 앞에 서 있다. <q>골목 끝까지 가 보려고요. 서른 해 만에. 반나절 걸릴 거예요.</q>',
