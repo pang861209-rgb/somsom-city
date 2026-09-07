@@ -612,7 +612,7 @@ ARC.search=(tried,tries)=>{ tried=tried||[]; const helpers=FRIENDS.filter(k=>(k=
   let text='골목을 뛰었다. '+(helpers.length?'<b>'+helpers.map(k=>F[k].n).join(', ')+'</b>'+(helpers.length>1?'가':'이')+' 나와 있었다. 부르지도 않았는데.<br>'+helpers.map(k=>hint[k]).join('<br>'):'아무도 없었다. 장날이라 다들 바쁘다. 끼토 혼자다.');
   if(helpers.length>=2) text+='<br><span class="sub">끼토는 이번 시즌 발자국을 제일 많이 남긴 곳을 떠올렸다. '+(top?'<b>'+PLACE[top].n+'</b>.':'...집이었다. 미개가 갈 만한 곳이 떠오르지 않았다.')+'</span>';
   D.helpers=helpers; S.flags.helpersN=helpers.length;
-  const go=(p)=>({fn:()=>{ if(top===p){ D.hit=1; S.flags.migae_found=1; S.flags.migae_lost=0; D.arcEnd=ARC_END.migaeFound(p); achUnlock('day_migae'); return {eff:{worry:-4},line:PLACE[p].n+'. 미개가 거기 있었다. 끼토를 보고 더듬이를 세웠다.',face:'ok'}; } D.tries++; D.tried.push(p); if(D.tries<2) return {eff:{worry:2},line:PLACE[p].n+'. 없었다. 해가 기운다. 한 곳 더 볼 수 있다.',face:'bad'}; S.flags.migae_lost=1; D.arcEnd=ARC_END.migaeWet(); return {eff:{worry:2},line:PLACE[p].n+'. 없었다. 해가 졌다. 더는 못 찾는다.',face:'bad'}; }});
+  const go=(p)=>({fn:()=>{ if(top===p){ D.hit=1; S.flags.migae_found=1; S.flags.migae_lost=0; D.arcEnd=ARC_END.migaeFound(p); achUnlock('day_migae'); return {eff:{worry:-4},line:PLACE[p].n+'. 미개가 거기 있었다. 끼토를 보고 더듬이를 세웠다.',face:'ok'}; } D.tries++; D.tried.push(p); if(D.tries===1) crisisCost(); if(D.tries<2) return {eff:{worry:2},line:PLACE[p].n+'. 없었다. 해가 기운다. 한 곳 더 볼 수 있다.',face:'bad'}; S.flags.migae_lost=1; D.arcEnd=ARC_END.migaeWet(); return {eff:{worry:2},line:PLACE[p].n+'. 없었다. 해가 졌다. 더는 못 찾는다.',face:'bad'}; }});
   if(tries) text='해가 기운다. 한 곳만 더 볼 수 있다.<br>'+(tried.length?'<span class="sub">이미 가 본 곳: '+tried.map(x=>PLACE[x].n).join(', ')+'</span>':'');
   else text+=crisisLine();
   const CH4=[['bamboo','대나무숲 빌라 쪽으로'],['atelier','향수 공방 뒤로'],['tree','은행나무 밑으로'],['shop','도토리 상점 창고로']];
@@ -1032,7 +1032,7 @@ function crisisLine(){ const w=crisisWhat(); return w?'<br><span class="sub" sty
 // 두 번까지만 찾을 수 있다
 function searchLoop(make){ D.tries=0; D.tried=[]; D.hit=0;
   const step=()=>{ const sc=make(D.tried,D.tries); playScene(Object.assign({},sc,{after:()=>{
-    if(D.hit||D.tries>=2){ if(D.tries>0) crisisCost(); D.skipNight=1; return evening(); }
+    if(D.hit||D.tries>=2){ D.skipNight=1; return evening(); }
     step(); }})); };
   step(); }
 function searchScene(){ D.met='search'; searchLoop((tried,tries)=>ARC.search(tried,tries)); }
@@ -1854,7 +1854,7 @@ ARC3.search=(tried,tries)=>{ tried=tried||[]; const helpers=FRIENDS.filter(k=>(k
   if(helpers.length>=2) text+='<br><span class="sub">끼토는 이번 봄 발자국을 제일 많이 남긴 곳을 떠올렸다. '+(top?'<b>'+PLACE[top].n+'</b>.':'...집이었다. 미개가 갈 만한 곳이 떠오르지 않았다.')+'</span>';
   if(yearHas('migae_found')) text+='<br><span class="sub">가을에 찾았던 곳이 떠올랐다. 미개는 같은 곳에 있지 않을 것이다. 끼토가 같은 곳에 있지 않았으니까.</span>';
   D.helpers=helpers; S.flags.helpersN=helpers.length;
-  const go=(p)=>({fn:()=>{ if(top===p){ D.hit=1; S.flags.migae_found=1; S.flags.migae_lost=0; D.arcEnd=ARC3_END.migaeFound(p); achUnlock('day_migae'); return {eff:{worry:-4},line:PLACE[p].n+'. 꽃잎 더미. 미개가 거기 있었다. 더듬이에 꽃잎을 꽂고.',face:'ok'}; } D.tries++; D.tried.push(p); if(D.tries<2) return {eff:{worry:2},line:PLACE[p].n+'. 꽃잎뿐이었다. 해가 기운다. 한 곳 더 볼 수 있다.',face:'bad'}; S.flags.migae_lost=1; D.arcEnd=ARC3_END.migaeBack(); return {eff:{worry:2},line:PLACE[p].n+'. 꽃잎뿐이었다. 해가 졌다. 더는 못 찾는다.',face:'bad'}; }});
+  const go=(p)=>({fn:()=>{ if(top===p){ D.hit=1; S.flags.migae_found=1; S.flags.migae_lost=0; D.arcEnd=ARC3_END.migaeFound(p); achUnlock('day_migae'); return {eff:{worry:-4},line:PLACE[p].n+'. 꽃잎 더미. 미개가 거기 있었다. 더듬이에 꽃잎을 꽂고.',face:'ok'}; } D.tries++; D.tried.push(p); if(D.tries===1) crisisCost(); if(D.tries<2) return {eff:{worry:2},line:PLACE[p].n+'. 꽃잎뿐이었다. 해가 기운다. 한 곳 더 볼 수 있다.',face:'bad'}; S.flags.migae_lost=1; D.arcEnd=ARC3_END.migaeBack(); return {eff:{worry:2},line:PLACE[p].n+'. 꽃잎뿐이었다. 해가 졌다. 더는 못 찾는다.',face:'bad'}; }});
   if(tries) text='해가 기운다. 한 곳만 더 볼 수 있다.<br>'+(tried.length?'<span class="sub">이미 가 본 곳: '+tried.map(x=>PLACE[x].n).join(', ')+'</span>':'');
   else text+=crisisLine();
   const CH4=[['bamboo','대나무숲 빌라 쪽으로'],['atelier','향수 공방 뒤로'],['tree','은행나무 밑으로'],['shop','도토리 상점 창고로']];
@@ -2124,7 +2124,7 @@ ARC4.screen=()=>({cut:'u_bon_screen',bg:'bg_day_bamboo_entry.png',text:'대나�
 // 3주 수: 미개 더위 (낮)
 ARC4.cool=(tried,tries)=>{ tried=tried||[]; const helpers=FRIENDS.filter(k=>(k==='bookgeo'?STAGE_IDX.bookgeo(S.learn):STAGE_IDX[k](S.rel[k]))>=1 && !(k==='boneul'&&S.flags.bon_cold) && !(k==='ramda'&&S.sulk>=2));
   const hint={boneul:'보늘: <q>우리 집 선풍기... 두 대.</q>',ramda:'람다: <q>창고! 창고가 제일 시원해! 아마!</q>',lachil:'할머니: <q>얼음 갖고 내려갈게, 그래~</q>',bookgeo:'북거씨: <q>...등딱지 밑이 제일 시원해요. 이 도시에서.</q>'};
-  const go=(p,ok)=>({fn:()=>{ if(ok){ D.hit=1; S.flags.migae_cool=1; D.arcEnd=ARC4_END.cool(true); return {eff:{worry:-3,learn:1},line:p+'. 미개 더듬이가 올라왔다. 북거씨는 두 시간 동안 안 움직였다.',face:'ok'}; } D.tries++; D.tried.push(p); if(D.tries<2) return {eff:{worry:1},line:p+'. 여기도 덥다. 해가 제일 뜨거운 때다. 한 곳 더 가 볼 수 있다.',face:'bad'}; S.flags.migae_cool=0; D.arcEnd=ARC4_END.cool(false); return {eff:{worry:2},line:p+'. 여기도 덥다. 더는 못 옮긴다. 선풍기 앞에 눕혔다.',face:'bad'}; }});
+  const go=(p,ok)=>({fn:()=>{ if(ok){ D.hit=1; S.flags.migae_cool=1; D.arcEnd=ARC4_END.cool(true); return {eff:{worry:-3,learn:1},line:p+'. 미개 더듬이가 올라왔다. 북거씨는 두 시간 동안 안 움직였다.',face:'ok'}; } D.tries++; D.tried.push(p); if(D.tries===1) crisisCost(); if(D.tries<2) return {eff:{worry:1},line:p+'. 여기도 덥다. 해가 제일 뜨거운 때다. 한 곳 더 가 볼 수 있다.',face:'bad'}; S.flags.migae_cool=0; D.arcEnd=ARC4_END.cool(false); return {eff:{worry:2},line:p+'. 여기도 덥다. 더는 못 옮긴다. 선풍기 앞에 눕혔다.',face:'bad'}; }});
   const text='미개가 축 늘어졌다. 더듬이가 바닥에 닿는다. 폭염. 밥그릇을 세 번 갈았다. 오후.<br>'+(helpers.length?'문 두드리는 소리. <b>'+helpers.map(k=>F[k].n).join(', ')+'</b>.<br>'+helpers.map(k=>hint[k]).join('<br>'):'아무도 오지 않았다. 문자를 보낼 사람이 떠오르지 않았다.')+'<br><span class="sub">이 도시에서 제일 시원한 곳으로 데려가야 한다.</span>';
   S.flags.helpersN=helpers.length;
   const CH4=[['atelier','공방 · 북거씨 등딱지 밑','공방 앞 그늘',true],['shop','상점 창고','상점 창고',false],['bamboo','보늘네 선풍기 앞','보늘네 선풍기 앞',false],['gm','5층 · 얼음','5층 부엌',false]];
