@@ -27,3 +27,37 @@ Gemini는 참조 이미지를 **768×768 타일 단위**로 과금합니다(타�
 
 ## 저장 규칙
 결말 컷 PNG는 색을 160색으로 줄여 저장합니다(`Image.quantize(colors=160)` + `optimize=True`). 평면 채색이라 눈에 띄는 손실 없이 1.2MB → 400KB가 되고, 기존 결말 컷들과 용량대가 맞습니다.
+
+
+## 소품·아이콘 멀티샷 레시피 (2026-09-13 검증)
+
+캐릭터가 아닌 사물(장애물, 아이템, 아이콘)을 뽑을 때 쓴 방식입니다. 골목 원정대 에셋 5장이 이 레시피로 나왔습니다.
+
+```
+Draw ONE object on a plain pure-white background, centered, filling most of the square.
+
+STYLE: thin uniform dark outlines of even weight, flat matte colors, NO shading,
+NO gradients, NO drop shadow, muted pastel palette (warm cream, dusty orange,
+sage green, soft blue-grey). Simple and readable — the shape must still be
+recognizable when shrunk to 48 pixels. No text, no watermark, no background
+scenery, no characters.
+
+OBJECT: <사물 묘사>
+```
+
+- 모델 `gemini-3.1-flash-image`, `NB_AR=1:1`, 에셋당 **6샷**
+- 참조로 캐릭터 보드 1장(768px)을 넣습니다. 사물이라도 선 굵기와 팔레트를 맞춰 줍니다
+- 후처리: 네 모서리에서 플러드필로 흰 배경 키잉(tol 26) → `getbbox()` 트림 → 긴 변 128px 리사이즈
+
+### 걸린 것
+
+**바닥에 놓이는 사물은 배경을 그려 버립니다.** 물웅덩이 6샷 중 5샷에 돌바닥·모자이크 타일이 들어가 키잉이 불가능했습니다. "plain pure-white background"만으로는 부족합니다. 다음부터는 아래를 덧붙입니다.
+
+```
+The object floats on empty white. Do NOT draw any ground, floor, pavement,
+surface, or shadow beneath it.
+```
+
+### 색만 다른 변형은 새로 뽑지 않습니다
+
+일반 도토리는 황금 도토리에서 색조만 돌려 만들었습니다(HLS에서 hue -0.055, 명도 0.80배, 채도 0.72배, 무채색 픽셀은 보존). 같은 샷에서 나온 그림이라 선과 형태가 정확히 같고 샷 6개를 아꼈습니다. 등급 변형, 계절 변형에 쓸 수 있습니다.

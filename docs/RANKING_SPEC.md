@@ -129,14 +129,63 @@ async function pushProgress(){
 
 둘 다 판이 끝날 때 조용히 올라갑니다. 어느 쪽도 플레이어가 누를 버튼이 없습니다.
 
-## 보안 메모
+## 먼저 해야 할 일 — Firestore 규칙 추가 (막혀 있습니다)
 
-지금 Firestore 규칙은 웹 API 키만 있으면 누구나 읽고 쓸 수 있는 상태로 보입니다. 2026-09-13에 랭킹 293건을 콘솔에서 지운 것도 그래서였습니다.
+**신작의 랭킹은 규칙을 고치기 전까지 동작하지 않습니다.** 2026-09-13 실측 결과입니다.
 
-이 규격을 적용할 때 규칙도 같이 손보는 게 좋습니다. 권장 형태:
+| 컬렉션 | 클라이언트 읽기 |
+|---|---|
+| `scores` | 허용 |
+| `runner_scores` | 허용 |
+| `memory_scores` | 허용 |
+| `defense_scores` | 허용 |
+| `defense_events` | **403 차단** |
+| `expedition_scores` | **403 차단** |
+| `expedition_progress` | **403 차단** |
 
-- **생성은 허용**, 기존 문서 **수정·삭제는 차단** (점수형)
-- 진도형은 갱신이 필요하므로 **본인 문서만 수정 허용** — 다만 인증이 없으므로 현실적으로는 닉네임 기반이라 완전한 보호는 안 됩니다
-- 필드 타입과 값 범위 검증 (예: `s`는 0 이상 999999 이하의 정수)
+규칙이 **컬렉션 이름을 하나씩 허용하는 방식**으로 짜여 있습니다. 목록에 없는 이름은 읽기도 쓰기도 막힙니다. 그래서 새 컬렉션 네 개(`expedition_scores`, `expedition_progress`, `defense_progress`, `match_progress`)를 규칙에 추가해야 합니다.
 
-가족끼리 쓰는 동안은 급하지 않지만, 외부에 공개할 계획이 생기면 먼저 해야 할 일입니다.
+게임 코드는 실패를 조용히 삼키도록(`catch` 후 무시) 되어 있으므로, 규칙을 고치기 전에도 플레이에는 지장이 없습니다. 랭킹만 안 올라갑니다.
+
+### 권장 규칙
+
+[Firebase 콘솔](https://console.firebase.google.com/project/somsom-city/firestore/rules) → 규칙 탭에 붙여넣습니다.
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 점수형 — 새 기록 추가만 허용. 기존 기록은 못 고치고 못 지웁니다.
+    match /{col}/{doc} {
+      allow read: if col in ['scores','runner_scores','memory_scores',
+                             'defense_scores','expedition_scores'];
+      allow create: if col in ['scores','runner_scores','memory_scores',
+                               'defense_scores','expedition_scores']
+                    && request.resource.data.keys().hasOnly(['n','s','t','c','w'])
+                    && request.resource.data.n is string
+                    && request.resource.data.n.size() <= 12;
+      allow update, delete: if false;
+    }
+
+    // 진도형 — 닉네임이 문서 ID. 갱신이 필요하므로 create 와 update 를 엽니다.
+    match /{col}/{nick} {
+      allow read: if col in ['expedition_progress','defense_progress','match_progress'];
+      allow create, update: if col in ['expedition_progress','defense_progress','match_progress']
+                    && request.resource.data.n == nick
+                    && request.resource.data.n.size() <= 12;
+      allow delete: if false;
+    }
+  }
+}
+```
+
+`allow delete: if false` 가 핵심입니다. 브라우저에서는 아무도 기록을 지울 수 없고, 콘솔에서만 정리할 수 있습니다.
+
+## 앞서 쓴 보안 경고를 정정합니다
+
+이 문서 초판과 대화에서 "아무나 랭킹을 지울 수 있는 상태"라고 했는데, **확인되지 않은 추측이었습니다.**
+
+2026-09-13에 지운 293건은 Firebase 콘솔에서 소유자 권한으로 지운 것입니다. 콘솔은 보안 규칙을 우회하므로, 그 성공이 "웹 키로도 지워진다"는 증거가 되지 못합니다. 실제로 규칙은 생각보다 좁게 잠겨 있었습니다(위 표 참조).
+
+다만 허용된 네 컬렉션에 **점수를 넣는 것**은 여전히 누구나 할 수 있습니다. 키가 `index.html`에 그대로 있기 때문입니다. 위 규칙은 그것까지는 막지 않고(막으려면 인증이 필요합니다), 최소한 **기존 기록을 고치거나 지우는 것**만 차단합니다. 가족끼리 쓰는 수준에서는 이 정도면 충분합니다.

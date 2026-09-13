@@ -136,8 +136,8 @@ const MATES = {
 const MATE_KEYS = Object.keys(MATES);
 const SPRITE_FILE = { kkito:'sd_kkito_t', boneul:'sd_boneul_t', migae:'sd_migae_t',
   ramda:'sd_ramda_t', bookgeo:'sd_bookgeo_t', lachil:'sd_lachilchin_t', hit:'sd_kkito_hit_t' };
-const SIZE = { kkito:[44,58], boneul:[56,56], ramda:[46,48], lachil:[44,50],
-  migae:[30,32], bookgeo:[60,40] };
+const SIZE = { kkito:[56,74], boneul:[70,70], ramda:[58,60], lachil:[56,64],
+  migae:[38,40], bookgeo:[76,50] };
 
 const OBST = {
   leaf  : { w:40, h:40, spd:1.00, pat:'fall'  , c:'#E0A12B' },
@@ -201,6 +201,10 @@ function loadImg(key, file){
   im.onerror = ()=>{};
 }
 for(const k in SPRITE_FILE) loadImg(k, SPRITE_FILE[k]);
+// 장애물·수집물 그림 (없으면 캔버스 도형으로 대체 그림)
+const ART = { leaf:'exp_leaf_t', pot:'exp_pot_t', puddle:'exp_puddle_t', bike:'exp_bike_t',
+              acorn:'exp_acorn_t', goldacorn:'exp_goldacorn_t' };
+for(const k in ART) loadImg('art_'+k, ART[k]);
 const BGIMG = {};
 function loadBg(name){
   if(BGIMG[name]) return;
@@ -433,7 +437,7 @@ function step(dt){
 }
 function hitTest(o, d){
   if(o.y < H-DOCK-100 || o.y > H-DOCK-10) return false;
-  return Math.abs(o.x - G.px) < (d.w/2 + 16);
+  return Math.abs(o.x - G.px) < (d.w/2 + 20);
 }
 function takeHit(){
   const g=G;
@@ -526,7 +530,7 @@ function draw(){
   // 동료 (끼토 뒤, 반투명)
   const py = H-DOCK-58;
   // 끼토를 가리지 않도록 좌우로 벌려 세운다. 작게·연하게, 끼토보다 먼저 그림.
-  const FAN = [[-46,-10],[46,-10],[0,-40]];
+  const FAN = [[-56,-8],[56,-8],[0,-46]];
   g.joined.forEach((k,i)=>{
     const f = FAN[i] || [0,-40];
     const sp = IMG[k], sz0 = SIZE[k]||[40,44], sc = 0.78;
@@ -559,7 +563,18 @@ function draw(){
   drawHud(); drawDock();
 }
 function drawObst(o){
-  const d=OBST[o.k]; ctx.save(); ctx.translate(o.x,o.y);
+  const d=OBST[o.k];
+  const art = IMG['art_'+o.k];
+  if(art){                                  // 생성된 그림이 있으면 그걸 씀
+    ctx.save(); ctx.translate(o.x,o.y);
+    if(o.k==='bike') ctx.rotate(Math.sin(o.y/90+o.ph)*0.18);
+    if(o.k==='leaf') ctx.rotate(Math.sin(o.y/55+o.ph)*0.55);
+    const sc = d.w / art.width;
+    const w2 = art.width*sc, h2 = art.height*sc;
+    ctx.drawImage(art, -w2/2, -h2/2, w2, h2);
+    ctx.restore(); return;
+  }
+  ctx.save(); ctx.translate(o.x,o.y);
   ctx.strokeStyle='#221E18'; ctx.lineWidth=2; ctx.fillStyle=d.c;
   if(o.k==='leaf'){                       // 은행잎
     ctx.rotate(Math.sin(o.y/40+o.ph)*0.5);
@@ -587,6 +602,12 @@ function drawObst(o){
   ctx.restore();
 }
 function drawAcorn(a){
+  const art = IMG[a.gold?'art_goldacorn':'art_acorn'];
+  if(art){
+    const tw = a.gold?30:24, sc = tw/art.width;
+    ctx.drawImage(art, a.x-tw/2, a.y-art.height*sc/2, tw, art.height*sc);
+    return;
+  }
   ctx.save(); ctx.translate(a.x,a.y);
   ctx.strokeStyle='#221E18'; ctx.lineWidth=2;
   ctx.fillStyle = a.gold ? '#E8C64A' : '#B4884A';
