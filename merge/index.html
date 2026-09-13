@@ -83,6 +83,9 @@
   .bRow .nm{flex:1;}
   .bRow .sc{color:#C98A12;font-family:'Black Han Sans',sans-serif;font-size:17px;}
   .bMsg{padding:18px 6px;text-align:center;color:#6B6357;font-size:13px;line-height:1.6;}
+  .tabs{display:flex;gap:6px;}
+  .tab{flex:1;padding:7px 0;font-size:13px;background:#F3EEE2;box-shadow:none;border-radius:9px;}
+  .tab.on{background:#E0A12B;}
   .sheet .ghost{align-self:center;margin-top:4px;}
   #toast{position:absolute;left:50%;top:76px;transform:translateX(-50%);z-index:20;
     background:#221E18;color:#FDFBF5;border-radius:10px;padding:7px 14px;font-size:13px;
@@ -142,7 +145,12 @@
   <!-- 오늘의 순위판 -->
   <div id="board" class="sheetWrap">
     <div class="sheet">
-      <div class="hd"><span class="t">오늘의 순위</span><span class="c" id="boardDay"></span></div>
+      <div class="hd"><span class="t">순위</span><span class="c" id="boardDay"></span></div>
+      <div class="tabs">
+        <button class="tab on" data-r="today">오늘</button>
+        <button class="tab" data-r="week">이번 주</button>
+        <button class="tab" data-r="all">전체</button>
+      </div>
       <div id="boardList"></div>
       <button class="ghost" id="boardClose">닫기</button>
     </div>
@@ -789,12 +797,17 @@ $('shareSheet').addEventListener('click', e=>{ if(e.target.id==='shareSheet') $(
 // ── 오늘의 순위판 ────────────────────────────────────────────
 // d == 오늘 조건 하나로만 읽고 정렬은 여기서 한다. 정렬을 서버에 시키면
 // 복합 인덱스를 콘솔에서 따로 만들어야 한다.
-async function fetchToday(){
+// 범위: today = d 가 오늘 · week = 최근 7일(t 기준) · all = 전부
+// 어느 쪽도 정렬은 서버에 안 시킨다 (복합 인덱스 없이 단일 필드 조건만).
+let boardRange = 'today';
+function weekStart(){ return Date.now() - 7*24*3600*1000; }
+async function fetchScores(range){
+  const q = { from:[{collectionId:'merge_scores'}], limit: range==='all' ? 1000 : 500 };
+  if(range==='today') q.where = {fieldFilter:{field:{fieldPath:'d'},op:'EQUAL',value:{integerValue:String(dayKey())}}};
+  else if(range==='week') q.where = {fieldFilter:{field:{fieldPath:'t'},op:'GREATER_THAN_OR_EQUAL',value:{integerValue:String(weekStart())}}};
   const r = await fetch(FB_DOCS+':runQuery?key='+FB_KEY,{method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({structuredQuery:{from:[{collectionId:'merge_scores'}],
-      where:{fieldFilter:{field:{fieldPath:'d'},op:'EQUAL',value:{integerValue:String(dayKey())}}},
-      limit:500}})});
+    body:JSON.stringify({structuredQuery:q})});
   const j = await r.json();
   if(!Array.isArray(j)) throw new Error('bad');
   const best = {};
@@ -807,28 +820,35 @@ async function fetchToday(){
   return best;
 }
 function esc(t){ return String(t).replace(/[<>&]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
-async function openBoard(){
+async function openBoard(range){
+  if(range) boardRange = range;
+  document.querySelectorAll('#board .tab').forEach(b=> b.classList.toggle('on', b.dataset.r===boardRange));
   const me = localStorage.getItem('somsom_name') || '';
-  $('boardDay').textContent = dayLabel() + ' · ' + RULE.n;
+  $('boardDay').textContent = boardRange==='today' ? (dayLabel() + ' · ' + RULE.n)
+                            : boardRange==='week' ? '최근 7일 · 사람마다 최고 한 판' : '지금까지 · 사람마다 최고 한 판';
   const list = $('boardList');
   list.innerHTML = '<div class="bMsg">불러오는 중…</div>';
   $('board').classList.add('on');
+  const want = boardRange;
   let best;
-  try{ best = await fetchToday(); }
-  catch(e){ list.innerHTML = '<div class="bMsg">지금은 못 불러왔어요.<br>잠시 뒤 다시 열어 보세요.</div>'; return; }
+  try{ best = await fetchScores(want); }
+  catch(e){ if(want===boardRange) list.innerHTML = '<div class="bMsg">지금은 못 불러왔어요.<br>잠시 뒤 다시 열어 보세요.</div>'; return; }
+  if(want !== boardRange) return;               // 그새 다른 탭을 눌렀다
   // 방금 끝난 내 판은 아직 서버에 안 올라갔을 수 있다 — 바로 얹는다
   if(me && mode==='OVER' && (!(me in best) || score > best[me])) best[me] = Math.round(score);
   const rows = Object.entries(best).map(([n,s])=>({n,s})).sort((a,b)=>b.s-a.s);
   if(!rows.length){
-    list.innerHTML = '<div class="bMsg">오늘은 아직 아무도 안 했어요.<br><b>첫 번째가 되어 보세요.</b></div>'; return;
+    list.innerHTML = '<div class="bMsg">' + (want==='today' ? '오늘은 아직 아무도 안 했어요.' : '아직 기록이 없어요.')
+      + '<br><b>첫 번째가 되어 보세요.</b></div>'; return;
   }
   list.innerHTML = rows.map((r,i)=>
     '<div class="bRow'+(r.n===me?' me':'')+'"><span class="rk">'+(i+1)+'위</span>'
     +'<span class="nm">'+esc(r.n)+'</span><span class="sc">'+r.s+'</span></div>').join('')
     + (!me ? '<div class="bMsg">허브에서 닉네임을 정하면 내 점수도 올라갑니다</div>' : '');
 }
-$('btnBoard').onclick  = openBoard;
-$('btnBoard2').onclick = openBoard;
+$('btnBoard').onclick  = ()=> openBoard('today');
+$('btnBoard2').onclick = ()=> openBoard('today');
+document.querySelectorAll('#board .tab').forEach(b=> b.onclick = ()=> openBoard(b.dataset.r));
 $('boardClose').onclick = ()=> $('board').classList.remove('on');
 $('board').addEventListener('click', e=>{ if(e.target.id==='board') $('board').classList.remove('on'); });
 
