@@ -191,6 +191,23 @@
   #achToast{ top:calc(14px + env(safe-area-inset-top)); }
   img[src=""], img:not([src]){ visibility:hidden; }   /* 런타임에 채워지는 이미지가 깨져 보이지 않게 */
 </style>
+
+<style id="heroTitle">
+  /* 솜솜시티 공통 히어로 타이틀 (방범대 타이틀 구성과 동일): 전면 삽화 + 로고 + 하단 바 */
+  #title{ padding:0 !important; gap:0 !important; justify-content:flex-start !important; overflow:hidden; background:linear-gradient(#b898cb 0%,#efae7e 60%,#caa26a 100%) !important; }
+  #titleBg{ position:absolute !important; left:0 !important; top:0 !important; bottom:auto !important; width:100% !important; height:calc(100% - 104px) !important; object-fit:cover; object-position:center bottom; filter:none !important; z-index:0; }
+  .titleChar{ display:none !important; }
+  #titleTop{ position:relative; z-index:2; margin-top:52px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .logoTop{ font-size:14px; font-weight:800; color:#fff7e8; letter-spacing:5px; text-shadow:0 2px 0 rgba(96,58,38,.5); font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; }
+  #titleLogo{ font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif !important; font-size:44px !important; line-height:1.1 !important; font-weight:900 !important; color:#fff7e8 !important; letter-spacing:2px !important; transform:rotate(-2deg); margin:0 !important;
+    text-shadow:0 3px 0 #7c4a2d, 0 7px 16px rgba(60,30,20,.4) !important; }
+  #titleSub{ margin-top:2px !important; font-size:12px !important; font-weight:700 !important; color:#5a4130 !important; background:rgba(255,247,232,.85); border:1.5px solid rgba(124,74,45,.5); border-radius:20px; padding:5px 14px; text-shadow:none !important; }
+  #titleBottom{ position:absolute; left:0; right:0; bottom:0; z-index:2; height:104px; padding:12px 20px 8px; display:flex; flex-direction:column; align-items:center; gap:8px;
+    background:linear-gradient(#402419,#2f1a12); border-top:1.5px solid rgba(255,239,216,.16); box-shadow:0 -10px 22px rgba(40,20,10,.28); }
+  #titleBottom #startBtn{ font-size:17px !important; padding:12px 48px !important; border-radius:16px !important; background:#ffb35c !important; border:2px solid #5a2f1c !important; color:#4a2416 !important; box-shadow:0 4px 0 #5a2f1c !important; font-family:inherit; font-weight:800; }
+  #titleBottom #startBtn:active{ transform:translateY(4px) !important; box-shadow:none !important; }
+  .titleTag{ font-size:10px; font-weight:700; color:rgba(255,239,216,.55); letter-spacing:1px; }
+</style>
 </head>
 <body>
 <div id="app">
@@ -210,13 +227,16 @@
   <button id="muteBtn">🔊</button>
 
   <div id="title" class="screen">
-    <img id="titleBg" src="../assets/title_bg_leaf.png" onerror="this.onerror=null;this.src='../assets/title_main.png';" alt="가을 은행나무 골목">
-    <img class="titleChar" src="../assets/sd_kkito_t.png" alt="끼토" style="position:absolute;left:50%;bottom:98px;transform:translateX(-50%);width:130px;height:auto;z-index:1;pointer-events:none;filter:drop-shadow(0 4px 5px rgba(90,74,58,.22));">
+    <img id="titleBg" src="../assets/title_hero_leaf.jpg" onerror="this.onerror=null;this.src='../assets/title_bg_leaf.png';" alt="은행잎이 쏟아지는 골목의 끼토와 보늘">
     <div id="titleTop">
-      <h1 id="titleLogo">솜솜시티: 은행 주의보</h1>
+      <div class="logoTop">🥕 솜솜시티</div>
+      <h1 id="titleLogo">은행 주의보</h1>
       <div id="titleSub">가을이 왔다. 은행나무 골목을 무사히 버텨라!</div>
     </div>
-    <button id="startBtn" onclick="ui.toSelect()">시작하기</button>
+    <div id="titleBottom">
+      <button id="startBtn" onclick="ui.toSelect()">은행 피하러 가기</button>
+      <span class="titleTag">GAME 01 · 낙엽 피하기</span>
+    </div>
   </div>
 
   <div id="select" class="screen hidden">
