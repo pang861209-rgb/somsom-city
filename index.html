@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>솜솜시티 — 미니게임 마을</title>
-<meta name="description" content="솜솜시티 친구들과 즐기는 미니게임 4종: 낙엽피하기 · 달리기 · 짝맞추기 · 방범대">
+<meta name="description" content="솜솜시티 친구들과 즐기는 미니게임 5종: 낙엽피하기 · 달리기 · 짝맞추기 · 방범대 · 골목 원정대">
 <meta name="theme-color" content="#221E18">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -123,7 +123,7 @@
   </header>
 
   <div id="missionBox">
-    <div class="mh"><span class="lb">오늘의 미션</span><span id="missionChar"></span><span class="pg" id="missionPg">0/4</span></div>
+    <div class="mh"><span class="lb">오늘의 미션</span><span id="missionChar"></span><span class="pg" id="missionPg">0/5</span></div>
     <div id="missionList"></div>
   </div>
 
@@ -147,6 +147,11 @@
       <div class="mask"><img src="assets/bg_alley.png" alt="" style="object-position:center 78%;"></div>
       <div class="txt"><div class="no">GAME 04 · NEW</div><div class="nm">방범대</div><div class="ds">꼬릿 구름에서 당근빌라를!</div></div>
       <img class="ch" src="assets/sd_migae_t.png" alt="" style="height:84%;max-height:124px;">
+    </a>
+    <a class="blk" href="expedition/" style="background:#C9873F;color:#2A1806;grid-column:1 / -1;">
+      <div class="mask"><img src="assets/day/bg_alley_ginkgo.jpg" alt="" style="object-position:center 40%;"></div>
+      <div class="txt"><div class="no">GAME 05 · NEW</div><div class="nm">골목 원정대</div><div class="ds">달리다 보면 친구가 한 명씩 붙습니다. 누가 붙느냐로 판이 갈립니다</div></div>
+      <img class="ch" src="assets/sd_kkito_win_t.png" alt="" style="height:94%;max-height:126px;right:10px;">
     </a>
   </nav>
 
@@ -204,6 +209,11 @@ const ACH = [
   {id:'defense_boss',     g:'방범대', n:'왕꼬릿 퇴치',   d:'왕꼬릿 구름을 돌려보냈어요'},
   {id:'defense_allclear', g:'방범대', n:'골목 어귀 평정', d:'네 스테이지를 모두 클리어'},
   {id:'defense_endless10',g:'방범대', n:'끝없는 방범',   d:'무한 골목 10웨이브 돌파'},
+  {id:'exp_first',      g:'골목 원정대', n:'첫 골목',       d:'스테이지를 처음 끝까지 갔어요'},
+  {id:'exp_party3',     g:'골목 원정대', n:'셋이 함께',     d:'한 판에 동료 셋이 다 붙었어요'},
+  {id:'exp_star3',      g:'골목 원정대', n:'별 셋',         d:'한 스테이지에서 별 세 개를 받았어요'},
+  {id:'exp_clear',      g:'골목 원정대', n:'은행잎 골목 완주', d:'여섯 스테이지를 모두 깼어요'},
+  {id:'exp_endless2000',g:'골목 원정대', n:'끝없는 골목',   d:'무한 골목 2000점 돌파'},
   {id:'all_three',  g:'솜솜시티',  n:'마을 한 바퀴',  d:'세 게임을 모두 해봤어요'},
   {id:'all_four',   g:'솜솜시티',  n:'네 골목 제패',  d:'네 게임을 모두 해봤어요'},
   {id:'all_chars',  g:'솜솜시티',  n:'여섯 친구',     d:'여섯 주민 모두와 놀았어요'},
@@ -300,7 +310,7 @@ function missionSpec(){
           match:{goal:missGoal, label:'짝맞추기 '+(missGoal===0 ? '실수 없이 클리어'
                                                               : '실수 '+missGoal+'회 이하로 클리어')},
           defense:{goal:defGoal, label:'방범대 '+defGoal+'★로 스테이지 클리어'},
-          };
+          expedition:{goal:1, label:'골목 원정대 스테이지 하나 깨기'}};
 }
 function titleFor(coins){
   if(coins>=2000) return '은행나무 지킴이';
@@ -324,13 +334,13 @@ function renderMissions(){
   document.getElementById('missionChar').innerHTML='<span style="font-size:11.5px;font-weight:700;color:#8A6A1A;">오늘의 친구 '+CH_NAME[DAILY_CHAR_ID]+'</span>';
   const list=document.getElementById('missionList'); list.innerHTML='';
   let n=0;
-  for(const g of ['leaf','run','match','defense']){
+  for(const g of ['leaf','run','match','defense','expedition']){
     const ok=!!done[g]; if(ok) n++;
     const r=document.createElement('div'); r.className='mRow'+(ok?' ok':'');
     r.innerHTML='<span class="bx">'+(ok?'✓':'')+'</span><span>'+sp[g].label+'</span>';
     list.appendChild(r);
   }
-  document.getElementById('missionPg').textContent=n+'/4';
+  document.getElementById('missionPg').textContent=n+'/5';
 }
 // 주간 통합 랭킹 — 세 게임 점수를 각 게임 주간 최고 대비 100점으로 환산해 합산
 const FB_KEY='AIzaSyBfld7SRrVTxDG0nE_6Z3Mw5kSRTo5bIGY';
