@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>솜솜시티: 솜솜 합체</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;background:#221E18;overflow:hidden;
+    font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#221E18;
+    -webkit-user-select:none;user-select:none;}
+  #app{position:relative;width:100%;height:100%;max-width:520px;margin:0 auto;
+    background:#FDFBF5;overflow:hidden;touch-action:none;}
+  canvas{display:block;width:100%;height:100%;}
+  .screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:15px;padding:24px;background:#FDFBF5;z-index:5;}
+  .screen.hidden{display:none;}
+  button{border:2px solid #221E18;background:#fff;border-radius:11px;padding:11px 22px;
+    font-size:16px;font-weight:800;cursor:pointer;box-shadow:2px 2px 0 #221E18;
+    font-family:inherit;color:#221E18;}
+  button:active{transform:translate(2px,2px);box-shadow:0 0 0 #221E18;}
+  button.big{padding:14px 32px;font-size:18px;background:#E0A12B;}
+  button.ghost{background:#F3EEE2;font-size:14px;padding:8px 16px;box-shadow:1px 1px 0 #221E18;}
+  h1{font-family:'Black Han Sans',sans-serif;font-size:32px;margin:0;letter-spacing:-1px;}
+  .sub{font-size:13px;color:#6B6357;text-align:center;line-height:1.6;margin:0;}
+  .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+  .top{position:absolute;top:10px;left:10px;z-index:6;}
+  .top a{text-decoration:none;border:2px solid #221E18;background:#F3EEE2;border-radius:11px;
+    padding:7px 13px;font-size:13px;font-weight:800;box-shadow:1px 1px 0 #221E18;color:#221E18;}
+  /* 사다리 안내 */
+  #ladder{display:flex;align-items:flex-end;gap:2px;justify-content:center;flex-wrap:wrap;
+    max-width:360px;}
+  #ladder .lb{display:flex;flex-direction:column;align-items:center;gap:1px;}
+  #ladder img{display:block;}
+  #ladder .ln{font-size:9.5px;color:#8A8271;font-weight:800;}
+  #ladder .ar{font-size:11px;color:#C6BEAE;padding-bottom:14px;}
+  #resBig{font-size:34px;font-weight:900;font-family:'Black Han Sans',sans-serif;color:#E0A12B;}
+  #toast{position:absolute;left:50%;top:76px;transform:translateX(-50%);z-index:20;
+    background:#221E18;color:#FDFBF5;border-radius:10px;padding:7px 14px;font-size:13px;
+    font-weight:800;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;}
+  #toast.on{opacity:1;}
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="cv"></canvas>
+  <div id="toast"></div>
+
+  <!-- 타이틀 -->
+  <div id="sTitle" class="screen">
+    <div class="top"><a href="../">← 마을</a></div>
+    <h1>솜솜 합체</h1>
+    <p class="sub">같은 친구 둘이 만나면<br><b>한 뼘 더 큰 친구</b>가 됩니다.</p>
+    <div id="ladder"></div>
+    <p class="sub">골목 밖으로 넘치면 끝납니다.</p>
+    <button class="big" id="btnGo">떨어뜨리기</button>
+    <div class="row">
+      <button class="ghost" id="btnMute">🔊</button>
+    </div>
+    <p class="sub" id="titleHint"></p>
+  </div>
+
+  <!-- 결과 -->
+  <div id="sResult" class="screen hidden">
+    <h1 style="font-size:24px;">골목이 넘쳤다</h1>
+    <div id="resBig">0</div>
+    <p class="sub" id="resNote"></p>
+    <div class="row">
+      <button class="big" id="btnRetry">한 판 더</button>
+      <button class="ghost" id="btnHome">타이틀</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   솜솜시티 GAME 06 M0 — 「솜솜 합체」 (드롭 앤 머지)
+   조사 문서: docs/CASUAL_GENRE_SURVEY.md
+
+   M0 목적: 물리와 합체만으로 재미있는지 확인.
+   재미없으면 여기서 멈춘다. 메타 성장·스테이지·랭킹은 아직 없다.
+   ═══════════════════════════════════════════════════════════ */
+
+// ── 합체 사다리 ─────────────────────────────────────────────
+// 순서는 비주얼 바이블의 캐릭터 키 순서 그대로다.
+//   미개 37 · 북거씨 43 · 라칠친 52 · 람다 61 · 끼토 91 · 보늘 100
+// 반지름은 게임용으로 고르게 벌린 값이다(캐논 수치를 그대로 쓰면
+// 끼토 91 → 보늘 100 구간이 거의 안 커져서 합체가 체감되지 않는다).
+// R_BASE — 너비 382px 통을 기준으로 잰 반지름. 실제 반지름은 layout()에서
+// 통 너비에 비례해 다시 계산한다(TIERS[i].r).
+// 크기를 크게 잡은 이유: 사다리가 여섯 칸뿐이라 짝이 안 맞아 남는 조각은
+// 람다·끼토·보늘 셋뿐이다. 이 셋이 통을 꽤 차지해야 비로소 판이 끝난다.
+const R_BASE = [15, 20, 26, 33, 41, 52];
+const TIERS = [
+  { k:'migae',      n:'미개',   r:15, c:'#3A3A3A', sc:1.75 },
+  { k:'bookgeo',    n:'북거씨', r:20, c:'#6E9A6A', sc:1.95 },
+  { k:'lachilchin', n:'할머니', r:26, c:'#B3A8C8', sc:1.70 },
+  { k:'ramda',      n:'람다',   r:33, c:'#C87F4A', sc:1.70 },
+  { k:'kkito',      n:'끼토',   r:41, c:'#E9A8BE', sc:1.60 },
+  { k:'boneul',     n:'보늘',   r:52, c:'#9AA39B', sc:1.55 },
+];
+const TOP_TIER = TIERS.length - 1;
+// 합체 점수 — 위로 갈수록 가파르게
+const MERGE_SCORE = [1, 3, 6, 12, 24, 50];
+const POP_SCORE = 120;   // 보늘 둘이 만나 사라질 때
+// 떨어뜨릴 수 있는 건 아래 세 단계뿐 (윗단계는 합쳐서만 나온다)
+const DROPPABLE = 3;
+
+// ── 물리 상수 ───────────────────────────────────────────────
+const GRAV = 1500;        // px/s^2
+const REST = 0.12;        // 반발 계수 (낮게 — 통통 튀면 정신없다)
+const FRIC = 0.86;        // 접촉 시 접선 감쇠
+const AIRD = 0.999;       // 공기 저항
+const ITER = 14;          // 위치 보정 반복 — 쌓임 안정성 (많이 쌓이면 8로 낮춘다)
+const WALL_R = 0.10;      // 벽 반발
+
+// ── 캔버스 ──────────────────────────────────────────────────
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const DPR = Math.min(3, window.devicePixelRatio || 1);
+let W = 420, H = 680;
+let BOX = { x:0, y:0, w:0, h:0 };   // 통
+let LINE = 0;                       // 넘침 기준선
+const HUD = 58;
+
+let bodies = [];              // {x,y,vx,vy,r,t,id,born}
+let cur = null;               // 손에 든 것 {t, x}
+const REF_W = 382;            // R_BASE 를 잰 기준 통 너비
+
+function layout(){
+  const r = cv.getBoundingClientRect();
+  W = Math.max(300, Math.round(r.width || 420));
+  H = Math.max(420, Math.round(r.height || 680));
+  cv.width = Math.round(W*DPR); cv.height = Math.round(H*DPR);
+  const margin = Math.max(10, Math.round(W*0.045));
+  BOX.x = margin; BOX.w = W - margin*2;
+  // 조각 크기를 통 너비에 비례시킨다.
+  // 고정 픽셀로 두면 좁은 폰에서만 통이 빨리 차서, 기기에 따라 난이도가 달라진다.
+  const k = BOX.w / REF_W;
+  TIERS.forEach((t,i)=>{ t.r = Math.max(7, Math.round(R_BASE[i]*k)); });
+  // 손에 든 조각이 HUD를 가리지 않을 만큼만 위를 비운다
+  const TOPGAP = TIERS[DROPPABLE-1].r*2 + 20;
+  // 통 높이는 너비의 1.45배로 묶는다. 화면 세로 길이를 그대로 쓰면
+  // 긴 폰일수록 통이 깊어져서 같은 게임이 기기마다 쉬워진다.
+  BOX.h = Math.min(Math.round(BOX.w*1.45), H - (HUD+TOPGAP) - margin);
+  BOX.h = Math.max(220, BOX.h);
+  BOX.y = Math.max(HUD + TOPGAP, H - margin - BOX.h);   // 통은 아래에 붙인다
+  LINE = BOX.y;
+  // 화면이 바뀌면 이미 놓인 것도 같이 줄이고 통 안으로 넣는다
+  for(const b of bodies){
+    b.r = TIERS[b.t].r;
+    if(b.rT){ b.rT = b.r; b.r0 = Math.min(b.r0, b.r); }
+    b.x = Math.max(BOX.x+b.r, Math.min(BOX.x+BOX.w-b.r, b.x));
+    b.y = Math.min(BOX.y+BOX.h-b.r, b.y);
+  }
+  if(cur){ const cr = TIERS[cur.t].r;
+           cur.x = Math.max(BOX.x+cr+1, Math.min(BOX.x+BOX.w-cr-1, cur.x)); }
+}
+layout();
+addEventListener('resize', ()=>{ layout(); });
+addEventListener('orientationchange', ()=>setTimeout(layout,250));
+
+// ── 스프라이트 ──────────────────────────────────────────────
+const IMG = {};
+for(const t of TIERS){
+  const im = new Image();
+  im.src = '../assets/sd_' + t.k + '_t.png';
+  im.onload = ()=>{ IMG[t.k] = im; };
+  im.onerror = ()=>{};
+}
+
+// ── 소리 (낙엽피하기와 같은 WebAudio 합성) ────────────────────
+let AC=null, muted = localStorage.getItem('somsom_muted')==='1';
+function ac(){
+  if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)();
+  if(AC.state==='suspended') AC.resume();
+  return AC;
+}
+function tone(f,d,type,g,when,slide){
+  const a=ac(), o=a.createOscillator(), gn=a.createGain(), t0=a.currentTime+(when||0);
+  o.type=type||'sine'; o.frequency.setValueAtTime(f,t0);
+  if(slide) o.frequency.exponentialRampToValueAtTime(slide,t0+d);
+  gn.gain.setValueAtTime(g||0.06,t0); gn.gain.exponentialRampToValueAtTime(0.0001,t0+d);
+  o.connect(gn); gn.connect(a.destination); o.start(t0); o.stop(t0+d+0.02);
+}
+function sfx(name, tier){
+  if(muted) return;
+  try{
+    if(name==='drop') tone(200,0.07,'triangle',0.05);
+    else if(name==='merge'){
+      // 단계가 올라갈수록 높은 음 — 합체가 귀로도 느껴지게
+      const base = 420 + (tier||0)*110;
+      tone(base,0.10,'sine',0.055); tone(base*1.5,0.13,'sine',0.05,0.055);
+    }
+    else if(name==='chain') tone(1200,0.16,'square',0.045,0,1700);
+    else if(name==='top'){ [523,659,784,1046,1318].forEach((f,i)=>tone(f,0.22,'square',0.055,i*0.10)); }
+    else if(name==='over'){ [392,311,233].forEach((f,i)=>tone(f,0.26,'triangle',0.065,i*0.18)); }
+  }catch(e){}
+}
+function buzz(ms){ if(muted) return; try{ navigator.vibrate && navigator.vibrate(ms); }catch(e){} }
+
+// ── 상태 ────────────────────────────────────────────────────
+const KEY = 'somsom_merge_v1';
+let best = 0, bestTier = 0, plays = 0, seen = {};
+try{
+  const s = JSON.parse(localStorage.getItem(KEY)||'{}');
+  best = s.best||0; bestTier = s.bestTier||0; plays = s.plays||0; seen = s.seen||{};
+}catch(e){}                                  // 저장이 깨져 있어도 기본값으로 시작
+function saveAll(){ try{ localStorage.setItem(KEY, JSON.stringify({best,bestTier,plays,seen})); }catch(e){} }
+
+// 튜토리얼 — 첫 두 판에만 한 줄씩
+let tut = 0, tutMerged = 0;
+
+let mode = 'TITLE';           // TITLE | PLAY | PAUSE | OVER
+let nextId = 1;
+let score = 0, merges = 0, maxTier = 0;
+let nextT = 0;                // 다음 것
+let dropLock = 0;             // 연속 투하 방지
+let overT = 0;                // 넘침 누적 시간
+let chain = 0, chainT = 0;    // 연쇄
+let maxChain = 0;
+let stat = { pops:0 };
+let pops = [];                // 합체 이펙트
+let shake = 0;
+
+function $(id){ return document.getElementById(id); }
+function show(id){
+  for(const s of ['sTitle','sResult']) $(s).classList.add('hidden');
+  if(id) $(id).classList.remove('hidden');
+}
+function toast(m){
+  const t=$('toast'); t.textContent=m; t.classList.add('on');
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),1100);
+}
+function pickTier(){ return (Math.random()*DROPPABLE)|0; }
+
+function startGame(){
+  bodies = []; score = 0; merges = 0; maxTier = 0; overT = 0;
+  chain = 0; chainT = 0; maxChain = 0; stat = { pops:0 };
+  pops = []; shake = 0; dropLock = 0; tut = 0; tutMerged = 0;
+  cur = { t: pickTier(), x: W/2 };
+  nextT = pickTier();
+  mode = 'PLAY'; show(null);
+  acc = 0;                            // 이전 판의 누적 시간이 넘어오지 않게
+  tut = (plays < 2) ? 4.5 : 0;        // 첫 두 판에만 안내 한 줄
+  last = performance.now();
+}
+
+// ── 조작 ────────────────────────────────────────────────────
+function px(ev){
+  const r = cv.getBoundingClientRect();
+  const c = (ev.touches && ev.touches[0]) ? ev.touches[0].clientX : ev.clientX;
+  return c - r.left;
+}
+function togglePause(){
+  if(mode==='PLAY'){ mode='PAUSE'; }
+  else if(mode==='PAUSE'){ mode='PLAY'; last = performance.now(); acc = 0; }
+}
+function aim(ev){
+  if(mode!=='PLAY' || !cur) return;
+  if(!muted){ try{ ac(); }catch(e){} }
+  const r = TIERS[cur.t].r;
+  cur.x = Math.max(BOX.x + r + 1, Math.min(BOX.x + BOX.w - r - 1, px(ev)));
+}
+function hitPause(ev){
+  const r = cv.getBoundingClientRect();
+  const c = (ev.changedTouches && ev.changedTouches[0]) ? ev.changedTouches[0] : ev;
+  const x = c.clientX - r.left, y = c.clientY - r.top;
+  return x > W-46 && x < W-6 && y > HUD/2-18 && y < HUD/2+18;
+}
+function drop(){
+  if(mode!=='PLAY' || !cur || dropLock>0) return;
+  const t = cur.t, r = TIERS[t].r;
+  bodies.push({ x:cur.x, y:BOX.y - 26, vx:0, vy:0, r, t, id:nextId++, born:0 });
+  if(!seen[t]){ seen[t] = 1; saveAll(); }      // 떨어뜨린 단계도 도감에
+  sfx('drop'); buzz(6);
+  dropLock = 0.36;
+  cur = { t: nextT, x: cur.x };
+  nextT = pickTier();
+}
+cv.addEventListener('touchstart', e=>{ if(!hitPause(e)) aim(e); e.preventDefault(); }, {passive:false});
+cv.addEventListener('touchmove',  e=>{ aim(e); e.preventDefault(); }, {passive:false});
+cv.addEventListener('touchend',   e=>{
+  if(hitPause(e)){ togglePause(); e.preventDefault(); return; }
+  drop(); e.preventDefault();
+}, {passive:false});
+cv.addEventListener('mousemove',  aim);
+cv.addEventListener('mousedown',  e=>{ aim(e); });
+cv.addEventListener('mouseup',    e=>{ if(hitPause(e)){ togglePause(); return; } drop(); });
+addEventListener('keydown', e=>{
+  if(e.key==='p'||e.key==='P'||e.key==='Escape'){ togglePause(); return; }
+  if(mode!=='PLAY' || !cur) return;
+  const r = TIERS[cur.t].r;
+  if(e.key==='ArrowLeft')  cur.x = Math.max(BOX.x+r+1, cur.x-24);
+  if(e.key==='ArrowRight') cur.x = Math.min(BOX.x+BOX.w-r-1, cur.x+24);
+  if(e.key===' '||e.key==='ArrowDown'){ drop(); e.preventDefault(); }
+});
+
+// ── 물리 ────────────────────────────────────────────────────
+function stepPhysics(dt){
+  // 적분
+  for(const b of bodies){
+    b.born += dt;
+    if(b.rT && b.r < b.rT){                    // 합체 직후 0.12초 동안 제 크기로 부푼다
+      b.gt += dt;
+      b.r = Math.min(b.rT, b.r0 + (b.rT - b.r0) * (b.gt/0.12));
+    }
+    b.vy += GRAV*dt;
+    b.vx *= AIRD; b.vy *= AIRD;
+    b.x += b.vx*dt; b.y += b.vy*dt;
+  }
+  // 충돌 — 위치 보정 반복
+  // 순서가 중요하다. 원끼리 밀어낸 다음 벽으로 가둔다.
+  // 반대로 하면 마지막에 밀어낸 결과가 벽 밖으로 삐져나온 채 프레임이 끝나고,
+  // 그걸 나중에 한 번에 밀어 넣으면 이번엔 그 자리가 겹친 채로 남는다.
+  const iters = bodies.length > 60 ? 8 : ITER;
+  for(let it=0; it<iters; it++){
+    // 원끼리
+    for(let i=0;i<bodies.length;i++){
+      const a = bodies[i];
+      for(let j=i+1;j<bodies.length;j++){
+        const c = bodies[j];
+        let dx = c.x-a.x, dy = c.y-a.y;
+        let d2 = dx*dx+dy*dy;
+        const rr = a.r + c.r;
+        if(d2 >= rr*rr || d2 === 0) continue;
+        let d = Math.sqrt(d2);
+        if(d < 0.0001){ dx = 0.01; dy = -1; d = 1; }
+        const nx = dx/d, ny = dy/d;
+        const pen = rr - d;
+        // 질량은 면적에 비례
+        const ma = a.r*a.r, mc = c.r*c.r, tot = ma+mc;
+        const sa = (mc/tot), sc2 = (ma/tot);
+        a.x -= nx*pen*sa; a.y -= ny*pen*sa;
+        c.x += nx*pen*sc2; c.y += ny*pen*sc2;
+        if(it===0){
+          // 상대속도의 법선 성분만 감쇠
+          const rvx = c.vx-a.vx, rvy = c.vy-a.vy;
+          const vn = rvx*nx + rvy*ny;
+          if(vn < 0){
+            const imp = -(1+REST)*vn;
+            a.vx -= nx*imp*sa; a.vy -= ny*imp*sa;
+            c.vx += nx*imp*sc2; c.vy += ny*imp*sc2;
+          }
+        }
+      }
+    }
+    // 벽·바닥 — 반복의 마지막이라, 프레임은 항상 통 안에서 끝난다.
+    // 위치는 매번 잡되 속도는 첫 번째에만 건드린다. 매번 감쇠하면 바닥 마찰이
+    // 열네 번 곱해져(0.86^14 ≈ 0.12) 굴러가지 못하고 그 자리에 박힌다.
+    for(const b of bodies){
+      const L = BOX.x + b.r, R = BOX.x + BOX.w - b.r, B = BOX.y + BOX.h - b.r;
+      if(b.x < L){ b.x = L; if(it===0 && b.vx<0) b.vx = -b.vx*WALL_R; else if(b.vx<0) b.vx = 0; }
+      if(b.x > R){ b.x = R; if(it===0 && b.vx>0) b.vx = -b.vx*WALL_R; else if(b.vx>0) b.vx = 0; }
+      if(b.y > B){ b.y = B;
+        if(it===0){ if(b.vy>0) b.vy = -b.vy*REST; b.vx *= FRIC; }
+        else if(b.vy>0) b.vy = 0; }
+    }
+  }
+}
+
+// ── 합체 ────────────────────────────────────────────────────
+function resolveMerges(){
+  const gone = new Set();
+  let did = false;
+  // 최종 단계끼리 만나면 둘 다 사라진다. 안 그러면 통이 보늘로 막혀 판이 죽는다.
+  for(let i=0;i<bodies.length;i++){
+    const a = bodies[i];
+    if(gone.has(a.id) || a.t !== TOP_TIER) continue;
+    for(let j=i+1;j<bodies.length;j++){
+      const c = bodies[j];
+      if(gone.has(c.id) || c.t !== TOP_TIER) continue;
+      const dx=c.x-a.x, dy=c.y-a.y, rr=a.r+c.r;
+      if(dx*dx+dy*dy > rr*rr*1.02) continue;
+      gone.add(a.id); gone.add(c.id);
+      score += POP_SCORE * (1 + chain*0.5);
+      merges++; chain++; chainT = 0.55; if(chain>maxChain) maxChain = chain;
+      pops.push({ x:(a.x+c.x)/2, y:(a.y+c.y)/2, r:a.r*1.4, t:0 });
+      pops.push({ x:(a.x+c.x)/2, y:(a.y+c.y)/2, r:a.r*0.7, t:-0.08 });
+      sfx('top'); buzz(60); shake = 0.34;
+      toast('보늘 둘이 만나 돌아갔다  +' + POP_SCORE);
+      stat.pops++;
+      did = true;
+      break;
+    }
+  }
+  for(let i=0;i<bodies.length;i++){
+    const a = bodies[i];
+    if(gone.has(a.id) || a.t >= TOP_TIER) continue;
+    for(let j=i+1;j<bodies.length;j++){
+      const c = bodies[j];
+      if(gone.has(c.id) || c.t !== a.t) continue;
+      const dx=c.x-a.x, dy=c.y-a.y;
+      const rr = a.r + c.r;
+      if(dx*dx+dy*dy > rr*rr*1.02) continue;
+      // 합친다
+      gone.add(a.id); gone.add(c.id);
+      const nt = a.t + 1, T = TIERS[nt];
+      // 합쳐진 것은 부모보다 크므로, 중간 지점 그대로 두면 통 밖으로 삐져나온다.
+      // 만들 때 바로 가둔다 (물리 스텝을 기다리면 한 프레임 동안 벽을 뚫고 보인다).
+      const mx = Math.max(BOX.x + T.r, Math.min(BOX.x + BOX.w - T.r, (a.x+c.x)/2));
+      const my = Math.min(BOX.y + BOX.h - T.r, (a.y+c.y)/2);
+      bodies.push({ x:mx, y:my, r:a.r, r0:a.r, rT:T.r, gt:0, t:nt, id:nextId++, born:0,
+                    vx:(a.vx+c.vx)/2, vy:(a.vy+c.vy)/2 - 60 });
+      score += MERGE_SCORE[nt] * (1 + chain*0.5);
+      merges++;
+      if(nt > maxTier){
+        maxTier = nt;
+        if(nt === TOP_TIER){ sfx('top'); buzz(60); toast('보늘이 나왔다!'); }
+        else toast(T.n + ' 등장');
+      }
+      if(!seen[nt]){ seen[nt] = 1; saveAll(); }   // 처음 본 단계는 도감에
+      pops.push({ x:mx, y:my, r:T.r, t:0 });
+      if(plays<2 && !tutMerged){ tutMerged=1; tut=3.2; }
+      chain++; chainT = 0.55; if(chain>maxChain) maxChain = chain;
+      if(chain>1){ sfx('chain'); toast('연쇄 ×'+chain); }
+      else sfx('merge', nt);
+      buzz(10); shake = Math.min(0.3, 0.08 + nt*0.03);
+      did = true;
+      break;
+    }
+  }
+  if(gone.size) bodies = bodies.filter(b=>!gone.has(b.id));
+  return did;
+}
+
+// ── 넘침 판정 ───────────────────────────────────────────────
+function checkOver(dt){
+  let out = false;
+  for(const b of bodies){
+    if(b.born < 1.0) continue;                 // 막 떨어뜨린 건 봐준다
+    if(Math.abs(b.vy) > 42) continue;          // 아직 움직이는 중이면 봐준다
+    if(b.y - b.r < LINE){ out = true; break; }
+  }
+  overT = out ? overT + dt : 0;
+  if(overT > 1.15) gameOver();
+}
+function gameOver(){
+  mode = 'OVER';
+  sfx('over');
+  score = Math.round(score);
+  const isBest = score > best;
+  if(isBest) best = score;
+  if(maxTier > bestTier) bestTier = maxTier;
+  plays++;
+  saveAll();
+  hubReport();
+  pushRanking();
+
+  $('resBig').textContent = score + '점';
+  const parts = [];
+  parts.push('합체 ' + merges + '번' + (maxChain>1 ? ' · 최고 ' + maxChain + '연쇄' : ''));
+  parts.push('제일 큰 친구 · <b>' + TIERS[maxTier].n + '</b>');
+  if(stat.pops) parts.push('보늘 ' + stat.pops + '번 돌려보냄');
+  parts.push(isBest ? '<b>최고 기록을 세웠습니다</b>' : '최고 ' + best + '점');
+  $('resNote').innerHTML = parts.join('<br>');
+  show('sResult');
+}
+
+// ── 허브 연동 ───────────────────────────────────────────────
+function hubStats(){ try{ return JSON.parse(localStorage.getItem('somsom_stats')||'{}'); }catch(e){ return {}; } }
+function achLoad(){ try{ return JSON.parse(localStorage.getItem('somsom_ach')||'{}'); }catch(e){ return {}; } }
+function achUnlock(id){
+  const a = achLoad(); if(a[id]) return;
+  a[id] = Date.now(); try{ localStorage.setItem('somsom_ach', JSON.stringify(a)); }catch(e){}
+  toast('🏅 업적 달성');
+}
+function hubReport(){
+  const st = hubStats();
+  st.played = st.played || {}; st.played.merge = (st.played.merge||0) + 1;
+  st.chars  = st.chars  || {};
+  const topK = TIERS[maxTier].k;               // 허브의 캐릭터 키와 같은 문자열이다
+  st.chars[topK] = (st.chars[topK]||0) + 1; st.last = topK;
+  st.coins = (st.coins||0) + Math.floor(score/10);      // 다른 게임과 같은 지갑
+  try{ localStorage.setItem('somsom_stats', JSON.stringify(st)); }catch(e){}
+  // 도감 — 처음 본 단계
+  try{
+    const dx = JSON.parse(localStorage.getItem('somsom_dex')||'{}');
+    for(const k in seen) dx['merge_' + TIERS[k].k] = 1;
+    localStorage.setItem('somsom_dex', JSON.stringify(dx));
+  }catch(e){}
+  // 마을 공통 업적 — 합체로도 채워질 수 있어야 한다
+  const pl = st.played || {};
+  if(pl.leaf && pl.run && pl.match)             achUnlock('all_three');
+  if(pl.leaf && pl.run && pl.match && pl.defense) achUnlock('all_four');
+  if(Object.keys(st.chars||{}).length >= 6)     achUnlock('all_chars');
+  if((st.coins||0) >= 500)                      achUnlock('coins_500');
+  // 합체 업적
+  if(merges > 0)          achUnlock('merge_first');
+  if(maxTier >= 4)        achUnlock('merge_kkito');
+  if(maxTier >= TOP_TIER) achUnlock('merge_boneul');
+  if(maxChain >= 4)       achUnlock('merge_chain4');
+  if(score >= 1000)       achUnlock('merge_1000');
+  // 오늘의 미션
+  try{
+    const mk = String(new Date().getFullYear()*10000 + (new Date().getMonth()+1)*100 + new Date().getDate());
+    const ms = JSON.parse(localStorage.getItem('somsom_missions')||'{}');
+    if(maxTier >= 3){ ms[mk] = ms[mk]||{}; ms[mk].merge = 1;
+      localStorage.setItem('somsom_missions', JSON.stringify(ms)); }
+  }catch(e){}
+}
+// 랭킹 — 버튼 없이 조용히 (docs/RANKING_SPEC.md)
+const FB_KEY='AIzaSyBfld7SRrVTxDG0nE_6Z3Mw5kSRTo5bIGY';
+const FB_DOCS='https://firestore.googleapis.com/v1/projects/somsom-city/databases/(default)/documents';
+async function pushRanking(){
+  try{
+    const nm = localStorage.getItem('somsom_name'); if(!nm) return;
+    await fetch(FB_DOCS+'/merge_scores?key='+FB_KEY,{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({fields:{n:{stringValue:nm},s:{integerValue:String(score)},
+        t:{integerValue:String(Date.now())}}})});
+    await fetch(FB_DOCS+'/merge_progress/'+encodeURIComponent(nm)+'?key='+FB_KEY,
+      {method:'PATCH',headers:{'Content-Type':'application/json'},
+       body:JSON.stringify({fields:{n:{stringValue:nm},st:{integerValue:String(bestTier)},
+         b:{integerValue:String(best)},t:{integerValue:String(Date.now())}}})});
+  }catch(e){}                                   // 규칙이 막혀 있어도 게임엔 영향 없음
+}
+
+// ── 루프 ────────────────────────────────────────────────────
+let last = 0, acc = 0;
+const FIXED = 1/120;
+function frame(now){
+  requestAnimationFrame(frame);
+  let dt = (now - last)/1000; last = now;
+  if(!(dt>0)) dt = 0;
+  dt = Math.min(0.05, dt);
+
+  if(mode==='PAUSE'){ draw(); return; }
+  if(mode==='PLAY'){
+    if(dropLock>0) dropLock -= dt;
+    if(tut>0) tut -= dt;
+    if(chainT>0){ chainT -= dt; if(chainT<=0) chain = 0; }
+    if(shake>0) shake -= dt;
+    acc += dt;
+    let guard = 0;
+    while(acc >= FIXED && guard++ < 8){
+      stepPhysics(FIXED);
+      let n = 0;
+      while(resolveMerges() && n++ < 6){}
+      acc -= FIXED;
+    }
+    checkOver(dt);
+  }
+  for(let i=pops.length-1;i>=0;i--){ pops[i].t += dt; if(pops[i].t>0.35) pops.splice(i,1); }
+  draw();
+}
+
+// ── 그리기 ──────────────────────────────────────────────────
+function drawChar(t, x, y, r, alpha){
+  const T = TIERS[t], im = IMG[T.k];
+  ctx.save();
+  if(alpha!=null) ctx.globalAlpha = alpha;
+  // 바탕 원 — 실루엣이 또렷해야 단계가 구분된다
+  ctx.beginPath(); ctx.arc(x, y, r, 0, 7);
+  ctx.fillStyle = T.c; ctx.globalAlpha = (alpha==null?1:alpha) * 0.28; ctx.fill();
+  ctx.globalAlpha = (alpha==null?1:alpha);
+  ctx.lineWidth = 2.5; ctx.strokeStyle = '#221E18'; ctx.stroke();
+  if(im){
+    const h = r*2*T.sc*0.72, w = h*(im.width/im.height);
+    ctx.save();
+    ctx.beginPath(); ctx.arc(x, y, r-1.5, 0, 7); ctx.clip();
+    ctx.drawImage(im, x-w/2, y-h/2 + r*0.10, w, h);
+    ctx.restore();
+  }
+  ctx.restore();
+}
+function draw(){
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.fillStyle = '#FDFBF5'; ctx.fillRect(0,0,W,H);
+  const sx = shake>0 ? (Math.random()-0.5)*7 : 0;
+  ctx.save(); ctx.translate(sx,0);
+
+  // 통
+  ctx.fillStyle = '#F4EFE1';
+  ctx.fillRect(BOX.x, BOX.y, BOX.w, BOX.h);
+  // 넘침선
+  ctx.strokeStyle = overT>0 ? '#E0605F' : '#DCD3BE';
+  ctx.lineWidth = 2; ctx.setLineDash([7,6]);
+  ctx.beginPath(); ctx.moveTo(BOX.x, LINE); ctx.lineTo(BOX.x+BOX.w, LINE); ctx.stroke();
+  ctx.setLineDash([]);
+  // 통 테두리 (좌·우·아래)
+  ctx.strokeStyle = '#221E18'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(BOX.x, BOX.y); ctx.lineTo(BOX.x, BOX.y+BOX.h);
+  ctx.lineTo(BOX.x+BOX.w, BOX.y+BOX.h); ctx.lineTo(BOX.x+BOX.w, BOX.y);
+  ctx.stroke();
+
+  // 몸통
+  for(const b of bodies) drawChar(b.t, b.x, b.y, b.r);
+  // 합체 이펙트
+  for(const p of pops){
+    const k = p.t/0.35;
+    ctx.strokeStyle = 'rgba(224,161,43,'+(1-k)+')';
+    ctx.lineWidth = 3*(1-k)+1;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r*(1+k*0.8), 0, 7); ctx.stroke();
+  }
+  ctx.restore();
+
+  // 손에 든 것 + 낙하 가이드
+  if(mode==='PLAY' && cur){
+    const r = TIERS[cur.t].r;
+    ctx.strokeStyle = 'rgba(34,30,24,.18)'; ctx.lineWidth = 2; ctx.setLineDash([4,7]);
+    ctx.beginPath(); ctx.moveTo(cur.x, BOX.y-4); ctx.lineTo(cur.x, BOX.y+BOX.h); ctx.stroke();
+    ctx.setLineDash([]);
+    drawChar(cur.t, cur.x, BOX.y - 30, r, dropLock>0 ? 0.35 : 1);
+  }
+
+  drawHud();
+}
+function drawHud(){
+  ctx.fillStyle = '#FDFBF5'; ctx.fillRect(0,0,W,HUD);
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#221E18'; ctx.font = '900 24px sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText(Math.round(score), 14, HUD/2);
+  ctx.fillStyle = '#8A8271'; ctx.font = '800 11.5px sans-serif';
+  ctx.fillText('최고 ' + best, 14, HUD/2 + 18);
+  // 다음
+  if(mode==='PLAY' || mode==='PAUSE'){
+    ctx.fillStyle = '#8A8271'; ctx.font = '800 11px sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText('다음', W-104, HUD/2);
+    drawChar(nextT, W-70, HUD/2, 17);
+    // 일시정지 버튼
+    ctx.strokeStyle = '#221E18'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(W-40, HUD/2-14, 28, 28, 7); ctx.stroke();
+    ctx.fillStyle = '#221E18';
+    if(mode==='PLAY'){ ctx.fillRect(W-31,HUD/2-7,4,14); ctx.fillRect(W-24,HUD/2-7,4,14); }
+    else { ctx.beginPath(); ctx.moveTo(W-30,HUD/2-8); ctx.lineTo(W-18,HUD/2); ctx.lineTo(W-30,HUD/2+8); ctx.fill(); }
+  }
+  // 튜토리얼 한 줄
+  if(mode==='PLAY' && tut>0){
+    const msg = tutMerged ? '둘이 만나 한 뼘 커졌습니다' : '문질러서 자리를 고르고, 손을 떼면 떨어집니다';
+    ctx.globalAlpha = Math.min(1, tut);
+    ctx.fillStyle = 'rgba(34,30,24,.88)';
+    ctx.font = '800 13px sans-serif'; ctx.textAlign = 'center';
+    const tw = ctx.measureText(msg).width;
+    ctx.beginPath(); ctx.roundRect(W/2-tw/2-13, BOX.y+BOX.h-56, tw+26, 32, 9); ctx.fill();
+    ctx.fillStyle = '#FDFBF5'; ctx.textBaseline = 'middle';
+    ctx.fillText(msg, W/2, BOX.y+BOX.h-40);
+    ctx.globalAlpha = 1;
+  }
+  // 일시정지 덮개
+  if(mode==='PAUSE'){
+    ctx.fillStyle = 'rgba(253,251,245,.86)'; ctx.fillRect(0,HUD,W,H-HUD);
+    ctx.fillStyle = '#221E18'; ctx.font = '900 22px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('잠깐 멈춤', W/2, H/2-10);
+    ctx.font = '800 13px sans-serif'; ctx.fillStyle = '#6B6357';
+    ctx.fillText('오른쪽 위 버튼을 다시 누르면 이어집니다', W/2, H/2+18);
+  }
+}
+
+// ── 타이틀의 사다리 안내 ────────────────────────────────────
+function buildLadder(){
+  const el = $('ladder'); el.innerHTML = '';
+  TIERS.forEach((t,i)=>{
+    if(i){ const a=document.createElement('span'); a.className='ar'; a.textContent='›'; el.appendChild(a); }
+    const d = document.createElement('div'); d.className='lb';
+    const im = document.createElement('img');
+    im.src = '../assets/sd_'+t.k+'_t.png';
+    im.style.height = (16 + i*5) + 'px'; im.style.width = 'auto';
+    im.alt = t.n;
+    const n = document.createElement('span'); n.className='ln'; n.textContent = t.n;
+    d.appendChild(im); d.appendChild(n); el.appendChild(d);
+  });
+}
+
+// ── 버튼 ────────────────────────────────────────────────────
+$('btnGo').onclick    = startGame;
+$('btnRetry').onclick = startGame;
+$('btnHome').onclick  = ()=>{ mode='TITLE'; show('sTitle'); refreshTitle(); };
+$('btnMute').onclick  = ()=>{
+  muted = !muted;
+  try{ localStorage.setItem('somsom_muted', muted?'1':'0'); }catch(e){}
+  $('btnMute').textContent = muted?'🔇':'🔊';
+  if(!muted) sfx('drop');
+};
+function refreshTitle(){
+  $('btnMute').textContent = muted?'🔇':'🔊';
+  $('titleHint').innerHTML = best
+    ? ('최고 ' + best + '점 · 제일 큰 친구 ' + TIERS[bestTier].n)
+    : '';
+}
+
+buildLadder();
+refreshTitle();
+show('sTitle');
+requestAnimationFrame(t=>{ last = t; frame(t); });
+</script>
+</body>
+</html>
