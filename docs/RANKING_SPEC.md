@@ -151,6 +151,9 @@ async function pushProgress(){
 
 ### 권장 규칙
 
+> 2026-09-13 갱신: 실제 콘솔의 규칙은 컬렉션마다 `match` 블록을 하나씩 두는 모양이었습니다(아래 `col in [...]` 초안과 다름). **실제로 붙여 넣을 완성본은 `docs/firestore.rules`** 이고, 기존 여섯 블록은 그대로 두고 `merge_scores`·`merge_progress` 블록 둘만 뒤에 붙인 것입니다. 아래 초안은 참고용으로 남깁니다.
+
+
 [Firebase 콘솔](https://console.firebase.google.com/project/somsom-city/firestore/rules) → 규칙 탭에 붙여넣습니다.
 
 ```

@@ -1,0 +1,86 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /scores/{doc} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['n','c','s','t'])
+        && request.resource.data.n is string && request.resource.data.n.size() >= 1 && request.resource.data.n.size() <= 8
+        && request.resource.data.c is string && request.resource.data.c.size() <= 12
+        && request.resource.data.s is int && request.resource.data.s > 0 && request.resource.data.s < 100000
+        && request.resource.data.t is int;
+      allow update, delete: if false;
+    }
+    match /runner_scores/{doc} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['n','c','s','t'])
+        && request.resource.data.n is string && request.resource.data.n.size() >= 1 && request.resource.data.n.size() <= 8
+        && request.resource.data.c is string && request.resource.data.c.size() <= 12
+        && request.resource.data.s is int && request.resource.data.s > 0 && request.resource.data.s < 100000
+        && request.resource.data.t is int;
+      allow update, delete: if false;
+    }
+    match /memory_scores/{doc} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['n','c','d','s','t'])
+        && request.resource.data.n is string && request.resource.data.n.size() >= 1 && request.resource.data.n.size() <= 8
+        && request.resource.data.c is string && request.resource.data.c.size() <= 12
+        && request.resource.data.d in ['easy', 'normal', 'hard']
+        && request.resource.data.s is int && request.resource.data.s > 0 && request.resource.data.s < 100000
+        && request.resource.data.t is int;
+      allow update, delete: if false;
+    }
+    match /defense_scores/{doc} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['n','s','t','c'])
+        && request.resource.data.n is string && request.resource.data.n.size() <= 10
+        && request.resource.data.s is int && request.resource.data.s >= 0 && request.resource.data.s <= 999
+        && request.resource.data.t is int
+        && request.resource.data.c is string && request.resource.data.c.size() <= 20;
+      allow update, delete: if false;
+    }
+    match /defense_weekly/{doc} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['n','s','w','t','c'])
+        && request.resource.data.n is string && request.resource.data.n.size() <= 10
+        && request.resource.data.s is int && request.resource.data.s >= 0 && request.resource.data.s <= 999
+        && request.resource.data.w is int
+        && request.resource.data.t is int
+        && request.resource.data.c is string && request.resource.data.c.size() <= 20;
+      allow update, delete: if false;
+    }
+    match /defense_events/{doc} {
+      allow create: if request.resource.data.keys().hasOnly(['e','t','d'])
+        && request.resource.data.e is string && request.resource.data.e.size() <= 30
+        && request.resource.data.t is int
+        && request.resource.data.d is string && request.resource.data.d.size() <= 500;
+      allow read, update, delete: if false;
+    }
+    match /defense_config/{doc} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ── 솜솜 합체 (GAME 05) ─────────────────────────────────
+    // 점수형 — 한 판의 점수. 새 기록 추가만, 고치거나 지우기는 불가.
+    // d 는 "오늘의 통" 날짜(YYYYMMDD 정수) — 같은 날끼리 비교하는 데 쓴다.
+    match /merge_scores/{doc} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['n','s','d','t'])
+        && request.resource.data.n is string && request.resource.data.n.size() >= 1 && request.resource.data.n.size() <= 12
+        && request.resource.data.s is int && request.resource.data.s >= 0 && request.resource.data.s < 1000000
+        && request.resource.data.d is int && request.resource.data.d >= 20000101 && request.resource.data.d <= 21001231
+        && request.resource.data.t is int;
+      allow update, delete: if false;
+    }
+    // 진도형 — 닉네임이 문서 이름. 최고 단계(st 0~5)와 최고 점수(b)를 덮어쓴다.
+    match /merge_progress/{nick} {
+      allow read: if true;
+      allow create, update: if request.resource.data.keys().hasOnly(['n','st','b','t'])
+        && request.resource.data.n == nick && request.resource.data.n.size() <= 12
+        && request.resource.data.st is int && request.resource.data.st >= 0 && request.resource.data.st <= 5
+        && request.resource.data.b is int && request.resource.data.b >= 0
+        && request.resource.data.t is int;
+      allow delete: if false;
+    }
+  }
+}
