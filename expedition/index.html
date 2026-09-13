@@ -359,7 +359,7 @@ function step(dt){
   const g=G;
   g.t += dt;
   // 속도: 기본 + 거리 증가 + 갈림길 보정, 보늘이 늦춤
-  const ramp = g.endless ? 1 + Math.min(1.2, g.t/60) : 1 + Math.min(0.55, g.dist/Math.max(1,g.st.len));
+  const ramp = g.endless ? 1 + Math.min(3.2, g.t/40) : 1 + Math.min(0.55, g.dist/Math.max(1,g.st.len));
   g.spd = (1 + g.mod.spd) * ramp * g.mSlow;
   g.dist += 60 * g.spd * dt;
 
@@ -370,7 +370,7 @@ function step(dt){
   // 스폰
   g.spawnT = (g.spawnT||0) - dt;
   if(g.spawnT<=0){
-    const rate = Math.max(0.24, 0.70 / (1 + g.mod.obst) / ramp);
+    const rate = Math.max(g.endless?0.15:0.24, 0.70 / (1 + g.mod.obst) / ramp);
     g.spawnT = rate * (0.7 + Math.random()*0.6);
     spawnObst();
   }
@@ -383,7 +383,7 @@ function step(dt){
   // 동료 합류
   if(g.matesQueue.length && g.dist >= g.nextJoin){
     joinMate(g.matesQueue.shift());
-    g.nextJoin += Math.max(180, g.st.len/4);
+    g.nextJoin += g.endless ? 260 : Math.max(180, g.st.len/4);
   }
   // 갈림길
   if(g.dist >= g.nextFork && (g.endless || g.dist < g.st.len - 80)){
