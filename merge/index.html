@@ -67,6 +67,22 @@
   #ladder .ln{font-size:9.5px;color:#8A8271;font-weight:800;}
   #ladder .ar{font-size:11px;color:#C6BEAE;padding-bottom:14px;}
   #resBig{font-size:34px;font-weight:900;font-family:'Black Han Sans',sans-serif;color:#E0A12B;}
+  /* 오늘의 순위판 — 아래에서 올라오는 시트 */
+  .sheetWrap{position:absolute;inset:0;z-index:30;display:none;align-items:flex-end;justify-content:center;
+    background:rgba(34,30,24,.45);}
+  .sheetWrap.on{display:flex;}
+  .sheet{background:#FDFBF5;border:2px solid #221E18;border-bottom:0;border-radius:18px 18px 0 0;width:100%;
+    max-height:72%;overflow:auto;padding:16px 18px 20px;display:flex;flex-direction:column;gap:8px;}
+  .sheet .hd{display:flex;justify-content:space-between;align-items:baseline;}
+  .sheet .t{font-family:'Black Han Sans',sans-serif;font-size:21px;}
+  .sheet .c{font-size:12px;color:#8A8271;font-weight:800;}
+  .bRow{display:flex;gap:10px;align-items:center;padding:8px 8px;border-bottom:1px solid #EFE7D6;font-weight:800;font-size:14px;}
+  .bRow.me{background:#FFF1CC;border-radius:9px;border-bottom-color:transparent;}
+  .bRow .rk{width:30px;color:#8A8271;font-size:12px;}
+  .bRow .nm{flex:1;}
+  .bRow .sc{color:#C98A12;font-family:'Black Han Sans',sans-serif;font-size:17px;}
+  .bMsg{padding:18px 6px;text-align:center;color:#6B6357;font-size:13px;line-height:1.6;}
+  .sheet .ghost{align-self:center;margin-top:4px;}
   #toast{position:absolute;left:50%;top:76px;transform:translateX(-50%);z-index:20;
     background:#221E18;color:#FDFBF5;border-radius:10px;padding:7px 14px;font-size:13px;
     font-weight:800;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;}
@@ -92,6 +108,7 @@
       <button class="big" id="btnGo">떨어뜨리기</button>
       <div class="row" id="titleFoot">
         <button class="ghost" id="btnMute">🔊</button>
+        <button class="ghost" id="btnBoard">오늘의 순위</button>
         <span id="titleHint"></span>
       </div>
     </div>
@@ -105,8 +122,18 @@
       <p class="sub" id="resNote"></p>
       <div class="row">
         <button class="big" id="btnRetry">한 판 더</button>
+        <button class="ghost" id="btnBoard2">순위</button>
         <button class="ghost" id="btnHome">타이틀</button>
       </div>
+    </div>
+  </div>
+
+  <!-- 오늘의 순위판 -->
+  <div id="board" class="sheetWrap">
+    <div class="sheet">
+      <div class="hd"><span class="t">오늘의 순위</span><span class="c" id="boardDay"></span></div>
+      <div id="boardList"></div>
+      <button class="ghost" id="boardClose">닫기</button>
     </div>
   </div>
 </div>
@@ -178,6 +205,26 @@ let BOX = { x:0, y:0, w:0, h:0 };   // 통
 let LINE = 0;                       // 넘침 기준선
 const HUD = 58;
 
+// ── 오늘의 규칙 ─────────────────────────────────────────────
+// 날짜를 씨앗으로 하루에 하나. 모두 같은 규칙·같은 순서라 순위판이 공정하다.
+// 규칙은 숫자만 바꾼다. 새 조작·새 조각·새 캐릭터는 없다.
+const RULES = [
+  { k:'plain',   n:'보통 날',           d:'',                                        w:2 },
+  { k:'migae',   n:'미개가 많은 날',     d:'작은 친구가 자주 옵니다',                   w:1, weights:[.55,.30,.15] },
+  { k:'granny',  n:'할머니가 많은 날',   d:'큰 친구가 자주 와서 통이 빨리 찹니다',        w:1, weights:[.15,.30,.55] },
+  { k:'hold',    n:'바꾸기가 넉넉한 날', d:'바꿔 두기를 여섯 번 할 수 있습니다',          w:1, hold:6 },
+  { k:'boneul',  n:'보늘이 후한 날',     d:'보늘 둘이 돌아가며 조각 열 개를 두고 갑니다', w:1, popBonus:10 },
+  { k:'shallow', n:'통이 얕은 날',       d:'통이 낮아 넘치기 쉽습니다',                 w:1, boxH:0.82 },
+];
+function todayRule(){
+  const r = mulberry32(dayKey()*31 + 7)();
+  const tot = RULES.reduce((a,x)=>a+x.w, 0);
+  let acc = 0;
+  for(const R of RULES){ acc += R.w/tot; if(r < acc) return R; }
+  return RULES[0];
+}
+let RULE = todayRule();
+
 let bodies = [];              // {x,y,vx,vy,r,t,id,born}
 let cur = null;               // 손에 든 것 {t, x}
 const REF_W = 382;            // R_BASE 를 잰 기준 통 너비
@@ -204,6 +251,7 @@ function layout(){
   // 긴 폰일수록 통이 깊어져서 같은 게임이 기기마다 쉬워진다.
   BOX.h = Math.min(Math.round(BOX.w*BOX_RATIO), H - (HUD+TOPGAP) - margin);
   BOX.h = Math.max(220, BOX.h);
+  if(RULE.boxH) BOX.h = Math.round(BOX.h * RULE.boxH);   // 통이 얕은 날
   BOX.y = Math.max(HUD + TOPGAP, H - margin - BOX.h);   // 통은 아래에 붙인다
   LINE = BOX.y;
   // 화면이 바뀌면 이미 놓인 것도 같이 줄이고 통 안으로 넣는다
@@ -311,14 +359,21 @@ function dayLabel(){ const d=new Date(); return (d.getMonth()+1)+'월 '+d.getDat
 function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a);
   t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 let rng = Math.random;
-function pickTier(){ return (rng()*DROPPABLE)|0; }
+function pickTier(){
+  const w = RULE.weights;
+  if(!w) return (rng()*DROPPABLE)|0;
+  const r = rng(); let acc = 0;
+  for(let i=0;i<DROPPABLE;i++){ acc += w[i]; if(r < acc) return i; }
+  return DROPPABLE-1;
+}
 
 function startGame(){
   bodies = []; score = 0; merges = 0; maxTier = 0; overT = 0;
   left = DROPS_MAX; doneT = 0; endT = 0; overReason = 'over';
   chain = 0; chainT = 0; maxChain = 0; stat = { pops:0 };
   pops = []; shake = 0; dropLock = 0; tut = 0; tutMerged = 0;
-  hold = null; holdLeft = HOLD_MAX;
+  RULE = window.FORCE_RULE || todayRule(); layout();   // 자정을 넘겼을 수 있다 (FORCE_RULE 은 테스트용)
+  hold = null; holdLeft = RULE.hold || HOLD_MAX;
   rng = mulberry32(dayKey() * 7919 + 13);      // 오늘의 통
   cur = { t: pickTier(), x: W/2 };
   nextT = pickTier();
@@ -496,9 +551,10 @@ function resolveMerges(){
       pops.push({ x:(a.x+c.x)/2, y:(a.y+c.y)/2, r:a.r*0.7, t:-0.08 });
       sfx('top'); buzz(60); shake = 0.34;
       // 조각을 더 두고 간다. 마지막 조각을 이미 놓은 뒤라면 손을 다시 채운다.
-      left += POP_BONUS_DROPS; doneT = 0; endT = 0;
+      const bonus = RULE.popBonus || POP_BONUS_DROPS;
+      left += bonus; doneT = 0; endT = 0;
       if(!cur){ cur = { t: pickTier(), x: W/2 }; nextT = pickTier(); }
-      toast('보늘 둘이 돌아가며 조각 ' + POP_BONUS_DROPS + '개를 두고 갔다  +' + POP_SCORE);
+      toast('보늘 둘이 돌아가며 조각 ' + bonus + '개를 두고 갔다  +' + POP_SCORE);
       stat.pops++;
       did = true;
       break;
@@ -655,6 +711,52 @@ async function pushRanking(){
   }catch(e){}                                   // 규칙이 막혀 있어도 게임엔 영향 없음
 }
 
+// ── 오늘의 순위판 ────────────────────────────────────────────
+// d == 오늘 조건 하나로만 읽고 정렬은 여기서 한다. 정렬을 서버에 시키면
+// 복합 인덱스를 콘솔에서 따로 만들어야 한다.
+async function fetchToday(){
+  const r = await fetch(FB_DOCS+':runQuery?key='+FB_KEY,{method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({structuredQuery:{from:[{collectionId:'merge_scores'}],
+      where:{fieldFilter:{field:{fieldPath:'d'},op:'EQUAL',value:{integerValue:String(dayKey())}}},
+      limit:500}})});
+  const j = await r.json();
+  if(!Array.isArray(j)) throw new Error('bad');
+  const best = {};
+  for(const e of j){
+    if(!e.document) continue;
+    const f = e.document.fields||{};
+    const n = String((f.n&&f.n.stringValue)||'?').slice(0,12), sc = +((f.s&&f.s.integerValue)||0);
+    if(!(n in best) || sc > best[n]) best[n] = sc;
+  }
+  return best;
+}
+function esc(t){ return String(t).replace(/[<>&]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+async function openBoard(){
+  const me = localStorage.getItem('somsom_name') || '';
+  $('boardDay').textContent = dayLabel() + ' · ' + RULE.n;
+  const list = $('boardList');
+  list.innerHTML = '<div class="bMsg">불러오는 중…</div>';
+  $('board').classList.add('on');
+  let best;
+  try{ best = await fetchToday(); }
+  catch(e){ list.innerHTML = '<div class="bMsg">지금은 못 불러왔어요.<br>잠시 뒤 다시 열어 보세요.</div>'; return; }
+  // 방금 끝난 내 판은 아직 서버에 안 올라갔을 수 있다 — 바로 얹는다
+  if(me && mode==='OVER' && (!(me in best) || score > best[me])) best[me] = Math.round(score);
+  const rows = Object.entries(best).map(([n,s])=>({n,s})).sort((a,b)=>b.s-a.s);
+  if(!rows.length){
+    list.innerHTML = '<div class="bMsg">오늘은 아직 아무도 안 했어요.<br><b>첫 번째가 되어 보세요.</b></div>'; return;
+  }
+  list.innerHTML = rows.map((r,i)=>
+    '<div class="bRow'+(r.n===me?' me':'')+'"><span class="rk">'+(i+1)+'위</span>'
+    +'<span class="nm">'+esc(r.n)+'</span><span class="sc">'+r.s+'</span></div>').join('')
+    + (!me ? '<div class="bMsg">허브에서 닉네임을 정하면 내 점수도 올라갑니다</div>' : '');
+}
+$('btnBoard').onclick  = openBoard;
+$('btnBoard2').onclick = openBoard;
+$('boardClose').onclick = ()=> $('board').classList.remove('on');
+$('board').addEventListener('click', e=>{ if(e.target.id==='board') $('board').classList.remove('on'); });
+
 // ── 루프 ────────────────────────────────────────────────────
 let last = 0, acc = 0;
 const FIXED = 1/120;
@@ -759,6 +861,15 @@ function draw(){
     ctx.setLineDash([]);
     drawChar(cur.t, cur.x, BOX.y - r - 8, r, dropLock>0 ? 0.35 : 1);
   }
+  // 오늘의 규칙 — 보통 날이면 안 그린다
+  if((mode==='PLAY' || mode==='PAUSE') && RULE.k !== 'plain'){
+    ctx.save(); ctx.font = '800 10.5px sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    const msg = '오늘의 규칙 · ' + RULE.n, tw = ctx.measureText(msg).width;
+    ctx.fillStyle = 'rgba(34,30,24,.78)';
+    ctx.beginPath(); ctx.roundRect(W-14-tw-16, HUD+8, tw+16, 22, 11); ctx.fill();
+    ctx.fillStyle = '#FDFBF5'; ctx.fillText(msg, W-22, HUD+19);
+    ctx.restore();
+  }
   // 바꾸기 칸
   if(mode==='PLAY' || mode==='PAUSE'){
     const h = holdPos(), on = holdLeft > 0;
@@ -857,7 +968,9 @@ $('btnMute').onclick  = ()=>{
 };
 function refreshTitle(){
   $('btnMute').textContent = muted?'🔇':'🔊';
-  $('titleHint').innerHTML = '오늘의 통 · ' + dayLabel() + ' · 모두 같은 순서로 떨어집니다<br>' + (best
+  RULE = window.FORCE_RULE || todayRule();
+  $('titleHint').innerHTML = '오늘의 통 · ' + dayLabel() + ' · <b>' + RULE.n + '</b>'
+    + (RULE.d ? ' — ' + RULE.d : ' · 모두 같은 순서로 떨어집니다') + '<br>' + (best
     ? ('최고 ' + best + '점 · 제일 큰 친구 ' + TIERS[bestTier].n)
     : ('조각 ' + DROPS_MAX + '개로 몇 점까지 쌓을 수 있을까요'));
 }
