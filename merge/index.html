@@ -102,9 +102,14 @@ const TIERS = [
   { k:'boneul',     n:'보늘',   r:52, c:'#9AA39B', sc:1.55 },
 ];
 const TOP_TIER = TIERS.length - 1;
-// 합체 점수 — 위로 갈수록 가파르게
-const MERGE_SCORE = [1, 3, 6, 12, 24, 50];
-const POP_SCORE = 120;   // 보늘 둘이 만나 사라질 때
+// 합체 점수 — 위로 갈수록 가파르게.
+// 예전 값 [1,3,6,12,24,50] · 연쇄 배수 0.5 로는 점수의 4/5가 연쇄에서 나왔고,
+// 연쇄는 운이라 무작위 봇 1280 · 사람 봇 1298 · 완벽한 봇 1354로 실력 차가
+// 6%밖에 안 났습니다(조각 50개, 같은 시드). 랭킹이 뜻을 가지려면 점수가
+// "얼마나 높이 올렸나"를 따라야 하므로 위쪽을 가파르게 올리고 연쇄를 낮췄습니다.
+const MERGE_SCORE = [0, 5, 15, 45, 130, 400];
+const POP_SCORE = 800;   // 보늘 둘이 만나 사라질 때 — 한 판의 승부처
+const CHAIN_MUL = 0.35;  // 연쇄 배수. 높이면 다시 운 게임이 됩니다
 // 떨어뜨릴 수 있는 건 아래 세 단계뿐 (윗단계는 합쳐서만 나온다)
 let DROPPABLE = 3;
 // 한 판에 쓸 수 있는 조각 수. 이게 이 게임의 진짜 한 판 길이다.
@@ -388,7 +393,9 @@ function resolveMerges(){
       const dx=c.x-a.x, dy=c.y-a.y, rr=a.r+c.r;
       if(dx*dx+dy*dy > rr*rr*1.02) continue;
       gone.add(a.id); gone.add(c.id);
-      score += POP_SCORE * (1 + chain*0.5);
+      // 연쇄 배수를 안 붙인다. 보늘 둘을 붙이는 건 작정하고 만드는 일이지
+      // 굴러가다 우연히 터지는 게 아니고, 배수까지 붙이면 운으로 한 판이 갈린다.
+      score += POP_SCORE;
       merges++; chain++; chainT = 0.55; if(chain>maxChain) maxChain = chain;
       pops.push({ x:(a.x+c.x)/2, y:(a.y+c.y)/2, r:a.r*1.4, t:0 });
       pops.push({ x:(a.x+c.x)/2, y:(a.y+c.y)/2, r:a.r*0.7, t:-0.08 });
@@ -417,7 +424,7 @@ function resolveMerges(){
       const my = Math.min(BOX.y + BOX.h - T.r, (a.y+c.y)/2);
       bodies.push({ x:mx, y:my, r:a.r, r0:a.r, rT:T.r, gt:0, t:nt, id:nextId++, born:0,
                     vx:(a.vx+c.vx)/2, vy:(a.vy+c.vy)/2 - 60 });
-      score += MERGE_SCORE[nt] * (1 + chain*0.5);
+      score += MERGE_SCORE[nt] * (1 + chain*CHAIN_MUL);
       merges++;
       if(nt > maxTier){
         maxTier = nt;
@@ -500,7 +507,10 @@ function hubReport(){
   st.chars  = st.chars  || {};
   const topK = TIERS[maxTier].k;               // 허브의 캐릭터 키와 같은 문자열이다
   st.chars[topK] = (st.chars[topK]||0) + 1; st.last = topK;
-  st.coins = (st.coins||0) + Math.floor(score/10);      // 다른 게임과 같은 지갑
+  // 도토리는 마을 공용 지갑이다. 점수 눈금이 커졌으므로 나누는 값도 같이 키운다.
+  // 한 판에 30~40개 — 낙엽피하기·달리기에서 주워 오는 양과 비슷한 수준이다.
+  // (칭호는 누적 2000개에서 열리므로 한 판에 수백 개를 주면 하루 만에 끝난다)
+  st.coins = (st.coins||0) + Math.floor(score/200);
   try{ localStorage.setItem('somsom_stats', JSON.stringify(st)); }catch(e){}
   // 도감 — 처음 본 단계
   try{
@@ -518,8 +528,8 @@ function hubReport(){
   if(merges > 0)          achUnlock('merge_first');
   if(maxTier >= 4)        achUnlock('merge_kkito');
   if(maxTier >= TOP_TIER) achUnlock('merge_boneul');
-  if(maxChain >= 4)       achUnlock('merge_chain4');
-  if(score >= 1000)       achUnlock('merge_1000');
+  if(maxChain >= 6)       achUnlock('merge_chain6');
+  if(score >= 4000)       achUnlock('merge_4000');
   // 오늘의 미션
   try{
     const mk = String(new Date().getFullYear()*10000 + (new Date().getMonth()+1)*100 + new Date().getDate());
