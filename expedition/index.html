@@ -84,6 +84,7 @@
     <div class="row">
       <button class="ghost" id="btnEndless">무한 골목</button>
       <button class="ghost" id="btnLobby">동료 강화</button>
+      <button class="ghost" id="btnMute">🔊</button>
     </div>
     <p class="sub" id="titleHint"></p>
   </div>
@@ -171,6 +172,46 @@ const FORKS = [
 ];
 
 const AD = '../assets/', DD = '../assets/day/';
+
+// ── 소리·진동 (낙엽피하기와 같은 WebAudio 합성 · 파일 없음) ─────
+let AC=null, muted = localStorage.getItem('somsom_muted')==='1';
+function ac(){
+  if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)();
+  if(AC.state==='suspended') AC.resume();
+  return AC;
+}
+function tone(freq,dur,type,gain,when,slide){
+  const a=ac(), o=a.createOscillator(), g=a.createGain(), t0=a.currentTime+(when||0);
+  o.type=type||'square'; o.frequency.setValueAtTime(freq,t0);
+  if(slide) o.frequency.exponentialRampToValueAtTime(slide,t0+dur);
+  g.gain.setValueAtTime(gain||0.08,t0);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  o.connect(g); g.connect(a.destination); o.start(t0); o.stop(t0+dur+0.02);
+}
+// 기획서 §3.4 피드백 표
+function sfx(name){
+  if(muted) return;
+  try{
+    if(name==='acorn'){ tone(880,0.06,'square',0.040); tone(1318,0.09,'square',0.038,0.05); }
+    else if(name==='gold'){ [880,1109,1318,1568].forEach((f,i)=>tone(f,0.09,'square',0.042,i*0.045)); }
+    else if(name==='hit'){ tone(220,0.20,'sawtooth',0.075,0,70); tone(110,0.24,'square',0.05,0.02,60); }
+    else if(name==='shield'){ tone(300,0.20,'sine',0.06,0,520); }
+    else if(name==='splash'){ tone(620,0.35,'sine',0.05,0,180); }
+    else if(name==='join'){ [523,659,784].forEach((f,i)=>tone(f,0.14,'triangle',0.055,i*0.07)); }
+    else if(name==='fork'){ tone(520,0.07,'sine',0.05); }
+    else if(name==='clear'){ [523,659,784,1046].forEach((f,i)=>tone(f,0.20,'square',0.055,i*0.11)); }
+    else if(name==='star'){ [1046,1318].forEach((f,i)=>tone(f,0.16,'sine',0.05,i*0.10)); }
+    else if(name==='fail'){ [392,311,233].forEach((f,i)=>tone(f,0.24,'triangle',0.065,i*0.17)); }
+    else if(name==='heal'){ tone(660,0.22,'sine',0.055,0,990); }
+  }catch(e){}
+}
+function buzz(ms){ if(muted) return; try{ navigator.vibrate && navigator.vibrate(ms); }catch(e){} }
+function toggleMute(){
+  muted=!muted;
+  try{ localStorage.setItem('somsom_muted', muted?'1':'0'); }catch(e){}
+  const b=$('btnMute'); if(b) b.textContent = muted?'🔇':'🔊';
+  if(!muted) sfx('fork');
+}
 
 // ── 저장 ────────────────────────────────────────────────────
 const KEY = 'somsom_expedition_v1';
@@ -283,6 +324,7 @@ function joinMate(k){
   if(m.ab==='shield'){ const [n,cd]=m.lv[lv]; G.shMax=n; G.shield=n; G.shCd=cd; }
   if(m.ab==='heal'){ const [n,cd]=m.lv[lv]; G.hp=Math.min(G.maxHp,G.hp+n); G.healCd=cd; }
   G.flash = 0.5;
+  sfx('join'); buzz(20);
   toast(MATES[k].n + ' 합류!');
   seeCut('mate_'+k);
 }
@@ -307,6 +349,7 @@ function openFork(){
 function chooseFork(i){
   const f = forkCards[i]; if(!f) return;
   $('forkWrap').classList.remove('on');
+  sfx('fork'); buzz(10);
   applyFork(f);
   seeCut('fork_'+f.id);
   mode = ST.RUN;
@@ -330,7 +373,7 @@ function ptrX(ev){
   const cx = (ev.touches && ev.touches[0] ? ev.touches[0].clientX : ev.clientX);
   return Math.max(0, Math.min(W, cx - r.left));
 }
-function onMove(ev){ if(mode===ST.RUN && G){ G.tx = ptrX(ev); } }
+function onMove(ev){ if(mode===ST.RUN && G){ G.tx = ptrX(ev); if(!muted){ try{ ac(); }catch(e){} } } }
 cv.addEventListener('touchstart', e=>{ onMove(e); e.preventDefault(); }, {passive:false});
 cv.addEventListener('touchmove',  e=>{ onMove(e); e.preventDefault(); }, {passive:false});
 cv.addEventListener('mousemove',  onMove);
@@ -393,7 +436,7 @@ function step(dt){
   // 쿨다운
   if(g.shCd>0 && g.shield<g.shMax){ g.shT=(g.shT||g.shCd)-dt; if(g.shT<=0){ g.shield++; g.shT=g.shCd; } }
   if(g.healCd>0){ g.healT=(g.healT||g.healCd)-dt; if(g.healT<=0){ g.healT=g.healCd;
-      if(g.hp<g.maxHp){ g.hp++; toast('할머니가 내려다봤다'); } } }
+      if(g.hp<g.maxHp){ g.hp++; toast('할머니가 내려다봤다'); sfx('heal'); } } }
   if(g.noMateT>0) g.noMateT -= dt;
   if(g.slowT>0) g.slowT -= dt;
   if(g.inv>0) g.inv -= dt;
@@ -410,7 +453,7 @@ function step(dt){
     if(o.y > H+60){ g.obs.splice(i,1); continue; }
     if(!o.done && hitTest(o, d)){
       o.done = 1;
-      if(d.eff==='slow'){ g.slowT = 1.2; toast('첨벙'); }
+      if(d.eff==='slow'){ g.slowT = 1.2; toast('첨벙'); sfx('splash'); buzz(12); }
       else takeHit();
     }
   }
@@ -429,6 +472,7 @@ function step(dt){
       g.acs.splice(i,1);
       const mult = (g.noMateT>0 && g.joined.includes('ramda')) ? 1 : g.mMult;
       g.acorn += Math.max(1, Math.round((a.gold?5:1) * mult));
+      sfx(a.gold?'gold':'acorn'); buzz(8);
     }
   }
   // 종료
@@ -442,8 +486,8 @@ function hitTest(o, d){
 function takeHit(){
   const g=G;
   if(g.inv>0) return;
-  if(g.shield>0){ g.shield--; g.inv=1.0; g.flash=0.3; toast('북거씨가 막았다'); return; }
-  g.hp--; g.hit++; g.inv=1.2; g.shake=0.35;
+  if(g.shield>0){ g.shield--; g.inv=1.0; g.flash=0.3; toast('북거씨가 막았다'); sfx('shield'); buzz(15); return; }
+  g.hp--; g.hit++; g.inv=1.2; g.shake=0.35; sfx('hit'); buzz(40);
 }
 function spawnObst(){
   const k = G.types[(Math.random()*G.types.length)|0];
@@ -474,6 +518,7 @@ function finish(cleared){
     if(sc > (S.endlessBest||0)) S.endlessBest = sc;
   }
   save();
+  if(g.endless||!cleared) sfx('fail'); else { sfx('clear'); buzz(20); if(stars>=3) setTimeout(()=>{sfx('star');buzz(30);},520); }
   hubReport(stars);
   pushRanking();
   renderResult(stars);
@@ -802,6 +847,8 @@ async function pushRanking(){
 $('btnGo').onclick        = goSelect;
 $('btnEndless').onclick   = startEndless;
 $('btnLobby').onclick     = goLobby;
+$('btnMute').onclick      = toggleMute;
+$('btnMute').textContent  = muted?'🔇':'🔊';
 $('btnBackTitle').onclick = goTitle;
 $('btnBackTitle2').onclick= goTitle;
 $('btnToSelect').onclick  = goSelect;
