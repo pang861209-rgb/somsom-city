@@ -44,7 +44,8 @@
   #titleBottom #titleHint{font-size:10.5px;color:rgba(255,239,216,.7);line-height:1.4;text-align:left;}
   /* 결과는 통을 가리지 않는다 — 끝난 통 모습이 "내 통 봐"가 된다 */
   #sResult{background:rgba(253,251,245,.28);justify-content:flex-end;padding-bottom:26px;}
-  #sResult .card{background:#FDFBF5;border:2px solid #221E18;border-radius:18px;
+  @keyframes cardUp{from{transform:translateY(36px);opacity:0}to{transform:none;opacity:1}}
+  #sResult .card{animation:cardUp .4s ease-out;background:#FDFBF5;border:2px solid #221E18;border-radius:18px;
     box-shadow:3px 3px 0 #221E18;padding:18px 22px 20px;display:flex;flex-direction:column;
     align-items:center;gap:10px;max-width:340px;width:100%;}
   button{border:2px solid #221E18;background:#fff;border-radius:11px;padding:11px 22px;
@@ -122,9 +123,19 @@
       <p class="sub" id="resNote"></p>
       <div class="row">
         <button class="big" id="btnRetry">한 판 더</button>
+        <button class="ghost" id="btnShare">자랑하기</button>
         <button class="ghost" id="btnBoard2">순위</button>
         <button class="ghost" id="btnHome">타이틀</button>
       </div>
+    </div>
+  </div>
+
+  <!-- 자랑하기 — 공유 시트가 없는 곳에서는 여기 띄운다 -->
+  <div id="shareSheet" class="sheetWrap">
+    <div class="sheet">
+      <div class="hd"><span class="t">자랑하기</span><span class="c">길게 눌러 저장하거나 보내세요</span></div>
+      <img id="shareImg" alt="결과 이미지" style="width:100%;border-radius:12px;border:2px solid #221E18;">
+      <button class="ghost" id="shareClose">닫기</button>
     </div>
   </div>
 
@@ -198,7 +209,8 @@ const ITER = 14;          // 위치 보정 반복 — 쌓임 안정성 (많이 �
 const WALL_R = 0.10;      // 벽 반발
 
 // ── 캔버스 ──────────────────────────────────────────────────
-const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const cv = document.getElementById('cv');
+let ctx = cv.getContext('2d');   // 자랑하기 카드를 그릴 때 잠시 바꿔 낀다
 const DPR = Math.min(3, window.devicePixelRatio || 1);
 let W = 420, H = 680;
 let BOX = { x:0, y:0, w:0, h:0 };   // 통
@@ -271,7 +283,11 @@ addEventListener('orientationchange', ()=>setTimeout(layout,250));
 // ── 스프라이트 ──────────────────────────────────────────────
 // 벽 배경과 널빤지 — 통을 나무 상자로, 뒤를 상점 벽으로. 못 불러오면 예전 평면 그리기로 간다.
 let BG_WALL = null, PLANK = null, PLANK_PAT = null;
-{ const w = new Image(); w.src = '../assets/merge_wall.jpg';  w.onload = ()=>{ BG_WALL = w; };
+// 계절 벽 — 선반 위 소품만 바뀐다. 3~5 봄, 6~8 여름, 9~11 가을, 12~2 겨울. 못 불러오면 v1 벽.
+function seasonName(){ const m = new Date().getMonth()+1; return m<=2||m===12 ? 'winter' : m<=5 ? 'spring' : m<=8 ? 'summer' : 'autumn'; }
+{ const w = new Image(); w.src = '../assets/merge_wall_' + seasonName() + '.jpg';
+  w.onload = ()=>{ BG_WALL = w; };
+  w.onerror = ()=>{ const f = new Image(); f.src = '../assets/merge_wall.jpg'; f.onload = ()=>{ BG_WALL = f; }; };
   const k = new Image(); k.src = '../assets/merge_plank.jpg'; k.onload = ()=>{ PLANK = k; }; }
 const IMG = {}, IMG_HIT = {}, IMG_WIN = {};   // 기본 · 눌림 · 기쁨 (세 포즈 다 기존 자산)
 for(const t of TIERS){
@@ -341,6 +357,8 @@ let maxChain = 0;
 let stat = { pops:0 };
 let hold = null, holdLeft = HOLD_MAX;   // 바꾸기 칸에 든 단계, 남은 횟수
 let pops = [];                // 합체 이펙트
+let floats = [];              // 떠오르는 점수 글자 {x,y,txt,t,big}
+let ghosts = [];              // 보늘 소멸 — 떠올라 사라지는 둘 {x,y,r,t}
 let shake = 0;
 
 function $(id){ return document.getElementById(id); }
@@ -371,7 +389,7 @@ function startGame(){
   bodies = []; score = 0; merges = 0; maxTier = 0; overT = 0;
   left = DROPS_MAX; doneT = 0; endT = 0; overReason = 'over';
   chain = 0; chainT = 0; maxChain = 0; stat = { pops:0 };
-  pops = []; shake = 0; dropLock = 0; tut = 0; tutMerged = 0;
+  pops = []; floats = []; ghosts = []; shake = 0; dropLock = 0; tut = 0; tutMerged = 0;
   RULE = window.FORCE_RULE || todayRule(); layout();   // 자정을 넘겼을 수 있다 (FORCE_RULE 은 테스트용)
   hold = null; holdLeft = RULE.hold || HOLD_MAX;
   rng = mulberry32(dayKey() * 7919 + 13);      // 오늘의 통
@@ -546,6 +564,8 @@ function resolveMerges(){
       // 연쇄 배수를 안 붙인다. 보늘 둘을 붙이는 건 작정하고 만드는 일이지
       // 굴러가다 우연히 터지는 게 아니고, 배수까지 붙이면 운으로 한 판이 갈린다.
       score += POP_SCORE;
+      ghosts.push({ x:a.x, y:a.y, r:a.r, t:0 }, { x:c.x, y:c.y, r:c.r, t:0 });
+      floats.push({ x:(a.x+c.x)/2, y:Math.min(a.y,c.y) - a.r, txt:'+'+POP_SCORE, t:0, big:true });
       merges++; chain++; chainT = 0.55; if(chain>maxChain) maxChain = chain;
       pops.push({ x:(a.x+c.x)/2, y:(a.y+c.y)/2, r:a.r*1.4, t:0 });
       pops.push({ x:(a.x+c.x)/2, y:(a.y+c.y)/2, r:a.r*0.7, t:-0.08 });
@@ -579,7 +599,9 @@ function resolveMerges(){
       bodies.push({ x:mx, y:my, r:a.r, r0:a.r, rT:T.r, gt:0, t:nt, id:nextId++, born:0,
                     vx:(a.vx+c.vx)/2, vy:(a.vy+c.vy)/2 - 60,
                     face:'win', faceT: nt===TOP_TIER ? 1.6 : 0.9 });   // 태어난 김에 기뻐한다
-      score += MERGE_SCORE[nt] * (1 + chain*CHAIN_MUL);
+      const gain = Math.round(MERGE_SCORE[nt] * (1 + chain*CHAIN_MUL));
+      score += gain;
+      floats.push({ x:mx, y:my - T.r*0.6, txt:'+'+gain + (chain>0 ? ' ×'+(chain+1) : ''), t:0, big: nt>=4 });
       merges++;
       if(nt > maxTier){
         maxTier = nt;
@@ -711,6 +733,58 @@ async function pushRanking(){
   }catch(e){}                                   // 규칙이 막혀 있어도 게임엔 영향 없음
 }
 
+// ── 자랑하기 — 끝난 통 + 점수를 한 장으로 ─────────────────────
+function buildShareCard(){
+  const cw = 1080, chh = 1350;
+  const c = document.createElement('canvas'); c.width = cw; c.height = chh;
+  const g = c.getContext('2d');
+  g.fillStyle = '#FDFBF5'; g.fillRect(0, 0, cw, chh);
+  drawWall(g, 0, 0, cw, chh);
+  g.fillStyle = 'rgba(253,251,245,.35)'; g.fillRect(0, 0, cw, chh);
+  // 통 스냅샷 — 카드 가운데에 맞춰 축소
+  const areaW = cw - 180, areaH = chh - 560, k = Math.min(areaW/(BOX.w+30), areaH/(BOX.h+30));
+  const ox = (cw - BOX.w*k)/2, oy = 330 + (areaH - BOX.h*k)/2;
+  const saved = ctx; ctx = g;
+  g.save(); g.translate(ox, oy); g.scale(k, k); g.translate(-BOX.x, -BOX.y);
+  PLANK_PAT = null;                              // 패턴은 컨텍스트마다 새로
+  drawCrate();
+  for(const b of bodies) drawChar(b.t, b.x, b.y, b.r, null, b.face);
+  g.restore();
+  ctx = saved; PLANK_PAT = null;
+  // 글자
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#221E18';
+  g.font = '800 34px sans-serif'; g.fillStyle = '#8A8271';
+  g.fillText('솜솜시티 · 솜솜 합체', cw/2, 90);
+  g.font = '900 52px sans-serif'; g.fillStyle = '#221E18';
+  g.fillText('오늘의 통 · ' + dayLabel() + (RULE.k!=='plain' ? ' · ' + RULE.n : ''), cw/2, 160);
+  const nm = localStorage.getItem('somsom_name') || '';
+  g.font = '900 150px sans-serif'; g.fillStyle = '#E0A12B';
+  g.lineWidth = 10; g.strokeStyle = '#221E18'; g.strokeText(Math.round(score) + '점', cw/2, chh - 230);
+  g.fillText(Math.round(score) + '점', cw/2, chh - 230);
+  g.font = '800 44px sans-serif'; g.fillStyle = '#221E18';
+  g.fillText((nm ? nm + ' · ' : '') + '합체 ' + merges + '번 · 제일 큰 친구 ' + TIERS[maxTier].n, cw/2, chh - 120);
+  g.font = '700 28px sans-serif'; g.fillStyle = '#8A8271';
+  g.fillText('pang861209-rgb.github.io/somsom-city', cw/2, chh - 56);
+  return c;
+}
+async function shareResult(){
+  let c;
+  try{ c = buildShareCard(); }catch(e){ toast('이미지를 못 만들었어요'); return; }
+  const blob = await new Promise(res => c.toBlob(res, 'image/png'));
+  if(!blob){ toast('이미지를 못 만들었어요'); return; }
+  const file = new File([blob], 'somsom-merge.png', { type:'image/png' });
+  if(navigator.canShare && navigator.canShare({ files:[file] })){
+    try{ await navigator.share({ files:[file], title:'솜솜 합체', text:'오늘의 통 ' + dayLabel() + ' · ' + Math.round(score) + '점' }); return; }
+    catch(e){ if(e && e.name === 'AbortError') return; }   // 취소는 조용히
+  }
+  // 공유 시트가 없으면 이미지를 띄운다 — 길게 눌러 저장
+  $('shareImg').src = URL.createObjectURL(blob);
+  $('shareSheet').classList.add('on');
+}
+$('btnShare').onclick  = shareResult;
+$('shareClose').onclick = ()=> $('shareSheet').classList.remove('on');
+$('shareSheet').addEventListener('click', e=>{ if(e.target.id==='shareSheet') $('shareSheet').classList.remove('on'); });
+
 // ── 오늘의 순위판 ────────────────────────────────────────────
 // d == 오늘 조건 하나로만 읽고 정렬은 여기서 한다. 정렬을 서버에 시키면
 // 복합 인덱스를 콘솔에서 따로 만들어야 한다.
@@ -784,6 +858,8 @@ function frame(now){
     checkOver(dt);
   }
   for(let i=pops.length-1;i>=0;i--){ pops[i].t += dt; if(pops[i].t>0.35) pops.splice(i,1); }
+  for(let i=floats.length-1;i>=0;i--){ const f=floats[i]; f.t += dt; f.y -= 46*dt; if(f.t>0.95) floats.splice(i,1); }
+  for(let i=ghosts.length-1;i>=0;i--){ const g=ghosts[i]; g.t += dt; g.y -= 95*dt; if(g.t>1.05) ghosts.splice(i,1); }
   draw();
 }
 
@@ -814,42 +890,30 @@ function draw(){
   ctx.save(); ctx.translate(sx,0);
 
   // 벽 — HUD 아래를 상점 벽으로 덮는다 (cover 맞춤, 위쪽 정렬)
-  if(BG_WALL){
-    const iw = BG_WALL.width, ih = BG_WALL.height, ah = H - HUD;
-    const k = Math.max(W/iw, ah/ih), dw = iw*k, dh = ih*k;
-    ctx.drawImage(BG_WALL, (W-dw)/2, HUD, dw, dh);
-  }
-  // 통 — 나무 상자. 안쪽은 크림에 널빤지를 옅게 깔아 조각이 잘 읽히게 한다
-  if(PLANK && !PLANK_PAT){ try{ PLANK_PAT = ctx.createPattern(PLANK, 'repeat'); }catch(e){} }
-  ctx.fillStyle = '#F4EFE1';
-  ctx.fillRect(BOX.x, BOX.y, BOX.w, BOX.h);
-  if(PLANK_PAT){
-    ctx.save(); ctx.globalAlpha = 0.22; ctx.fillStyle = PLANK_PAT;
-    ctx.fillRect(BOX.x, BOX.y, BOX.w, BOX.h); ctx.restore();
-  }
-  // 넘침선
-  ctx.strokeStyle = overT>0 ? '#E0605F' : '#C9BFA8';
-  ctx.lineWidth = 2; ctx.setLineDash([7,6]);
-  ctx.beginPath(); ctx.moveTo(BOX.x, LINE); ctx.lineTo(BOX.x+BOX.w, LINE); ctx.stroke();
-  ctx.setLineDash([]);
-  // 상자 널빤지 테두리 (좌·우·아래) — 통의 바깥쪽 여백에 그린다
-  const RW = Math.max(9, Math.min(13, Math.round(BOX.x*0.6)));
-  const rails = [[BOX.x-RW, BOX.y-6, RW, BOX.h+6+RW], [BOX.x+BOX.w, BOX.y-6, RW, BOX.h+6+RW],
-                 [BOX.x-RW, BOX.y+BOX.h, BOX.w+RW*2, RW]];
-  for(const [rx,ry,rw,rh] of rails){
-    ctx.fillStyle = PLANK_PAT || '#D8BC93'; ctx.fillRect(rx, ry, rw, rh);
-    ctx.fillStyle = 'rgba(120,80,40,.18)'; ctx.fillRect(rx, ry, rw, rh);   // 안쪽보다 조금 진하게
-    ctx.strokeStyle = '#221E18'; ctx.lineWidth = 2.5; ctx.strokeRect(rx+1, ry+1, rw-2, rh-2);
-  }
-
+  drawWall(ctx, 0, HUD, W, H-HUD);
+  drawCrate();
   // 몸통
   for(const b of bodies) drawChar(b.t, b.x, b.y, b.r, null, b.face);
+  // 보늘 소멸 — 떠올라 사라지는 둘
+  for(const g of ghosts){
+    const k = g.t/1.05;
+    drawChar(TOP_TIER, g.x, g.y, g.r*(1+k*0.25), 1-k, 'win');
+  }
   // 합체 이펙트
   for(const p of pops){
     const k = p.t/0.35;
     ctx.strokeStyle = 'rgba(224,161,43,'+(1-k)+')';
     ctx.lineWidth = 3*(1-k)+1;
     ctx.beginPath(); ctx.arc(p.x, p.y, p.r*(1+k*0.8), 0, 7); ctx.stroke();
+  }
+  // 점수 글자
+  for(const f of floats){
+    const k = f.t/0.95, a = k<0.7 ? 1 : (1-k)/0.3;
+    ctx.save(); ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = (f.big ? '900 22px' : '900 15px') + ' sans-serif';
+    ctx.lineWidth = 4; ctx.strokeStyle = '#FDFBF5'; ctx.strokeText(f.txt, f.x, f.y);
+    ctx.fillStyle = f.big ? '#D8542F' : '#8A5A12'; ctx.fillText(f.txt, f.x, f.y);
+    ctx.restore();
   }
   ctx.restore();
 
@@ -884,9 +948,39 @@ function draw(){
     ctx.fillText('바꾸기 ' + holdLeft, h.x, h.y + h.r + 10);
     ctx.restore();
   }
-
   drawHud();
 }
+function drawCrate(){
+  // 통 — 나무 상자. 안쪽은 크림에 널빤지를 옅게 깔아 조각이 잘 읽히게 한다
+  if(PLANK && !PLANK_PAT){ try{ PLANK_PAT = ctx.createPattern(PLANK, 'repeat'); }catch(e){} }
+  ctx.fillStyle = '#F4EFE1';
+  ctx.fillRect(BOX.x, BOX.y, BOX.w, BOX.h);
+  if(PLANK_PAT){
+    ctx.save(); ctx.globalAlpha = 0.22; ctx.fillStyle = PLANK_PAT;
+    ctx.fillRect(BOX.x, BOX.y, BOX.w, BOX.h); ctx.restore();
+  }
+  // 넘침선
+  ctx.strokeStyle = overT>0 ? '#E0605F' : '#C9BFA8';
+  ctx.lineWidth = 2; ctx.setLineDash([7,6]);
+  ctx.beginPath(); ctx.moveTo(BOX.x, LINE); ctx.lineTo(BOX.x+BOX.w, LINE); ctx.stroke();
+  ctx.setLineDash([]);
+  // 상자 널빤지 테두리 (좌·우·아래) — 통의 바깥쪽 여백에 그린다
+  const RW = Math.max(9, Math.min(13, Math.round(BOX.x*0.6)));
+  const rails = [[BOX.x-RW, BOX.y-6, RW, BOX.h+6+RW], [BOX.x+BOX.w, BOX.y-6, RW, BOX.h+6+RW],
+                 [BOX.x-RW, BOX.y+BOX.h, BOX.w+RW*2, RW]];
+  for(const [rx,ry,rw,rh] of rails){
+    ctx.fillStyle = PLANK_PAT || '#D8BC93'; ctx.fillRect(rx, ry, rw, rh);
+    ctx.fillStyle = 'rgba(120,80,40,.18)'; ctx.fillRect(rx, ry, rw, rh);   // 안쪽보다 조금 진하게
+    ctx.strokeStyle = '#221E18'; ctx.lineWidth = 2.5; ctx.strokeRect(rx+1, ry+1, rw-2, rh-2);
+  }
+}
+function drawWall(g, x, y, w, h){
+  if(!BG_WALL) return;
+  const iw = BG_WALL.width, ih = BG_WALL.height;
+  const k = Math.max(w/iw, h/ih), dw = iw*k, dh = ih*k;
+  g.drawImage(BG_WALL, x+(w-dw)/2, y, dw, dh);
+}
+
 function drawHud(){
   ctx.fillStyle = '#FDFBF5'; ctx.fillRect(0,0,W,HUD);
   ctx.textBaseline = 'middle';
