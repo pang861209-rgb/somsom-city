@@ -106,7 +106,7 @@ const TOP_TIER = TIERS.length - 1;
 const MERGE_SCORE = [1, 3, 6, 12, 24, 50];
 const POP_SCORE = 120;   // 보늘 둘이 만나 사라질 때
 // 떨어뜨릴 수 있는 건 아래 세 단계뿐 (윗단계는 합쳐서만 나온다)
-const DROPPABLE = 3;
+let DROPPABLE = 3;
 // 한 판에 쓸 수 있는 조각 수. 이게 이 게임의 진짜 한 판 길이다.
 // 넘침만으로는 판이 안 끝난다 — 사다리가 여섯 칸뿐이라 합체 속도가 투하 속도를
 // 따라잡아 통이 평형에 머문다(자동 플레이 250판으로 확인). 조각 수를 묶으면
@@ -132,6 +132,9 @@ const HUD = 58;
 let bodies = [];              // {x,y,vx,vy,r,t,id,born}
 let cur = null;               // 손에 든 것 {t, x}
 const REF_W = 382;            // R_BASE 를 잰 기준 통 너비
+// 통 높이 = 너비 × 이 값. 화면 세로를 그대로 쓰면 긴 폰일수록 통이 깊어져
+// 같은 게임이 기기마다 쉬워진다. 조각 50개가 겨우 들어갈 만큼만 준다.
+let BOX_RATIO = 1.45;
 
 function layout(){
   const r = cv.getBoundingClientRect();
@@ -148,7 +151,7 @@ function layout(){
   const TOPGAP = TIERS[DROPPABLE-1].r*2 + 20;
   // 통 높이는 너비의 1.45배로 묶는다. 화면 세로 길이를 그대로 쓰면
   // 긴 폰일수록 통이 깊어져서 같은 게임이 기기마다 쉬워진다.
-  BOX.h = Math.min(Math.round(BOX.w*1.45), H - (HUD+TOPGAP) - margin);
+  BOX.h = Math.min(Math.round(BOX.w*BOX_RATIO), H - (HUD+TOPGAP) - margin);
   BOX.h = Math.max(220, BOX.h);
   BOX.y = Math.max(HUD + TOPGAP, H - margin - BOX.h);   // 통은 아래에 붙인다
   LINE = BOX.y;

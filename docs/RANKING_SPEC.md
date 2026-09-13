@@ -42,7 +42,7 @@
 { n: '닉네임', s: 점수(정수), t: 타임스탬프 }
 ```
 
-컬렉션: `scores`, `runner_scores`, `expedition_scores`
+컬렉션: `scores`, `runner_scores`, `memory_scores`, `defense_scores`, `merge_scores`
 
 ### B. 진도형 — 새로 추가
 
@@ -122,10 +122,12 @@ async function pushProgress(){
 
 ## 신작에 적용하는 방법
 
-신작 「골목 원정대」는 점수형과 진도형을 **둘 다** 씁니다.
+신작 「솜솜 합체」는 점수형과 진도형을 **둘 다** 씁니다.
 
-- 점수형 (`expedition_scores`) — 한 판의 점수. 주간 랭킹에 들어감.
-- 진도형 (`expedition_progress`) — 해금한 동료 수, 최고 도달 구간, 별 합계.
+- 점수형 (`merge_scores`) — 한 판의 점수 `{ n, s, t }`. 주간 랭킹에 들어감.
+- 진도형 (`merge_progress`) — `{ n, st:최고 도달 단계, b:최고 점수, t }`. 문서 ID는 닉네임.
+
+> 2026-09-13 기준. 「골목 원정대」(`expedition_*`)는 M0 게이트에서 탈락해 허브에서 내렸습니다. 아래 규칙에서도 `merge_*`로 바뀌었습니다.
 
 둘 다 판이 끝날 때 조용히 올라갑니다. 어느 쪽도 플레이어가 누를 버튼이 없습니다.
 
@@ -140,10 +142,10 @@ async function pushProgress(){
 | `memory_scores` | 허용 |
 | `defense_scores` | 허용 |
 | `defense_events` | **403 차단** |
-| `expedition_scores` | **403 차단** |
-| `expedition_progress` | **403 차단** |
+| `merge_scores` | **403 차단** |
+| `merge_progress` | **403 차단** |
 
-규칙이 **컬렉션 이름을 하나씩 허용하는 방식**으로 짜여 있습니다. 목록에 없는 이름은 읽기도 쓰기도 막힙니다. 그래서 새 컬렉션 네 개(`expedition_scores`, `expedition_progress`, `defense_progress`, `match_progress`)를 규칙에 추가해야 합니다.
+규칙이 **컬렉션 이름을 하나씩 허용하는 방식**으로 짜여 있습니다. 목록에 없는 이름은 읽기도 쓰기도 막힙니다. 그래서 새 컬렉션 네 개(`merge_scores`, `merge_progress`, `defense_progress`, `match_progress`)를 규칙에 추가해야 합니다.
 
 게임 코드는 실패를 조용히 삼키도록(`catch` 후 무시) 되어 있으므로, 규칙을 고치기 전에도 플레이에는 지장이 없습니다. 랭킹만 안 올라갑니다.
 
@@ -159,9 +161,9 @@ service cloud.firestore {
     // 점수형 — 새 기록 추가만 허용. 기존 기록은 못 고치고 못 지웁니다.
     match /{col}/{doc} {
       allow read: if col in ['scores','runner_scores','memory_scores',
-                             'defense_scores','expedition_scores'];
+                             'defense_scores','merge_scores'];
       allow create: if col in ['scores','runner_scores','memory_scores',
-                               'defense_scores','expedition_scores']
+                               'defense_scores','merge_scores']
                     && request.resource.data.keys().hasOnly(['n','s','t','c','w'])
                     && request.resource.data.n is string
                     && request.resource.data.n.size() <= 12;
@@ -170,8 +172,8 @@ service cloud.firestore {
 
     // 진도형 — 닉네임이 문서 ID. 갱신이 필요하므로 create 와 update 를 엽니다.
     match /{col}/{nick} {
-      allow read: if col in ['expedition_progress','defense_progress','match_progress'];
-      allow create, update: if col in ['expedition_progress','defense_progress','match_progress']
+      allow read: if col in ['merge_progress','defense_progress','match_progress'];
+      allow create, update: if col in ['merge_progress','defense_progress','match_progress']
                     && request.resource.data.n == nick
                     && request.resource.data.n.size() <= 12;
       allow delete: if false;
