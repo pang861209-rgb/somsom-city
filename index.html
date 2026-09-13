@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>솜솜시티 — 미니게임 마을</title>
-<meta name="description" content="솜솜시티 친구들과 즐기는 미니게임 5종: 낙엽피하기 · 달리기 · 짝맞추기 · 방범대 · 골목 원정대">
+<meta name="description" content="솜솜시티 친구들과 즐기는 미니게임 5종: 낙엽피하기 · 달리기 · 짝맞추기 · 방범대 · 솜솜 합체">
 <meta name="theme-color" content="#221E18">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -148,10 +148,10 @@
       <div class="txt"><div class="no">GAME 04 · NEW</div><div class="nm">방범대</div><div class="ds">꼬릿 구름에서 당근빌라를!</div></div>
       <img class="ch" src="assets/sd_migae_t.png" alt="" style="height:84%;max-height:124px;">
     </a>
-    <a class="blk" href="expedition/" style="background:#C9873F;color:#2A1806;grid-column:1 / -1;">
-      <div class="mask"><img src="assets/day/bg_alley_ginkgo.jpg" alt="" style="object-position:center 40%;"></div>
-      <div class="txt"><div class="no">GAME 05 · NEW</div><div class="nm">골목 원정대</div><div class="ds">달리다 보면 친구가 한 명씩 붙습니다. 누가 붙느냐로 판이 갈립니다</div></div>
-      <img class="ch" src="assets/sd_kkito_win_t.png" alt="" style="height:94%;max-height:126px;right:10px;">
+    <a class="blk" href="merge/" style="background:#3F7E86;color:#062024;grid-column:1 / -1;">
+      <div class="mask"><img src="assets/bg_day_acorn_shop.png" alt="" style="object-position:center 45%;"></div>
+      <div class="txt"><div class="no">GAME 05 · NEW</div><div class="nm">솜솜 합체</div><div class="ds">미개 둘이 만나면 북거씨가 됩니다. 통이 넘치기 전까지</div></div>
+      <img class="ch" src="assets/sd_boneul_t.png" alt="" style="height:94%;max-height:128px;right:10px;">
     </a>
   </nav>
 
@@ -209,11 +209,11 @@ const ACH = [
   {id:'defense_boss',     g:'방범대', n:'왕꼬릿 퇴치',   d:'왕꼬릿 구름을 돌려보냈어요'},
   {id:'defense_allclear', g:'방범대', n:'골목 어귀 평정', d:'네 스테이지를 모두 클리어'},
   {id:'defense_endless10',g:'방범대', n:'끝없는 방범',   d:'무한 골목 10웨이브 돌파'},
-  {id:'exp_first',      g:'골목 원정대', n:'첫 골목',       d:'스테이지를 처음 끝까지 갔어요'},
-  {id:'exp_party3',     g:'골목 원정대', n:'셋이 함께',     d:'한 판에 동료 셋이 다 붙었어요'},
-  {id:'exp_star3',      g:'골목 원정대', n:'별 셋',         d:'한 스테이지에서 별 세 개를 받았어요'},
-  {id:'exp_clear',      g:'골목 원정대', n:'은행잎 골목 완주', d:'여섯 스테이지를 모두 깼어요'},
-  {id:'exp_endless2000',g:'골목 원정대', n:'끝없는 골목',   d:'무한 골목 2000점 돌파'},
+  {id:'merge_first',  g:'솜솜 합체', n:'처음 만난 둘',   d:'미개 둘을 합쳐 봤어요'},
+  {id:'merge_kkito',  g:'솜솜 합체', n:'끼토까지',       d:'한 판에 끼토를 만들었어요'},
+  {id:'merge_boneul', g:'솜솜 합체', n:'제일 큰 친구',   d:'보늘을 만들었어요'},
+  {id:'merge_chain6', g:'솜솜 합체', n:'여섯 번 연달아', d:'한 번에 6연쇄를 냈어요'},
+  {id:'merge_4000',   g:'솜솜 합체', n:'사천 점',        d:'한 판에 4000점을 넘겼어요'},
   {id:'all_three',  g:'솜솜시티',  n:'마을 한 바퀴',  d:'세 게임을 모두 해봤어요'},
   {id:'all_four',   g:'솜솜시티',  n:'네 골목 제패',  d:'네 게임을 모두 해봤어요'},
   {id:'all_chars',  g:'솜솜시티',  n:'여섯 친구',     d:'여섯 주민 모두와 놀았어요'},
@@ -244,6 +244,14 @@ const DEX_ITEMS = [
     {id:'leaf_pinecone', f:'assets/dex_leaf_pinecone.png', n:'솔방울'},
     {id:'leaf_maple',    f:'assets/dex_leaf_maple.png',    n:'단풍잎'},
     {id:'leaf_chestnut', f:'assets/dex_leaf_chestnut.png', n:'알밤'},
+  ]},
+  {g:'솜솜 합체 사다리', items:[
+    {id:'merge_migae',      f:'assets/sd_migae_t.png',      n:'미개'},
+    {id:'merge_bookgeo',    f:'assets/sd_bookgeo_t.png',    n:'북거씨'},
+    {id:'merge_lachilchin', f:'assets/sd_lachilchin_t.png', n:'라칠친 할머니'},
+    {id:'merge_ramda',      f:'assets/sd_ramda_t.png',      n:'람다'},
+    {id:'merge_kkito',      f:'assets/sd_kkito_t.png',      n:'끼토'},
+    {id:'merge_boneul',     f:'assets/sd_boneul_t.png',     n:'보늘'},
   ]},
   {g:'달리기 랜드마크', items:[
     {id:'run_postbox', f:'assets/dex_run_postbox.png', n:'골목 우체통'},
@@ -310,7 +318,7 @@ function missionSpec(){
           match:{goal:missGoal, label:'짝맞추기 '+(missGoal===0 ? '실수 없이 클리어'
                                                               : '실수 '+missGoal+'회 이하로 클리어')},
           defense:{goal:defGoal, label:'방범대 '+defGoal+'★로 스테이지 클리어'},
-          expedition:{goal:1, label:'골목 원정대 스테이지 하나 깨기'}};
+          merge:{goal:1, label:'솜솜 합체에서 람다 이상 만들기'}};
 }
 function titleFor(coins){
   if(coins>=2000) return '은행나무 지킴이';
@@ -334,7 +342,7 @@ function renderMissions(){
   document.getElementById('missionChar').innerHTML='<span style="font-size:11.5px;font-weight:700;color:#8A6A1A;">오늘의 친구 '+CH_NAME[DAILY_CHAR_ID]+'</span>';
   const list=document.getElementById('missionList'); list.innerHTML='';
   let n=0;
-  for(const g of ['leaf','run','match','defense','expedition']){
+  for(const g of ['leaf','run','match','defense','merge']){
     const ok=!!done[g]; if(ok) n++;
     const r=document.createElement('div'); r.className='mRow'+(ok?' ok':'');
     r.innerHTML='<span class="bx">'+(ok?'✓':'')+'</span><span>'+sp[g].label+'</span>';
@@ -342,7 +350,7 @@ function renderMissions(){
   }
   document.getElementById('missionPg').textContent=n+'/5';
 }
-// 주간 통합 랭킹 — 세 게임 점수를 각 게임 주간 최고 대비 100점으로 환산해 합산
+// 주간 통합 랭킹 — 각 게임 점수를 그 게임의 주간 최고 대비 100점으로 환산해 합산
 const FB_KEY='AIzaSyBfld7SRrVTxDG0nE_6Z3Mw5kSRTo5bIGY';
 const FB_DOCS='https://firestore.googleapis.com/v1/projects/somsom-city/databases/(default)/documents';
 async function fetchCol(col){
@@ -358,18 +366,20 @@ async function renderWeekly(){
   const list=document.getElementById('wkList');
   list.innerHTML='<div class="mRow" style="padding:14px;">불러오는 중…</div>';
   const since=Date.now()-7*24*3600*1000;
-  const cols=await Promise.all([fetchCol('scores'),fetchCol('runner_scores'),fetchCol('memory_scores'),fetchCol('defense_scores')]);
+  const cols=await Promise.all([fetchCol('scores'),fetchCol('runner_scores'),fetchCol('memory_scores'),
+                                fetchCol('defense_scores'),fetchCol('merge_scores')]);
   const per=cols.map(rows=>{
     const best={}; for(const e of rows){ if(e.t<since) continue; if(!best[e.n]||e.s>best[e.n]) best[e.n]=e.s; }
     const max=Math.max(1,...Object.values(best));
     return {best,max};
   });
   const tot={};
-  per.forEach((p,gi)=>{ for(const n in p.best){ tot[n]=tot[n]||{n, parts:[0,0,0,0], sum:0};
+  per.forEach((p,gi)=>{ for(const n in p.best){ tot[n]=tot[n]||{n, parts:cols.map(()=>0), sum:0};
     const v=Math.round(p.best[n]/p.max*100); tot[n].parts[gi]=v; tot[n].sum+=v; } });
   const rows=Object.values(tot).sort((a,b)=>b.sum-a.sum).slice(0,12);
   const me=localStorage.getItem('somsom_name')||'';
-  document.getElementById('wkNote').textContent=rows.length?'최근 7일 · 400점 만점':'';
+  const live=per.filter(p=>Object.keys(p.best).length).length;
+  document.getElementById('wkNote').textContent=rows.length?('최근 7일 · '+(live*100)+'점 만점'):'';
   if(!rows.length){ list.innerHTML='<div class="mRow" style="padding:14px;">이번 주 기록이 아직 없어요.</div>'; return; }
   list.innerHTML='';
   rows.forEach((r,i)=>{
