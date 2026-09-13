@@ -93,13 +93,15 @@
 // 크기를 크게 잡은 이유: 사다리가 여섯 칸뿐이라 짝이 안 맞아 남는 조각은
 // 람다·끼토·보늘 셋뿐이다. 이 셋이 통을 꽤 차지해야 비로소 판이 끝난다.
 const R_BASE = [26, 35, 46, 58, 72, 92];
+// r 은 여기 안 적습니다. layout() 이 통 너비에 맞춰 R_BASE 에서 계산해 넣습니다.
+// (sc 는 원 안에 스프라이트를 얼마나 크게 넣을지의 비율입니다)
 const TIERS = [
-  { k:'migae',      n:'미개',   r:15, c:'#3A3A3A', sc:1.75 },
-  { k:'bookgeo',    n:'북거씨', r:20, c:'#6E9A6A', sc:1.95 },
-  { k:'lachilchin', n:'할머니', r:26, c:'#B3A8C8', sc:1.70 },
-  { k:'ramda',      n:'람다',   r:33, c:'#C87F4A', sc:1.70 },
-  { k:'kkito',      n:'끼토',   r:41, c:'#E9A8BE', sc:1.60 },
-  { k:'boneul',     n:'보늘',   r:52, c:'#9AA39B', sc:1.55 },
+  { k:'migae',      n:'미개',   r:0, c:'#3A3A3A', sc:1.75 },
+  { k:'bookgeo',    n:'북거씨', r:0, c:'#6E9A6A', sc:1.95 },
+  { k:'lachilchin', n:'할머니', r:0, c:'#B3A8C8', sc:1.70 },
+  { k:'ramda',      n:'람다',   r:0, c:'#C87F4A', sc:1.70 },
+  { k:'kkito',      n:'끼토',   r:0, c:'#E9A8BE', sc:1.60 },
+  { k:'boneul',     n:'보늘',   r:0, c:'#9AA39B', sc:1.55 },
 ];
 const TOP_TIER = TIERS.length - 1;
 // 합체 점수 — 위로 갈수록 가파르게.
@@ -137,9 +139,11 @@ const HUD = 58;
 let bodies = [];              // {x,y,vx,vy,r,t,id,born}
 let cur = null;               // 손에 든 것 {t, x}
 const REF_W = 382;            // R_BASE 를 잰 기준 통 너비
-// 통 높이 = 너비 × 이 값. 화면 세로를 그대로 쓰면 긴 폰일수록 통이 깊어져
-// 같은 게임이 기기마다 쉬워진다. 조각 50개가 겨우 들어갈 만큼만 준다.
-let BOX_RATIO = 1.45;
+// 통 높이 = 너비 × 이 값(상한). 화면 세로를 그대로 쓰면 끝없이 깊은 통이
+// 되지만, 너무 낮게 묶으면 세로로 긴 폰에서 위쪽이 텅 빈 채로 남는다.
+// 420×680 에서는 애초에 이 상한에 못 미치므로(1.29) 값이 걸리지 않고,
+// 긴 폰에서만 작동한다.
+let BOX_RATIO = 1.9;
 
 function layout(){
   const r = cv.getBoundingClientRect();
