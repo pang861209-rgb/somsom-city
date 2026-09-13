@@ -742,8 +742,9 @@ function buildShareCard(){
   drawWall(g, 0, 0, cw, chh);
   g.fillStyle = 'rgba(253,251,245,.35)'; g.fillRect(0, 0, cw, chh);
   // 통 스냅샷 — 카드 가운데에 맞춰 축소
-  const areaW = cw - 180, areaH = chh - 560, k = Math.min(areaW/(BOX.w+30), areaH/(BOX.h+30));
-  const ox = (cw - BOX.w*k)/2, oy = 330 + (areaH - BOX.h*k)/2;
+  // 통은 위 글자(~200)와 아래 점수(~1080) 사이에만 들어간다
+  const areaW = cw - 180, areaH = chh - 700, k = Math.min(areaW/(BOX.w+30), areaH/(BOX.h+30));
+  const ox = (cw - BOX.w*k)/2, oy = 230 + (areaH - BOX.h*k)/2;
   const saved = ctx; ctx = g;
   g.save(); g.translate(ox, oy); g.scale(k, k); g.translate(-BOX.x, -BOX.y);
   PLANK_PAT = null;                              // 패턴은 컨텍스트마다 새로
@@ -759,10 +760,10 @@ function buildShareCard(){
   g.fillText('오늘의 통 · ' + dayLabel() + (RULE.k!=='plain' ? ' · ' + RULE.n : ''), cw/2, 160);
   const nm = localStorage.getItem('somsom_name') || '';
   g.font = '900 150px sans-serif'; g.fillStyle = '#E0A12B';
-  g.lineWidth = 10; g.strokeStyle = '#221E18'; g.strokeText(Math.round(score) + '점', cw/2, chh - 230);
-  g.fillText(Math.round(score) + '점', cw/2, chh - 230);
+  g.lineWidth = 10; g.strokeStyle = '#221E18'; g.strokeText(Math.round(score) + '점', cw/2, chh - 200);
+  g.fillText(Math.round(score) + '점', cw/2, chh - 200);
   g.font = '800 44px sans-serif'; g.fillStyle = '#221E18';
-  g.fillText((nm ? nm + ' · ' : '') + '합체 ' + merges + '번 · 제일 큰 친구 ' + TIERS[maxTier].n, cw/2, chh - 120);
+  g.fillText((nm ? nm + ' · ' : '') + '합체 ' + merges + '번 · 제일 큰 친구 ' + TIERS[maxTier].n, cw/2, chh - 105);
   g.font = '700 28px sans-serif'; g.fillStyle = '#8A8271';
   g.fillText('pang861209-rgb.github.io/somsom-city', cw/2, chh - 56);
   return c;
