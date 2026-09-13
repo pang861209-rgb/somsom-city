@@ -124,7 +124,7 @@ async function pushProgress(){
 
 신작 「솜솜 합체」는 점수형과 진도형을 **둘 다** 씁니다.
 
-- 점수형 (`merge_scores`) — 한 판의 점수 `{ n, s, t }`. 주간 랭킹에 들어감.
+- 점수형 (`merge_scores`) — 한 판의 점수 `{ n, s, d, t }`. `d`는 그 판의 "오늘의 통" 날짜(YYYYMMDD 정수)라 같은 날끼리 비교할 수 있습니다. 주간 랭킹에 들어감.
 - 진도형 (`merge_progress`) — `{ n, st:최고 도달 단계, b:최고 점수, t }`. 문서 ID는 닉네임.
 
 > 2026-09-13 기준. 「골목 원정대」(`expedition_*`)는 M0 게이트에서 탈락해 허브에서 내렸습니다. 아래 규칙에서도 `merge_*`로 바뀌었습니다.
@@ -164,7 +164,7 @@ service cloud.firestore {
                              'defense_scores','merge_scores'];
       allow create: if col in ['scores','runner_scores','memory_scores',
                                'defense_scores','merge_scores']
-                    && request.resource.data.keys().hasOnly(['n','s','t','c','w'])
+                    && request.resource.data.keys().hasOnly(['n','s','t','c','w','d'])
                     && request.resource.data.n is string
                     && request.resource.data.n.size() <= 12;
       allow update, delete: if false;
