@@ -228,6 +228,7 @@ let dropLock = 0;             // 연속 투하 방지
 let overT = 0;                // 넘침 누적 시간
 let left = DROPS_MAX;         // 남은 조각
 let doneT = 0;                // 조각을 다 쓴 뒤 잠잠해진 시간
+let endT = 0;                 // 마지막 조각을 놓은 뒤 흐른 시간
 let overReason = 'over';      // over | done
 let chain = 0, chainT = 0;    // 연쇄
 let maxChain = 0;
@@ -248,7 +249,7 @@ function pickTier(){ return (Math.random()*DROPPABLE)|0; }
 
 function startGame(){
   bodies = []; score = 0; merges = 0; maxTier = 0; overT = 0;
-  left = DROPS_MAX; doneT = 0; overReason = 'over';
+  left = DROPS_MAX; doneT = 0; endT = 0; overReason = 'over';
   chain = 0; chainT = 0; maxChain = 0; stat = { pops:0 };
   pops = []; shake = 0; dropLock = 0; tut = 0; tutMerged = 0;
   cur = { t: pickTier(), x: W/2 };
@@ -448,11 +449,15 @@ function checkOver(dt){
   }
   overT = out ? overT + dt : 0;
   if(overT > 1.15){ overReason = 'over'; gameOver(); return; }
-  // 조각을 다 쓰고 판이 잠잠해지면 끝난다
+  // 조각을 다 쓰고 판이 잠잠해지면 끝난다.
+  // 통이 꽉 차면 조각들이 서로 밀며 미세하게 계속 떨리므로 "완전히 멈춤"만
+  // 기다리면 판이 영영 안 끝난다(조각 17개에서 확인). 그래서 마지막 조각을
+  // 놓은 뒤 3.5초가 지나면 잠잠해지지 않아도 끝냅니다.
   if(left <= 0 && !cur){
+    endT += dt;
     const moving = bodies.some(b => Math.abs(b.vy)>24 || Math.abs(b.vx)>24 || (b.rT && b.r<b.rT));
     doneT = moving ? 0 : doneT + dt;
-    if(doneT > 0.7){ overReason = 'done'; gameOver(); }
+    if(doneT > 0.7 || endT > 3.5){ overReason = 'done'; gameOver(); }
   }
 }
 function gameOver(){
