@@ -142,6 +142,7 @@
       <p class="lead" id="titleLead">4주 뒤 일요일 밤은 솜재페. 누가 어떤 모습으로 올지는 그때까지의 끼토가 정합니다.<br>매주 월요일은 원고 마감. 친구에게 쓴 하루는 원고에 못 쓴 하루입니다.</p>
       <button class="big" id="btnStart">오늘 하루 시작</button>
       <div class="row"><button class="ghost" id="btnRel">친구들 · 약속</button><button class="ghost" id="btnInter">막간극</button><button class="ghost" id="btnDex">그림 도감</button></div>
+      <div class="row"><button class="ghost" id="btnReset" style="color:#B06A55;">처음부터 다시</button></div>
       <p class="lead" style="font-size:11px;color:#8A8271;" id="titleHint"></p>
     </div>
   </section>
@@ -725,6 +726,13 @@ function arcForce(){ const d=S.dayNo, f=S.flags; const r=[];
   return r; }
 // ====================== 저장 ======================
 const KEY='somsom_day';
+function resetDay(){
+  const b=$('btnReset');
+  if(b.dataset.armed!=='1'){ b.dataset.armed='1'; b.textContent='정말 지울까요? 한 번 더 누르기'; b.style.color='#C0392B';
+    setTimeout(()=>{ if(b.dataset.armed==='1'){ b.dataset.armed='0'; b.textContent='처음부터 다시'; b.style.color='#B06A55'; } },4000); return; }
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  location.reload();
+}
 const DEF=()=>({v:5,seasonNo:0,rel:{boneul:3,ramda:2,lachil:1},learn:0,story:0,sulk:0,mended:0,dayNo:1,week:0,seeds:[],cuts:{},met:{},fired:[],weekFired:[],stage:{boneul:1,ramda:0,lachil:0,bookgeo:0},sickUsedWeek:-1,
   ms:0,msLog:[],msFail:0,reading:0,acorn:10,flags:{},ing:{},visits:{},tags:{},evCount:{},nightMod:0,letterTo:null,serialStop:0,seasons:[],year:{},inter:{},round:0});
 function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY)||'{}'); if(s.v===4){ const d=DEF(); d.cuts=s.cuts||{}; d.met=s.met||{}; return d; } if(s.v!==5) return DEF(); return Object.assign(DEF(),s); }catch(e){ return DEF(); } }
@@ -2502,6 +2510,7 @@ Object.assign(CUT_BG,{b1_wake:'bg_day_boneul_home.png',b1_shoot:'bg_day_boneul_h
 
 $('btnStart').onclick=newDay; $('btnAgain').onclick=newDay;
 $('btnInter').onclick=()=>{ interludeMenu(); };
+$('btnReset').onclick=resetDay;
 $('btnRel').onclick=()=>{ backTo='sTitle'; renderRel(); };
 $('btnDex').onclick=()=>{ backTo='sTitle'; renderDex(); }; $('btnDex2').onclick=()=>{ backTo='sResult'; renderDex(); }; $('btnDex3').onclick=()=>{ backTo='sFest'; renderDex(); };
 $('btnNewSeason').onclick=()=>{ if(S.seasonNo>=CHAPTERS.length-1){ alert('한 해가 끝났습니다. 관계와 약속을 이어받은 채 두 번째 해의 가을을 시작합니다.'); } if(confirm('새 시즌을 시작할까요? 그림 도감은 남고 관계와 약속은 처음으로 돌아갑니다. 계절 순서가 바뀝니다.')) newSeason(); };
