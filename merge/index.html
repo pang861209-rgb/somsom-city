@@ -67,6 +67,16 @@
   #ladder img{display:block;}
   #ladder .ln{font-size:9.5px;color:#8A8271;font-weight:800;}
   #ladder .ar{font-size:11px;color:#C6BEAE;padding-bottom:14px;}
+  #resCut{display:flex;flex-direction:column;align-items:center;gap:5px;width:100%;}
+  #resCut.hidden{display:none;}
+  #resCut img{width:100%;max-height:190px;object-fit:cover;object-position:center 32%;
+    border-radius:13px;border:2px solid #221E18;box-shadow:2px 2px 0 #221E18;cursor:zoom-in;}
+  #resCut span{font-size:11.5px;font-weight:800;color:#8A6A1A;}
+  /* 컷 크게 보기 */
+  #cutBig{position:absolute;inset:0;z-index:40;display:none;align-items:center;justify-content:center;
+    background:rgba(34,30,24,.88);padding:18px;}
+  #cutBig.on{display:flex;}
+  #cutBig img{max-width:100%;max-height:100%;border-radius:13px;border:2px solid #FDFBF5;}
   #resBig{font-size:34px;font-weight:900;font-family:'Black Han Sans',sans-serif;color:#E0A12B;}
   /* 오늘의 순위판 — 아래에서 올라오는 시트 */
   .sheetWrap{position:absolute;inset:0;z-index:30;display:none;align-items:flex-end;justify-content:center;
@@ -124,6 +134,10 @@
       <h1 style="font-size:24px;" id="resTitle">한 판 끝</h1>
       <div id="resBig">0</div>
       <p class="sub" id="resNote"></p>
+      <div id="resCut" class="hidden">
+        <img id="resCutImg" alt="새로 열린 솜솜시티 한 컷">
+        <span id="resCutCap"></span>
+      </div>
       <div class="row">
         <button class="big" id="btnRetry">한 판 더</button>
         <button class="ghost" id="btnShare">자랑하기</button>
@@ -132,6 +146,8 @@
       </div>
     </div>
   </div>
+
+  <div id="cutBig"><img id="cutBigImg" alt="솜솜시티 한 컷"></div>
 
   <!-- 자랑하기 — 공유 시트가 없는 곳에서는 여기 띄운다 -->
   <div id="shareSheet" class="sheetWrap">
@@ -318,6 +334,76 @@ for(const t of TIERS){
   }
 }
 
+// ── 오늘의 숙제 ─────────────────────────────────────────────
+// 오늘의 규칙이 "판이 어떻게 달라지나"라면, 숙제는 "오늘 뭘 해 볼까"다.
+// 점수와 별개의 목표가 하나 있으면 잘 안 풀린 판도 건질 데가 생긴다.
+const QUESTS = [
+  { k:'ramda3',  n:'람다 3마리 만들기',  ok:()=> (made[3]||0) >= 3 },
+  { k:'kkito2',  n:'끼토 2마리 만들기',  ok:()=> (made[4]||0) >= 2 },
+  { k:'boneul1', n:'보늘 1마리 만들기',  ok:()=> (made[5]||0) >= 1 },
+  { k:'chain5',  n:'5연쇄 한 번',        ok:()=> maxChain >= 5 },
+  { k:'fever2',  n:'과열 두 번',         ok:()=> feverCount >= 2 },
+  { k:'merge45', n:'합체 45번',          ok:()=> merges >= 45 },
+];
+const QUEST_SCORE = 2000;
+const QKEY = 'somsom_merge_quest';
+function todayQuest(){ return QUESTS[(mulberry32(dayKey()*577 + 3)() * QUESTS.length) | 0]; }
+let QUEST = todayQuest();
+function questLoad(){ try{ return JSON.parse(localStorage.getItem(QKEY)||'{}'); }catch(e){ return {}; } }
+// 숙제를 끝내면 연속 일수를 올린다. 어제 한 게 아니면 1부터 다시.
+function questSave(){
+  const q = questLoad(), d = dayKey();
+  if(q.day === d) return q.streak || 1;
+  const y = new Date(); y.setDate(y.getDate()-1);
+  const yk = y.getFullYear()*10000 + (y.getMonth()+1)*100 + y.getDate();
+  const streak = (q.day === yk ? (q.streak||0) : 0) + 1;
+  try{ localStorage.setItem(QKEY, JSON.stringify({ day:d, streak })); }catch(e){}
+  return streak;
+}
+function checkQuest(){
+  if(questDone || mode !== 'PLAY' || !QUEST.ok()) return;
+  questDone = true;
+  score += QUEST_SCORE;
+  const streak = questSave();
+  floats.push({ x:BOX.x+BOX.w/2, y:BOX.y+BOX.h*0.3, txt:'숙제 완료 +'+QUEST_SCORE, t:0, big:true });
+  sfx('fever'); buzz(40);
+  toast('오늘의 숙제 완료!  ' + (streak>1 ? streak+'일 연속' : '첫날'));
+}
+
+// ── 캐릭터 대사 ─────────────────────────────────────────────
+// 통 안에서 친구들이 가끔 한마디 한다. 점수와 무관하고, 세계관만 산다.
+const SAY = {
+  migae:      ['영차', '여기 좁아요', '나도 있어요'],
+  bookgeo:    ['흠, 좋은 향이군', '천천히 갑시다', '자리를 좀'],
+  lachilchin: ['아이고 반가워라', '옜다 도토리', '허리야'],
+  ramda:      ['우와 커졌다', '같이 가요', '나도 나도'],
+  kkito:      ['마감이 코앞인데', '어… 커졌네', '이러다 늦겠어'],
+  boneul:     ['…', '음냐', '천천히 해도 돼'],
+};
+const SAY_WARN = ['곧 넘쳐요', '자리 없어요', '조심조심'];
+function maybeSay(b, lines, always){
+  if(!always && Math.random() > 0.28) return;
+  b.say = lines[(Math.random()*lines.length)|0]; b.sayT = 1.6;
+}
+
+// ── 보상 컷 ─────────────────────────────────────────────────
+// 「끼토의 하루」를 내리면서 삽화 295장이 통째로 묻혔다. 한 판을 잘 끝내면
+// 그중 아직 못 본 한 장이 열린다. 판이 이야기로 이어지는 유일한 통로다.
+const CUTS = ["a1_deadline_0.jpg","a2_rainwindow_0.jpg","a3_market_0.jpg","a4_complaint_0.jpg","a5_ginkgo_call_0.jpg","a6_festival_prep_0.jpg","a7_sleep_in_0.jpg","a8_sick_migae_0.jpg","b1_edit_0.jpg","b1_kkito_door_0.jpg","b1_migae_crumbs_0.jpg","b1_shoot_0.jpg","b1_upload_0.jpg","b1_wake_0.jpg","b2_close_0.jpg","b2_customer_0.jpg","b2_kkito_0.jpg","b2_label_0.jpg","b2_migae_0.jpg","b2_open_0.jpg","b3_evening_0.jpg","b3_give_0.jpg","b3_snack_0.jpg","b3_stairs_0.jpg","b3_wake_0.jpg","b3_window_0.jpg","b4_alley_0.jpg","b4_bookgeo_0.jpg","b4_home_0.jpg","b4_night_0.jpg","b4_roof_0.jpg","b4_trash_0.jpg","b4_tree_0.jpg","d10_lachil_hallway_0.jpg","d11_lachil_sewing_0.jpg","d12_lachil_album_0.jpg","d13_rain_bookgeo_0.jpg","d14_market_ramda_0.jpg","d15_bamboo_boneul_0.jpg","d16_ginkgo_grandma_0.jpg","d17_festival_ladder_0.jpg","d18_walk_sunny_0.jpg","d19_walk_rain_0.jpg","d1_boneul_cold_0.jpg","d20_walk_wind_0.jpg","d21_home_work_0.jpg","d22_reconcile_pizza_0.jpg","d2_boneul_toast_0.jpg","d3_boneul_camera_0.jpg","d4_ramda_shop_0.jpg","d5_ramda_stationery_0.jpg","d6_ramda_buttons_0.jpg","d7_bookgeo_strip_0.jpg","d8_bookgeo_bottle_0.jpg","d9_bookgeo_name_0.jpg","i1_boneul_0.jpg","i1_end_ring_0.jpg","i1_grandma_0.jpg","i1_grandma_nap_0.jpg","i1_kkito_button_0.jpg","i1_kkomeon_0.jpg","i1_rain_shop_0.jpg","i1_window_bk_0.jpg","m1_migae_better_0.jpg","m2_night_nursing_0.jpg","n2_wet_leaf_0.jpg","n3_sign_changed_0.jpg","n4_trash_sign_0.jpg","n5_roasting_0.jpg","n6_lights_on_0.jpg","n7_sunday_nap_0.jpg","p_a_garden_0.jpg","p_a_market_0.jpg","p_a_notice_0.jpg","p_a_snack_0.jpg","p_a_stall_0.jpg","p_bk_paper_0.jpg","p_bon_button_0.jpg","p_bon_photo_0.jpg","p_bon_signoff_0.jpg","p_city_bk_0.jpg","p_city_kkito_0.jpg","p_city_ramda_0.jpg","p_fest_alone_0.jpg","p_fest_bg_0.jpg","p_fest_frame_0.jpg","p_fest_full_0.jpg","p_fest_roof_0.jpg","p_fest_sign_0.jpg","p_fest_zone_0.jpg","p_gm_frame_0.jpg","p_gm_photo_0.jpg","p_gm_window_frame_0.jpg","p_gm_window_spring_0.jpg","p_key_0.jpg","p_lam_cityhall_0.jpg","p_lam_cup_0.jpg","p_lam_eve_0.jpg","p_lam_eve_n_0.jpg","p_lam_items_0.jpg","p_lam_notice_0.jpg","p_lam_notice_n_0.jpg","p_lam_poster_0.jpg","p_letter_city_0.jpg","p_mg_back_0.jpg","p_mg_blossom_0.jpg","p_mg_found_0.jpg","p_mg_gone_0.jpg","p_mg_search_0.jpg","p_n_garden_0.jpg","p_n_market_0.jpg","p_n_nap_0.jpg","p_n_notice_0.jpg","p_n_plate_0.jpg","p_n_stall_0.jpg","p_roof_0.jpg","p_roof_locked_0.jpg","p_roof_open_0.jpg","p_v_bkdry_0.jpg","p_v_shop_0.jpg","p_v_sign_0.jpg","p_v_snack_0.jpg","p_v_stall_0.jpg","p_w1_0.jpg","p_w2_0.jpg","p_w3_0.jpg","p_w4_0.jpg","p_walk_petal_0.jpg","r_bk_blend_0.jpg","r_bk_cart_0.jpg","r_bk_jars_0.jpg","r_bk_window_0.jpg","r_bon_apply_0.jpg","r_bon_bag_0.jpg","r_bon_recipe_0.jpg","r_bon_shy_0.jpg","r_bon_sign_0.jpg","r_bon_taste_0.jpg","r_fest_alone_0.jpg","r_fest_bg_0.jpg","r_fest_booths_0.jpg","r_fest_full_0.jpg","r_fest_reading_0.jpg","r_fest_window_0.jpg","r_gm_carttest_0.jpg","r_gm_roast_0.jpg","r_gm_stairs_0.jpg","r_gm_wave_0.jpg","r_lam_ask_0.jpg","r_lam_back_0.jpg","r_lam_cityhall_0.jpg","r_lam_draft_0.jpg","r_lam_mend_0.jpg","r_lam_notice_0.jpg","r_lam_rehearsal_0.jpg","r_lights_test_0.jpg","r_mg_found_atelier_0.jpg","r_mg_found_bamboo_0.jpg","r_mg_found_shop_0.jpg","r_mg_found_tree_0.jpg","r_mg_leash_0.jpg","r_mg_search_0.jpg","r_mg_wet_0.jpg","r_ms_fail_0.jpg","r_ms_half_0.jpg","r_ms_sent_0.jpg","r_nt_desk_0.jpg","r_nt_letter_0.jpg","r_nt_sleep_0.jpg","r_prep_alley_0.jpg","s10_festival_night_0.jpg","s11_portrait_0.jpg","s1_keyring_0.jpg","s2_boneul_waiting_0.jpg","s3_scent_morning_0.jpg","s6_trash_moved_0.jpg","s7_rain_scent_0.jpg","s8_boots_0.jpg","s9_letter_0.jpg","u2_ramda_giftbutton_0.jpg","u3_ramda_shutter_0.jpg","u4_bookgeo_walk_0.jpg","u5_bookgeo_label_0.jpg","u6_lachil_tea_0.jpg","u7_lachil_lap_0.jpg","u8_boneul_plate_0.jpg","u_a_fan_0.jpg","u_a_market_0.jpg","u_a_roof_0.jpg","u_a_snack_0.jpg","u_a_water_0.jpg","u_bon_film_0.jpg","u_bon_meeting_0.jpg","u_bon_screen_0.jpg","u_book_0.jpg","u_book_fall_0.jpg","u_book_spring_0.jpg","u_book_winter_0.jpg","u_eve_0.jpg","u_eve_n_0.jpg","u_eve_quiet_0.jpg","u_eve_told_0.jpg","u_fest_alone_0.jpg","u_fest_bff_0.jpg","u_fest_bg_0.jpg","u_fest_book_0.jpg","u_fest_full_0.jpg","u_fest_screen_0.jpg","u_fest_wall_0.jpg","u_fest_window_0.jpg","u_gm_plates_0.jpg","u_lam_mc_0.jpg","u_lam_projector_0.jpg","u_letter_ed_0.jpg","u_meet_0.jpg","u_meet_n_0.jpg","u_mem1_0.jpg","u_mem2_0.jpg","u_mem3_0.jpg","u_mg_cool_0.jpg","u_mg_hot_0.jpg","u_mg_rain_0.jpg","u_n_cup_0.jpg","u_n_fan_0.jpg","u_n_nap_0.jpg","u_n_roof_0.jpg","u_n_shade_0.jpg","u_n_tomato_0.jpg","u_permit_0.jpg","u_permit_n_0.jpg","u_screen_up_0.jpg","u_v_bkshade_0.jpg","u_v_chairs_0.jpg","u_v_fan_0.jpg","u_v_ice_0.jpg","u_v_tomato_0.jpg","u_w1_0.jpg","u_w2_0.jpg","u_walk_shade_0.jpg","u_wall_0.jpg","w1_autumn_0.jpg","w2_ginkgo_0.jpg","w3_dusk_0.jpg","w4_rain_0.jpg","w5_winter_0.jpg","w6_night_0.jpg","w_a_lantern_0.jpg","w_a_market_0.jpg","w_a_mat_0.jpg","w_a_snack_0.jpg","w_a_snow_0.jpg","w_bk_blend_0.jpg","w_bk_note_0.jpg","w_bk_oldbottle_0.jpg","w_bk_road_0.jpg","w_bk_walk_0.jpg","w_bon_ask_0.jpg","w_bon_cough_0.jpg","w_bon_live_0.jpg","w_bon_sick_0.jpg","w_bon_soup_0.jpg","w_fest_0.jpg","w_fest_alone_0.jpg","w_fest_bg_0.jpg","w_fest_lanterns_0.jpg","w_fest_live_0.jpg","w_fest_sea_0.jpg","w_fest_song_0.jpg","w_gm_album_0.jpg","w_gm_kimchi_0.jpg","w_gm_song_0.jpg","w_gm_window_0.jpg","w_gm_window_song_0.jpg","w_lam_box_0.jpg","w_lam_inspect_0.jpg","w_lam_lantern_0.jpg","w_lam_paper_0.jpg","w_lam_shop_0.jpg","w_mg_alone_0.jpg","w_mg_firstsnow_0.jpg","w_mg_sick_0.jpg","w_mg_visit1_0.jpg","w_mg_visit3_0.jpg","w_n_lantern1_0.jpg","w_n_mat_0.jpg","w_n_nap_0.jpg","w_n_plate_0.jpg","w_n_sign_0.jpg","w_n_snowman_0.jpg","w_v_bkslow_0.jpg","w_v_lantern_0.jpg","w_v_mat_0.jpg","w_v_shop_0.jpg","w_v_snack_0.jpg","w_walk_snow_0.jpg"];
+const CUT_AT = 5000;            // 이 점수를 넘기면 한 장
+const CUT_KEY = 'somsom_merge_cuts';
+function cutsSeen(){ try{ return JSON.parse(localStorage.getItem(CUT_KEY)||'[]'); }catch(e){ return []; } }
+function unlockCut(){
+  if(score < CUT_AT) return null;
+  const seen = cutsSeen();
+  const left = CUTS.filter(c => seen.indexOf(c) < 0);
+  if(!left.length) return null;                       // 295장을 다 모았다
+  const pick = left[(mulberry32(dayKey()*131 + plays)() * left.length) | 0];
+  seen.push(pick);
+  try{ localStorage.setItem(CUT_KEY, JSON.stringify(seen)); }catch(e){}
+  return pick;
+}
+
 // ── 소리 (낙엽피하기와 같은 WebAudio 합성) ────────────────────
 let AC=null, muted = localStorage.getItem('somsom_muted')==='1';
 function ac(){
@@ -342,6 +428,7 @@ function sfx(name, tier){
       tone(base,0.10,'sine',0.055); tone(base*1.5,0.13,'sine',0.05,0.055);
     }
     else if(name==='chain') tone(1200,0.16,'square',0.045,0,1700);
+    else if(name==='shake'){ tone(150,0.22,'triangle',0.05,0,90); tone(300,0.16,'sine',0.035,0.05); }
     else if(name==='fever'){ [440,554,659,880,1108].forEach((f,i)=>tone(f,0.3,'square',0.06,i*0.07)); }
     else if(name==='swap'){ tone(660,0.06,'triangle',0.045); tone(880,0.07,'triangle',0.04,0.06); }
     else if(name==='top'){ [523,659,784,1046,1318].forEach((f,i)=>tone(f,0.22,'square',0.055,i*0.10)); }
@@ -377,6 +464,11 @@ let fever = 0;                // 과열 남은 시간
 let feverCount = 0;           // 한 판에 과열에 들어간 횟수
 let comboT = 0, comboN = 0;   // 가운데에 크게 띄우는 연쇄 표시
 let clears = 0;               // 완벽 정리 횟수
+let warnT = 0;                // 다음 경고 대사까지
+let made = [];                // 단계별로 몇 개나 만들었나 (오늘의 숙제용)
+let shakeLeft = 1;            // 통 흔들기 남은 횟수
+let overGrace = 0;            // 흔든 직후엔 넘침을 봐준다
+let questDone = false;
 let maxChain = 0;
 let stat = { pops:0 };
 let hold = null, holdLeft = HOLD_MAX;   // 바꾸기 칸에 든 단계, 남은 횟수
@@ -414,6 +506,8 @@ function startGame(){
   left = DROPS_MAX; doneT = 0; endT = 0; overReason = 'over';
   chain = 0; chainT = 0; maxChain = 0; stat = { pops:0 };
   fever = 0; feverCount = 0; comboT = 0; comboN = 0; clears = 0;
+  warnT = 3; made = []; shakeLeft = 1; overGrace = 0; questDone = false;
+  QUEST = todayQuest();
   pops = []; floats = []; ghosts = []; shake = 0; dropLock = 0; tut = 0; tutMerged = 0;
   RULE = window.FORCE_RULE || todayRule(); layout();   // 자정을 넘겼을 수 있다 (FORCE_RULE 은 테스트용)
   hold = null; holdLeft = RULE.hold || HOLD_MAX;
@@ -450,6 +544,25 @@ function hitPause(ev){
 }
 // 바꾸기 칸 — 드롭 공간 왼쪽에 둔다. HUD는 이미 꽉 찼다.
 function holdPos(){ return { x: BOX.x + 30, y: HUD + Math.round((BOX.y-HUD)/2), r: 24 }; }
+function shakePos(){ return { x: BOX.x + BOX.w - 30, y: HUD + Math.round((BOX.y-HUD)/2), r: 22 }; }
+function hitShake(ev){
+  const rc = cv.getBoundingClientRect();
+  const c = (ev.changedTouches && ev.changedTouches[0]) ? ev.changedTouches[0] : ev;
+  const x = c.clientX - rc.left, y = c.clientY - rc.top, h = shakePos();
+  return Math.hypot(x-h.x, y-h.y) < h.r + 12;
+}
+// 통을 흔들어 조각을 다시 앉힌다. 한 판 1번. 잘못 쌓았을 때의 유일한 구제책이다.
+// 흔들면 조각이 위로 튀므로 1.2초 동안 넘침을 봐준다. 안 그러면 구제가 사형이 된다.
+function shakeBox(){
+  if(mode !== 'PLAY' || shakeLeft <= 0 || !bodies.length) return;
+  shakeLeft--;
+  for(const b of bodies){
+    b.vy -= 190 + Math.random()*90;
+    b.vx += (Math.random()-0.5) * 320;
+  }
+  overGrace = 1.2; shake = 0.55; sfx('shake'); buzz(45);
+  toast('통을 흔들었다');
+}
 function hitHold(ev){
   const rc = cv.getBoundingClientRect();
   const c = (ev.changedTouches && ev.changedTouches[0]) ? ev.changedTouches[0] : ev;
@@ -478,27 +591,32 @@ function drop(){
   if(left > 0){ cur = { t: nextT, x: cur.x }; nextT = nextT2; nextT2 = pickTier(); }
   else cur = null;                             // 마지막 조각을 놓았다
 }
-let touchOnHold = false;      // 바꾸기 칸을 누른 채로는 조준·투하를 안 한다
+// 버튼을 누른 채로는 조준·투하를 안 한다
+let touchOnHold = false, touchOnShake = false;
 cv.addEventListener('touchstart', e=>{
-  touchOnHold = hitHold(e);
-  if(!hitPause(e) && !touchOnHold) aim(e); e.preventDefault(); }, {passive:false});
-cv.addEventListener('touchmove',  e=>{ if(!touchOnHold) aim(e); e.preventDefault(); }, {passive:false});
+  touchOnHold = hitHold(e); touchOnShake = hitShake(e);
+  if(!hitPause(e) && !touchOnHold && !touchOnShake) aim(e); e.preventDefault(); }, {passive:false});
+cv.addEventListener('touchmove',  e=>{ if(!touchOnHold && !touchOnShake) aim(e); e.preventDefault(); }, {passive:false});
 cv.addEventListener('touchend',   e=>{
   if(hitPause(e)){ togglePause(); e.preventDefault(); return; }
   if(touchOnHold){ touchOnHold = false; if(hitHold(e)) swapHold(); e.preventDefault(); return; }
+  if(touchOnShake){ touchOnShake = false; if(hitShake(e)) shakeBox(); e.preventDefault(); return; }
   drop(); e.preventDefault();
 }, {passive:false});
-cv.addEventListener('mousemove',  e=>{ if(!touchOnHold) aim(e); });
-cv.addEventListener('mousedown',  e=>{ touchOnHold = hitHold(e); if(!touchOnHold) aim(e); });
+cv.addEventListener('mousemove',  e=>{ if(!touchOnHold && !touchOnShake) aim(e); });
+cv.addEventListener('mousedown',  e=>{ touchOnHold = hitHold(e); touchOnShake = hitShake(e);
+  if(!touchOnHold && !touchOnShake) aim(e); });
 cv.addEventListener('mouseup',    e=>{
   if(hitPause(e)){ togglePause(); return; }
   if(touchOnHold){ touchOnHold = false; if(hitHold(e)) swapHold(); return; }
+  if(touchOnShake){ touchOnShake = false; if(hitShake(e)) shakeBox(); return; }
   drop(); });
 addEventListener('keydown', e=>{
   if(e.key==='p'||e.key==='P'||e.key==='Escape'){ togglePause(); return; }
   if(mode!=='PLAY' || !cur) return;
   const r = TIERS[cur.t].r;
   if(e.key==='ArrowUp'||e.key==='c'||e.key==='C'||e.key==='Shift'){ swapHold(); e.preventDefault(); return; }
+  if(e.key==='s'||e.key==='S'){ shakeBox(); e.preventDefault(); return; }
   if(e.key==='ArrowLeft')  cur.x = Math.max(BOX.x+r+1, cur.x-24);
   if(e.key==='ArrowRight') cur.x = Math.min(BOX.x+BOX.w-r-1, cur.x+24);
   if(e.key===' '||e.key==='ArrowDown'){ drop(); e.preventDefault(); }
@@ -659,6 +777,8 @@ function resolveMerges(){
       bodies.push({ x:mx, y:my, r:a.r, r0:a.r, rT:T.r, gt:0, t:nt, id:nextId++, born:0,
                     vx:(a.vx+c.vx)/2, vy:(a.vy+c.vy)/2 - 60,
                     face:'win', faceT: nt===TOP_TIER ? 1.6 : 0.9 });   // 태어난 김에 기뻐한다
+      maybeSay(bodies[bodies.length-1], SAY[T.k], nt === TOP_TIER);
+      made[nt] = (made[nt]||0) + 1;                  // 오늘의 숙제 집계
       if(!isCascade(a, c)) chain = 0;
       const gain = Math.round(MERGE_SCORE[nt] * chainMul(chain) * (fever>0 ? FEVER_MUL : 1));
       score += gain;
@@ -686,6 +806,7 @@ function resolveMerges(){
 
 // ── 넘침 판정 ───────────────────────────────────────────────
 function checkOver(dt){
+  if(overGrace > 0){ overGrace -= dt; overT = 0; return; }
   let out = false;
   for(const b of bodies){
     if(b.born < 1.0) continue;                 // 막 떨어뜨린 건 봐준다
@@ -728,8 +849,21 @@ function gameOver(){
   if(stat.pops) parts.push('보늘 ' + stat.pops + '번 돌려보냄');
   if(feverCount)parts.push('<b>과열 ' + feverCount + '번</b>');
   if(clears)    parts.push('<b>완벽 정리 ' + clears + '번</b>');
+  parts.push(questDone ? '<b>오늘의 숙제 완료 · ' + QUEST.n + '</b>'
+                       : '<span style="color:#8A8271;">오늘의 숙제 · ' + QUEST.n + '</span>');
   parts.push(isBest ? '<b>최고 기록을 세웠습니다</b>' : '최고 ' + best + '점');
   $('resNote').innerHTML = parts.join('<br>');
+  const cut = unlockCut();
+  if(cut){
+    $('resCutImg').src = '../assets/day/' + cut;
+    $('resCutCap').textContent = '새 컷이 열렸어요 · 모은 컷 ' + cutsSeen().length + ' / ' + CUTS.length;
+    $('resCut').classList.remove('hidden');
+  } else {
+    $('resCut').classList.add('hidden');
+    if(score < CUT_AT && CUTS.length > cutsSeen().length)
+      parts.push('<span style="color:#8A6A1A;">' + CUT_AT + '점을 넘기면 새 컷이 열려요</span>'),
+      $('resNote').innerHTML = parts.join('<br>');
+  }
   show('sResult');
 }
 
@@ -849,6 +983,8 @@ async function shareResult(){
   $('shareImg').src = URL.createObjectURL(blob);
   $('shareSheet').classList.add('on');
 }
+$('resCutImg').onclick = ()=>{ $('cutBigImg').src = $('resCutImg').src; $('cutBig').classList.add('on'); };
+$('cutBig').onclick    = ()=> $('cutBig').classList.remove('on');
 $('btnShare').onclick  = shareResult;
 $('shareClose').onclick = ()=> $('shareSheet').classList.remove('on');
 $('shareSheet').addEventListener('click', e=>{ if(e.target.id==='shareSheet') $('shareSheet').classList.remove('on'); });
@@ -928,7 +1064,18 @@ function frame(now){
     if(fever>0){ fever -= dt; if(fever<0) fever = 0; }
     if(comboT>0) comboT -= dt;
     if(shake>0) shake -= dt;
-    for(const b of bodies) if(b.faceT>0){ b.faceT -= dt; if(b.faceT<=0){ b.face=null; b.faceT=0; } }
+    for(const b of bodies){
+      if(b.faceT>0){ b.faceT -= dt; if(b.faceT<=0){ b.face=null; b.faceT=0; } }
+      if(b.sayT>0){ b.sayT -= dt; if(b.sayT<=0) b.say = null; }
+    }
+    checkQuest();
+    warnT -= dt;
+    if(warnT <= 0 && bodies.length){                 // 넘침이 가까우면 위쪽 조각이 알려 준다
+      warnT = 2.6;
+      let top = null;
+      for(const b of bodies) if(b.born > 1 && (!top || b.y-b.r < top.y-top.r)) top = b;
+      if(top && top.y - top.r < LINE + top.r*0.9) maybeSay(top, SAY_WARN, true);
+    }
     acc += dt;
     let guard = 0;
     while(acc >= FIXED && guard++ < 8){
@@ -976,6 +1123,7 @@ function draw(){
   drawCrate();
   // 몸통
   for(const b of bodies) drawChar(b.t, b.x, b.y, b.r, null, b.face);
+  for(const b of bodies) if(b.say) drawSay(b);
   // 보늘 소멸 — 떠올라 사라지는 둘
   for(const g of ghosts){
     const k = g.t/1.05;
@@ -1058,8 +1206,37 @@ function draw(){
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('바꾸기 ' + holdLeft, h.x, h.y + h.r + 10);
     ctx.restore();
+    // 흔들기
+    const k = shakePos(), able = shakeLeft > 0;
+    ctx.save(); ctx.globalAlpha = able ? 1 : 0.35;
+    ctx.beginPath(); ctx.arc(k.x, k.y, k.r, 0, 7);
+    ctx.fillStyle = able ? '#F3E3C4' : '#F4EFE1'; ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = '#221E18'; ctx.stroke();
+    ctx.fillStyle = '#221E18'; ctx.font = '900 17px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('↯', k.x, k.y);
+    ctx.fillStyle = '#8A8271'; ctx.font = '800 10px sans-serif';
+    ctx.fillText('흔들기 ' + shakeLeft, k.x, k.y + k.r + 10);
+    ctx.restore();
   }
   drawHud();
+}
+// 말풍선 — 조각 바로 위에
+function drawSay(b){
+  const a = b.sayT > 1.35 ? (1.6-b.sayT)/0.25 : Math.min(1, b.sayT/0.35);
+  ctx.save(); ctx.globalAlpha = Math.max(0, Math.min(1, a));
+  ctx.font = '800 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const tw = ctx.measureText(b.say).width, w = tw+16, h = 20;
+  let x = Math.max(BOX.x+w/2+2, Math.min(BOX.x+BOX.w-w/2-2, b.x));
+  const y = Math.max(BOX.y+h/2+2, b.y - b.r - 13);
+  ctx.fillStyle = '#FDFBF5'; ctx.strokeStyle = '#221E18'; ctx.lineWidth = 1.8;
+  ctx.beginPath(); ctx.roundRect(x-w/2, y-h/2, w, h, 9); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x-4, y+h/2-1); ctx.lineTo(x, y+h/2+5); ctx.lineTo(x+4, y+h/2-1);
+  ctx.fillStyle = '#FDFBF5'; ctx.fill();
+  ctx.strokeStyle = '#221E18'; ctx.beginPath();
+  ctx.moveTo(x-4, y+h/2-1); ctx.lineTo(x, y+h/2+5); ctx.lineTo(x+4, y+h/2-1); ctx.stroke();
+  ctx.fillStyle = '#221E18'; ctx.fillText(b.say, x, y);
+  ctx.restore();
 }
 function drawCrate(){
   // 통 — 나무 상자. 안쪽은 크림에 널빤지를 옅게 깔아 조각이 잘 읽히게 한다
@@ -1183,11 +1360,14 @@ $('btnMute').onclick  = ()=>{
 };
 function refreshTitle(){
   $('btnMute').textContent = muted?'🔇':'🔊';
-  RULE = window.FORCE_RULE || todayRule();
+  RULE = window.FORCE_RULE || todayRule(); QUEST = todayQuest();
+  const qs = questLoad(), qDoneToday = qs.day === dayKey();
   $('titleHint').innerHTML = '오늘의 통 · ' + dayLabel() + ' · <b>' + RULE.n + '</b>'
     + (RULE.d ? ' — ' + RULE.d : ' · 모두 같은 순서로 떨어집니다') + '<br>' + (best
     ? ('최고 ' + best + '점 · 제일 큰 친구 ' + TIERS[bestTier].n)
-    : ('조각 ' + DROPS_MAX + '개로 몇 점까지 쌓을 수 있을까요'));
+    : ('조각 ' + DROPS_MAX + '개로 몇 점까지 쌓을 수 있을까요'))
+    + '<br>오늘의 숙제 · ' + QUEST.n + (qDoneToday ? ' <b>완료</b>' : '')
+    + (qs.streak > 1 && qDoneToday ? ' · ' + qs.streak + '일 연속' : '');
 }
 
 buildLadder();
