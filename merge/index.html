@@ -20,7 +20,7 @@
   /* 타이틀 — 솜솜시티 공통 히어로 구성 (짝맞추기·방범대와 같은 틀) */
   #sTitle{padding:0;gap:0;justify-content:flex-start;overflow:hidden;
     background:linear-gradient(#efd9b8 0%,#e3c39a 60%,#caa26a 100%);}
-  #titleBg{position:absolute;left:0;top:0;width:100%;height:calc(100% - 168px);object-fit:cover;
+  #titleBg{position:absolute;left:0;top:0;width:100%;height:calc(100% - 190px);object-fit:cover;
     object-position:center 68%;z-index:0;}
   #titleTop{position:relative;z-index:2;margin-top:44px;display:flex;flex-direction:column;align-items:center;gap:9px;}
   .logoTop{font-size:13px;font-weight:800;color:#fff7e8;letter-spacing:5px;text-shadow:0 2px 0 rgba(96,58,38,.5);}
@@ -29,8 +29,8 @@
     text-shadow:0 3px 0 #7c4a2d,0 7px 16px rgba(60,30,20,.4);}
   #titleSub{font-size:12px;font-weight:700;color:#5a4130;background:rgba(255,247,232,.88);
     border:1.5px solid rgba(124,74,45,.5);border-radius:20px;padding:5px 14px;}
-  #titleBottom{position:absolute;left:0;right:0;bottom:0;z-index:2;height:168px;padding:10px 16px 8px;
-    display:flex;flex-direction:column;align-items:center;gap:7px;
+  #titleBottom{position:absolute;left:0;right:0;bottom:0;z-index:2;height:190px;padding:9px 16px 10px;
+    display:flex;flex-direction:column;align-items:center;gap:6px;
     background:linear-gradient(#402419,#2f1a12);border-top:1.5px solid rgba(255,239,216,.16);
     box-shadow:0 -10px 22px rgba(40,20,10,.28);}
   #titleBottom #ladder .ln{color:#d9c9ad;}
@@ -38,10 +38,16 @@
   #titleBottom #btnGo{font-size:17px;padding:11px 44px;border-radius:16px;background:#ffb35c;
     border:2px solid #5a2f1c;color:#4a2416;box-shadow:0 4px 0 #5a2f1c;}
   #titleBottom #btnGo:active{transform:translateY(4px);box-shadow:none;}
-  #titleFoot{gap:8px;align-items:center;flex-wrap:nowrap;max-width:360px;}
+  #titleFoot{gap:7px;align-items:center;flex-wrap:nowrap;}
+  #titleFoot .ghost{padding:5px 13px;font-size:12.5px;}
+  /* 앨범 — 모은 컷을 3열 격자로. 295장이라 안 연 칸은 그리지 않고 수만 적는다 */
+  #albumGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}
+  #albumGrid img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:9px;
+    border:1.5px solid #221E18;cursor:zoom-in;background:#F4EFE1;}
   #titleBottom .ghost{padding:4px 10px;font-size:12px;background:rgba(255,239,216,.14);color:#f3e6cf;
     border-color:rgba(255,239,216,.35);box-shadow:none;}
-  #titleBottom #titleHint{font-size:10.5px;color:rgba(255,239,216,.7);line-height:1.4;text-align:left;}
+  #titleBottom #titleHint{font-size:10.5px;color:rgba(255,239,216,.72);line-height:1.45;
+    text-align:center;margin:0;}
   /* 결과는 통을 가리지 않는다 — 끝난 통 모습이 "내 통 봐"가 된다 */
   #sResult{background:rgba(253,251,245,.28);justify-content:flex-end;padding-bottom:26px;}
   @keyframes cardUp{from{transform:translateY(36px);opacity:0}to{transform:none;opacity:1}}
@@ -69,7 +75,8 @@
   #ladder .ar{font-size:11px;color:#C6BEAE;padding-bottom:14px;}
   #resCut{display:flex;flex-direction:column;align-items:center;gap:5px;width:100%;}
   #resCut.hidden{display:none;}
-  #resCut img{width:100%;max-height:190px;object-fit:cover;object-position:center 32%;
+  /* 삽화는 3:4 세로다. width:100% + max-height 로 자르면 절반이 날아간다. */
+  #resCut img{height:210px;width:auto;max-width:100%;object-fit:contain;
     border-radius:13px;border:2px solid #221E18;box-shadow:2px 2px 0 #221E18;cursor:zoom-in;}
   #resCut span{font-size:11.5px;font-weight:800;color:#8A6A1A;}
   /* 컷 크게 보기 */
@@ -122,9 +129,10 @@
       <button class="big" id="btnGo">떨어뜨리기</button>
       <div class="row" id="titleFoot">
         <button class="ghost" id="btnMute">🔊</button>
-        <button class="ghost" id="btnBoard">오늘의 순위</button>
-        <span id="titleHint"></span>
+        <button class="ghost" id="btnBoard">순위</button>
+        <button class="ghost" id="btnAlbum">앨범</button>
       </div>
+      <p id="titleHint"></p>
     </div>
   </div>
 
@@ -155,6 +163,16 @@
       <div class="hd"><span class="t">자랑하기</span><span class="c">길게 눌러 저장하거나 보내세요</span></div>
       <img id="shareImg" alt="결과 이미지" style="width:100%;border-radius:12px;border:2px solid #221E18;">
       <button class="ghost" id="shareClose">닫기</button>
+    </div>
+  </div>
+
+  <!-- 앨범 -->
+  <div id="album" class="sheetWrap">
+    <div class="sheet">
+      <div class="hd"><span class="t">앨범</span><span class="c" id="albumCount"></span></div>
+      <div id="albumGrid"></div>
+      <div class="bMsg" id="albumMsg"></div>
+      <button class="ghost" id="albumClose">닫기</button>
     </div>
   </div>
 
@@ -988,6 +1006,26 @@ async function shareResult(){
   $('shareImg').src = URL.createObjectURL(blob);
   $('shareSheet').classList.add('on');
 }
+function openAlbum(){
+  const seen = cutsSeen(), grid = $('albumGrid');
+  $('albumCount').textContent = seen.length + ' / ' + CUTS.length;
+  // 최근에 연 것부터 보여 준다
+  grid.innerHTML = seen.slice().reverse().map(c =>
+    '<img loading="lazy" src="../assets/day/' + c + '" alt="솜솜시티 한 컷">').join('');
+  const rest = CUTS.length - seen.length;
+  $('albumMsg').innerHTML = !seen.length
+    ? '아직 연 컷이 없어요.<br><b>한 판에 ' + CUT_AT + '점을 넘기면 한 장씩 열립니다.</b>'
+    : (rest ? '아직 안 열린 컷 ' + rest + '장' : '<b>295장을 다 모았습니다</b>');
+  $('album').classList.add('on');
+}
+$('btnAlbum').onclick   = openAlbum;
+$('albumClose').onclick = ()=> $('album').classList.remove('on');
+$('album').addEventListener('click', e=>{
+  if(e.target.id === 'album'){ $('album').classList.remove('on'); return; }
+  if(e.target.tagName === 'IMG' && e.target.closest('#albumGrid')){
+    $('cutBigImg').src = e.target.src; $('cutBig').classList.add('on');
+  }
+});
 $('resCutImg').onclick = ()=>{ $('cutBigImg').src = $('resCutImg').src; $('cutBig').classList.add('on'); };
 $('cutBig').onclick    = ()=> $('cutBig').classList.remove('on');
 $('btnShare').onclick  = shareResult;
@@ -1349,7 +1387,7 @@ function buildLadder(){
     const d = document.createElement('div'); d.className='lb';
     const im = document.createElement('img');
     im.src = '../assets/sd_'+t.k+'_t.png';
-    im.style.height = (16 + i*5) + 'px'; im.style.width = 'auto';
+    im.style.height = (13 + i*3.6) + 'px'; im.style.width = 'auto';
     im.alt = t.n;
     const n = document.createElement('span'); n.className='ln'; n.textContent = t.n;
     d.appendChild(im); d.appendChild(n); el.appendChild(d);
@@ -1370,11 +1408,12 @@ function refreshTitle(){
   $('btnMute').textContent = muted?'🔇':'🔊';
   RULE = window.FORCE_RULE || todayRule(); QUEST = todayQuest();
   const qs = questLoad(), qDoneToday = qs.day === dayKey();
-  $('titleHint').innerHTML = '오늘의 통 · ' + dayLabel() + ' · <b>' + RULE.n + '</b>'
-    + (RULE.d ? ' — ' + RULE.d : ' · 모두 같은 순서로 떨어집니다') + '<br>' + (best
-    ? ('최고 ' + best + '점 · 제일 큰 친구 ' + TIERS[bestTier].n)
-    : ('조각 ' + DROPS_MAX + '개로 몇 점까지 쌓을 수 있을까요'))
-    + '<br>오늘의 숙제 · ' + QUEST.n + (qDoneToday ? ' <b>완료</b>' : '')
+  // 두 줄로 묶는다. 세 줄이면 좁은 화면에서 하단 바를 넘친다.
+  // 규칙 설명은 판이 시작되면 HUD에 다시 뜨므로 여기선 이름만 적는다.
+  $('titleHint').innerHTML =
+      '오늘의 통 · ' + dayLabel() + ' · <b>' + RULE.n + '</b>'
+    + (best ? ' · 최고 ' + best + '점' : '')
+    + '<br>숙제 · ' + QUEST.n + (qDoneToday ? ' <b>완료</b>' : '')
     + (qs.streak > 1 && qDoneToday ? ' · ' + qs.streak + '일 연속' : '');
 }
 
