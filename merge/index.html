@@ -194,7 +194,18 @@ const TOP_TIER = TIERS.length - 1;
 // "얼마나 높이 올렸나"를 따라야 하므로 위쪽을 가파르게 올리고 연쇄를 낮췄습니다.
 const MERGE_SCORE = [0, 5, 15, 45, 130, 400];
 const POP_SCORE = 800;   // 보늘 둘이 만나 사라질 때 — 한 판의 승부처
-const CHAIN_MUL = 0.35;  // 연쇄 배수. 높이면 다시 운 게임이 됩니다
+// 연쇄 배수 — 4연쇄부터 확 오른다. 조각 60개로 얻을 수 있는 재료는
+// 보늘 4개어치(140단위)가 끝이라 재료로는 6000~7500점이 천장이다.
+// 천장을 뚫는 건 재료가 아니라 배수이고, 배수는 통을 읽고 일부러
+// 쌓아야 나온다. n 은 이번 합체 직전까지의 연쇄 수.
+//   0→×1  1→×1.6  2→×2.2  3→×3.0  4→×4.0  5→×5.1  6→×6.4  8↑→×9(상한)
+function chainMul(n){ return Math.min(9, 1 + 0.5*n + 0.1*n*n); }
+const CHAIN_WINDOW = 0.75;   // 이 안에 이어지면 연쇄 (0.55 → 여유를 줬다)
+const FEVER_AT = 4;          // 이 연쇄를 내면 과열
+const FEVER_TIME = 8;        // 과열 지속 (초). 과열 중 또 내면 다시 채운다
+const FEVER_MUL = 2;         // 과열 중 모든 점수
+const CLEAR_SCORE = 1500;    // 통을 깨끗이 비웠을 때
+const CLEAR_DROPS = 5;       // 그때 더 주는 조각
 // 떨어뜨릴 수 있는 건 아래 세 단계뿐 (윗단계는 합쳐서만 나온다)
 let DROPPABLE = 3;
 // 한 판에 쓸 수 있는 조각 수. 이게 이 게임의 진짜 한 판 길이다.
@@ -331,6 +342,7 @@ function sfx(name, tier){
       tone(base,0.10,'sine',0.055); tone(base*1.5,0.13,'sine',0.05,0.055);
     }
     else if(name==='chain') tone(1200,0.16,'square',0.045,0,1700);
+    else if(name==='fever'){ [440,554,659,880,1108].forEach((f,i)=>tone(f,0.3,'square',0.06,i*0.07)); }
     else if(name==='swap'){ tone(660,0.06,'triangle',0.045); tone(880,0.07,'triangle',0.04,0.06); }
     else if(name==='top'){ [523,659,784,1046,1318].forEach((f,i)=>tone(f,0.22,'square',0.055,i*0.10)); }
     else if(name==='over'){ [392,311,233].forEach((f,i)=>tone(f,0.26,'triangle',0.065,i*0.18)); }
@@ -353,7 +365,7 @@ let tut = 0, tutMerged = 0;
 let mode = 'TITLE';           // TITLE | PLAY | PAUSE | OVER
 let nextId = 1;
 let score = 0, merges = 0, maxTier = 0;
-let nextT = 0;                // 다음 것
+let nextT = 0, nextT2 = 0;    // 다음 · 그다음. 미리 보여야 연쇄를 설계할 수 있다
 let dropLock = 0;             // 연속 투하 방지
 let overT = 0;                // 넘침 누적 시간
 let left = DROPS_MAX;         // 남은 조각
@@ -361,6 +373,10 @@ let doneT = 0;                // 조각을 다 쓴 뒤 잠잠해진 시간
 let endT = 0;                 // 마지막 조각을 놓은 뒤 흐른 시간
 let overReason = 'over';      // over | done
 let chain = 0, chainT = 0;    // 연쇄
+let fever = 0;                // 과열 남은 시간
+let feverCount = 0;           // 한 판에 과열에 들어간 횟수
+let comboT = 0, comboN = 0;   // 가운데에 크게 띄우는 연쇄 표시
+let clears = 0;               // 완벽 정리 횟수
 let maxChain = 0;
 let stat = { pops:0 };
 let hold = null, holdLeft = HOLD_MAX;   // 바꾸기 칸에 든 단계, 남은 횟수
@@ -397,12 +413,13 @@ function startGame(){
   bodies = []; score = 0; merges = 0; maxTier = 0; overT = 0;
   left = DROPS_MAX; doneT = 0; endT = 0; overReason = 'over';
   chain = 0; chainT = 0; maxChain = 0; stat = { pops:0 };
+  fever = 0; feverCount = 0; comboT = 0; comboN = 0; clears = 0;
   pops = []; floats = []; ghosts = []; shake = 0; dropLock = 0; tut = 0; tutMerged = 0;
   RULE = window.FORCE_RULE || todayRule(); layout();   // 자정을 넘겼을 수 있다 (FORCE_RULE 은 테스트용)
   hold = null; holdLeft = RULE.hold || HOLD_MAX;
   rng = mulberry32(dayKey() * 7919 + 13);      // 오늘의 통
   cur = { t: pickTier(), x: W/2 };
-  nextT = pickTier();
+  nextT = pickTier(); nextT2 = pickTier();
   mode = 'PLAY'; show(null);
   acc = 0;                            // 이전 판의 누적 시간이 넘어오지 않게
   tut = (plays < 2) ? 4.5 : 0;        // 첫 두 판에만 안내 한 줄
@@ -442,7 +459,7 @@ function hitHold(ev){
 function swapHold(){
   if(mode!=='PLAY' || !cur || dropLock>0) return;
   if(holdLeft <= 0){ toast('바꾸기를 다 썼습니다'); return; }
-  if(hold == null){ hold = cur.t; cur = { t: nextT, x: cur.x }; nextT = pickTier(); }
+  if(hold == null){ hold = cur.t; cur = { t: nextT, x: cur.x }; nextT = nextT2; nextT2 = pickTier(); }
   else { const t = hold; hold = cur.t; cur = { t, x: cur.x }; }
   holdLeft--;
   const r = TIERS[cur.t].r;
@@ -458,7 +475,7 @@ function drop(){
   sfx('drop'); buzz(6);
   dropLock = 0.36;
   left--;
-  if(left > 0){ cur = { t: nextT, x: cur.x }; nextT = pickTier(); }
+  if(left > 0){ cur = { t: nextT, x: cur.x }; nextT = nextT2; nextT2 = pickTier(); }
   else cur = null;                             // 마지막 조각을 놓았다
 }
 let touchOnHold = false;      // 바꾸기 칸을 누른 채로는 조준·투하를 안 한다
@@ -555,6 +572,39 @@ function stepPhysics(dt){
   }
 }
 
+// 이 합체가 앞의 합체에서 "이어진" 것인가.
+// 합체로 태어난 조각이 끼어 있어야 진짜 연쇄다. 통 여기저기서 따로 터진
+// 합체가 시간만 겹쳐 연쇄로 세어지면, 아무 데나 던져도 11연쇄가 나온다
+// (자동 플레이 실측: 무작위 봇 maxChain 11, 40159점). 연쇄가 배수를 만드는
+// 이상 연쇄의 정의가 곧 실력의 정의다.
+function isCascade(a, c){
+  return !!((a.rT && a.born < CHAIN_WINDOW) || (c.rT && c.born < CHAIN_WINDOW));
+}
+// 연쇄를 한 칸 올리고, 4연쇄에 닿으면 과열에 들어간다
+function bumpChain(){
+  chain++; chainT = CHAIN_WINDOW;
+  if(chain > maxChain) maxChain = chain;
+  if(chain > 1){ comboN = chain; comboT = 0.9; }
+  if(chain >= FEVER_AT && fever <= 0){
+    fever = FEVER_TIME; feverCount++;
+    sfx('fever'); buzz(50); shake = 0.4;
+    toast('과열! ' + FEVER_TIME + '초 동안 점수 ' + FEVER_MUL + '배');
+  } else if(chain >= FEVER_AT){
+    fever = FEVER_TIME;                       // 과열 중에 또 내면 다시 채운다
+    toast('과열 연장');
+  }
+}
+// 통을 깨끗이 비웠다 — 보늘 소멸로만 일어난다. 드물고, 순전히 실력이다
+function perfectClear(){
+  clears++;
+  const gain = CLEAR_SCORE * (fever>0 ? FEVER_MUL : 1);
+  score += gain; left += CLEAR_DROPS; doneT = 0; endT = 0;
+  if(!cur && left > 0){ cur = { t: pickTier(), x: W/2 }; nextT = pickTier(); nextT2 = pickTier(); }
+  floats.push({ x:BOX.x+BOX.w/2, y:BOX.y+BOX.h*0.45, txt:'완벽 정리 +'+gain, t:0, big:true });
+  sfx('fever'); buzz(80); shake = 0.5;
+  toast('통을 깨끗이 비웠다!  조각 ' + CLEAR_DROPS + '개 더');
+}
+
 // ── 합체 ────────────────────────────────────────────────────
 function resolveMerges(){
   const gone = new Set();
@@ -571,17 +621,19 @@ function resolveMerges(){
       gone.add(a.id); gone.add(c.id);
       // 연쇄 배수를 안 붙인다. 보늘 둘을 붙이는 건 작정하고 만드는 일이지
       // 굴러가다 우연히 터지는 게 아니고, 배수까지 붙이면 운으로 한 판이 갈린다.
-      score += POP_SCORE;
+      if(!isCascade(a, c)) chain = 0;
+      score += POP_SCORE * (fever>0 ? FEVER_MUL : 1);
       ghosts.push({ x:a.x, y:a.y, r:a.r, t:0 }, { x:c.x, y:c.y, r:c.r, t:0 });
-      floats.push({ x:(a.x+c.x)/2, y:Math.min(a.y,c.y) - a.r, txt:'+'+POP_SCORE, t:0, big:true });
-      merges++; chain++; chainT = 0.55; if(chain>maxChain) maxChain = chain;
+      floats.push({ x:(a.x+c.x)/2, y:Math.min(a.y,c.y) - a.r,
+                    txt:'+'+(POP_SCORE*(fever>0?FEVER_MUL:1)), t:0, big:true });
+      merges++; bumpChain();
       pops.push({ x:(a.x+c.x)/2, y:(a.y+c.y)/2, r:a.r*1.4, t:0 });
       pops.push({ x:(a.x+c.x)/2, y:(a.y+c.y)/2, r:a.r*0.7, t:-0.08 });
       sfx('top'); buzz(60); shake = 0.34;
       // 조각을 더 두고 간다. 마지막 조각을 이미 놓은 뒤라면 손을 다시 채운다.
       const bonus = RULE.popBonus || POP_BONUS_DROPS;
       left += bonus; doneT = 0; endT = 0;
-      if(!cur){ cur = { t: pickTier(), x: W/2 }; nextT = pickTier(); }
+      if(!cur){ cur = { t: pickTier(), x: W/2 }; nextT = pickTier(); nextT2 = pickTier(); }
       toast('보늘 둘이 돌아가며 조각 ' + bonus + '개를 두고 갔다  +' + POP_SCORE);
       stat.pops++;
       did = true;
@@ -607,7 +659,8 @@ function resolveMerges(){
       bodies.push({ x:mx, y:my, r:a.r, r0:a.r, rT:T.r, gt:0, t:nt, id:nextId++, born:0,
                     vx:(a.vx+c.vx)/2, vy:(a.vy+c.vy)/2 - 60,
                     face:'win', faceT: nt===TOP_TIER ? 1.6 : 0.9 });   // 태어난 김에 기뻐한다
-      const gain = Math.round(MERGE_SCORE[nt] * (1 + chain*CHAIN_MUL));
+      if(!isCascade(a, c)) chain = 0;
+      const gain = Math.round(MERGE_SCORE[nt] * chainMul(chain) * (fever>0 ? FEVER_MUL : 1));
       score += gain;
       floats.push({ x:mx, y:my - T.r*0.6, txt:'+'+gain + (chain>0 ? ' ×'+(chain+1) : ''), t:0, big: nt>=4 });
       merges++;
@@ -619,15 +672,15 @@ function resolveMerges(){
       if(!seen[nt]){ seen[nt] = 1; saveAll(); }   // 처음 본 단계는 도감에
       pops.push({ x:mx, y:my, r:T.r, t:0 });
       if(plays<2 && !tutMerged){ tutMerged=1; tut=3.2; }
-      chain++; chainT = 0.55; if(chain>maxChain) maxChain = chain;
-      if(chain>1){ sfx('chain'); toast('연쇄 ×'+chain); }
-      else sfx('merge', nt);
+      bumpChain();
+      if(chain>1) sfx('chain'); else sfx('merge', nt);
       buzz(10); shake = Math.min(0.3, 0.08 + nt*0.03);
       did = true;
       break;
     }
   }
   if(gone.size) bodies = bodies.filter(b=>!gone.has(b.id));
+  if(did && !bodies.length && mode === 'PLAY' && merges > 0) perfectClear();
   return did;
 }
 
@@ -673,6 +726,8 @@ function gameOver(){
   parts.push('합체 ' + merges + '번' + (maxChain>1 ? ' · 최고 ' + maxChain + '연쇄' : ''));
   parts.push('제일 큰 친구 · <b>' + TIERS[maxTier].n + '</b>');
   if(stat.pops) parts.push('보늘 ' + stat.pops + '번 돌려보냄');
+  if(feverCount)parts.push('<b>과열 ' + feverCount + '번</b>');
+  if(clears)    parts.push('<b>완벽 정리 ' + clears + '번</b>');
   parts.push(isBest ? '<b>최고 기록을 세웠습니다</b>' : '최고 ' + best + '점');
   $('resNote').innerHTML = parts.join('<br>');
   show('sResult');
@@ -714,7 +769,11 @@ function hubReport(){
   if(maxTier >= 4)        achUnlock('merge_kkito');
   if(maxTier >= TOP_TIER) achUnlock('merge_boneul');
   if(maxChain >= 6)       achUnlock('merge_chain6');
+  if(maxChain >= 9)       achUnlock('merge_chain9');
+  if(feverCount >= 3)     achUnlock('merge_fever3');
+  if(clears > 0)          achUnlock('merge_clear');
   if(score >= 4000)       achUnlock('merge_4000');
+  if(score >= 15000)      achUnlock('merge_15000');
   // 오늘의 미션
   try{
     const mk = String(new Date().getFullYear()*10000 + (new Date().getMonth()+1)*100 + new Date().getDate());
@@ -866,6 +925,8 @@ function frame(now){
     if(dropLock>0) dropLock -= dt;
     if(tut>0) tut -= dt;
     if(chainT>0){ chainT -= dt; if(chainT<=0) chain = 0; }
+    if(fever>0){ fever -= dt; if(fever<0) fever = 0; }
+    if(comboT>0) comboT -= dt;
     if(shake>0) shake -= dt;
     for(const b of bodies) if(b.faceT>0){ b.faceT -= dt; if(b.faceT<=0){ b.face=null; b.faceT=0; } }
     acc += dt;
@@ -946,8 +1007,37 @@ function draw(){
     ctx.setLineDash([]);
     drawChar(cur.t, cur.x, BOX.y - r - 8, r, dropLock>0 ? 0.35 : 1);
   }
+  // 과열 — 남은 시간 띠를 통 위에 붙인다
+  if(fever > 0 && (mode==='PLAY' || mode==='PAUSE')){
+    const k = fever/FEVER_TIME, bw = BOX.w*0.66, bx = BOX.x + (BOX.w-bw)/2, by = HUD + 8;
+    ctx.save();
+    ctx.fillStyle = 'rgba(196,82,28,.92)';
+    ctx.beginPath(); ctx.roundRect(bx, by, bw, 20, 10); ctx.fill();
+    ctx.fillStyle = 'rgba(255,214,140,.95)';
+    ctx.beginPath(); ctx.roundRect(bx+3, by+3, (bw-6)*k, 14, 7); ctx.fill();
+    ctx.fillStyle = '#4A1B06'; ctx.font = '900 11.5px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('과열 · 점수 ' + FEVER_MUL + '배  ' + fever.toFixed(1) + '초', bx+bw/2, by+10);
+    ctx.restore();
+  }
+  // 연쇄 — 통 가운데에 크게. 배수가 곧 점수라 눈에 보여야 한다
+  if(comboT > 0 && comboN > 1){
+    const k = 1 - comboT/0.9, sc = 1 + Math.max(0, 0.5 - k*2.2);
+    ctx.save();
+    ctx.globalAlpha = k > 0.72 ? (1-k)/0.28 : 1;
+    ctx.translate(BOX.x + BOX.w/2, BOX.y + BOX.h*0.34); ctx.scale(sc, sc);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = '900 46px sans-serif';
+    ctx.lineWidth = 9; ctx.strokeStyle = '#FDFBF5'; ctx.strokeText(comboN + '연쇄', 0, 0);
+    ctx.fillStyle = comboN >= FEVER_AT ? '#C4521C' : '#E0A12B'; ctx.fillText(comboN + '연쇄', 0, 0);
+    ctx.font = '900 15px sans-serif';
+    ctx.lineWidth = 6; ctx.strokeStyle = '#FDFBF5';
+    ctx.strokeText('점수 ×' + chainMul(comboN-1).toFixed(1), 0, 33);
+    ctx.fillStyle = '#6B4A1A'; ctx.fillText('점수 ×' + chainMul(comboN-1).toFixed(1), 0, 33);
+    ctx.restore();
+  }
   // 오늘의 규칙 — 보통 날이면 안 그린다
-  if((mode==='PLAY' || mode==='PAUSE') && RULE.k !== 'plain'){
+  if((mode==='PLAY' || mode==='PAUSE') && RULE.k !== 'plain' && fever <= 0){
     ctx.save(); ctx.font = '800 10.5px sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
     const msg = '오늘의 규칙 · ' + RULE.n, tw = ctx.measureText(msg).width;
     ctx.fillStyle = 'rgba(34,30,24,.78)';
@@ -992,7 +1082,12 @@ function drawCrate(){
   for(const [rx,ry,rw,rh] of rails){
     ctx.fillStyle = PLANK_PAT || '#D8BC93'; ctx.fillRect(rx, ry, rw, rh);
     ctx.fillStyle = 'rgba(120,80,40,.18)'; ctx.fillRect(rx, ry, rw, rh);   // 안쪽보다 조금 진하게
-    ctx.strokeStyle = '#221E18'; ctx.lineWidth = 2.5; ctx.strokeRect(rx+1, ry+1, rw-2, rh-2);
+    if(fever > 0){                               // 과열 — 상자가 달아오른다
+      const p = 0.35 + 0.25*Math.sin(performance.now()/90);
+      ctx.fillStyle = 'rgba(224,110,43,'+p.toFixed(2)+')'; ctx.fillRect(rx, ry, rw, rh);
+    }
+    ctx.strokeStyle = fever>0 ? '#C4521C' : '#221E18';
+    ctx.lineWidth = fever>0 ? 3.5 : 2.5; ctx.strokeRect(rx+1, ry+1, rw-2, rh-2);
   }
 }
 function drawWall(g, x, y, w, h){
@@ -1023,8 +1118,11 @@ function drawHud(){
   // 다음
   if(mode==='PLAY' || mode==='PAUSE'){
     ctx.fillStyle = '#8A8271'; ctx.font = '800 11px sans-serif'; ctx.textAlign = 'right';
-    if(cur){ ctx.fillText('다음', W-104, HUD/2); drawChar(nextT, W-70, HUD/2, 17); }
-    else { ctx.fillText('마지막', W-104, HUD/2); }
+    if(cur){
+      ctx.fillText('다음', W-122, HUD/2);
+      drawChar(nextT,  W-94, HUD/2, 15);
+      drawChar(nextT2, W-64, HUD/2, 10, 0.55);   // 그다음 — 연쇄를 미리 설계하라고
+    } else ctx.fillText('마지막', W-104, HUD/2);
     // 일시정지 버튼
     ctx.strokeStyle = '#221E18'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.roundRect(W-40, HUD/2-14, 28, 28, 7); ctx.stroke();
@@ -1038,8 +1136,10 @@ function drawHud(){
                           : '조각 ' + DROPS_MAX + '개로 몇 점까지 · 문질러 자리를 고르고 손을 떼면 떨어집니다';
     ctx.globalAlpha = Math.min(1, tut);
     ctx.fillStyle = 'rgba(34,30,24,.88)';
-    ctx.font = '800 13px sans-serif'; ctx.textAlign = 'center';
-    const tw = ctx.measureText(msg).width;
+    ctx.textAlign = 'center';
+    let fs = 13, tw;                       // 긴 안내가 화면 밖으로 나가지 않게 줄인다
+    do { ctx.font = '800 ' + fs + 'px sans-serif'; tw = ctx.measureText(msg).width; fs -= 0.5; }
+    while(tw > W - 40 && fs > 8);
     ctx.beginPath(); ctx.roundRect(W/2-tw/2-13, BOX.y+BOX.h-56, tw+26, 32, 9); ctx.fill();
     ctx.fillStyle = '#FDFBF5'; ctx.textBaseline = 'middle';
     ctx.fillText(msg, W/2, BOX.y+BOX.h-40);
