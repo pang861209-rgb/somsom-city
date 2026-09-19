@@ -556,11 +556,16 @@ function hitShake(ev){
 function shakeBox(){
   if(mode !== 'PLAY' || shakeLeft <= 0 || !bodies.length) return;
   shakeLeft--;
+  // 중력이 1500이라 위로 v 만큼 띄우면 v²/3000 만큼 떠오른다.
+  // 예전 값(190~280)으로는 18px, 즉 제자리에서 꿈틀댈 뿐이었다.
+  // 480~640이면 75~135px 떠올라 조각이 실제로 자리를 바꾼다.
   for(const b of bodies){
-    b.vy -= 190 + Math.random()*90;
-    b.vx += (Math.random()-0.5) * 320;
+    const small = 26 / Math.max(26, b.r);       // 작은 조각이 더 잘 튀어 틈으로 파고든다
+    b.vy -= (480 + Math.random()*160) * (0.78 + small*0.30);
+    b.vx += (Math.random()-0.5) * 620;
+    b.face = 'hit'; b.faceT = 0.7;              // 다들 놀란 얼굴
   }
-  overGrace = 1.2; shake = 0.55; sfx('shake'); buzz(45);
+  overGrace = 1.9; shake = 0.85; sfx('shake'); buzz(70);
   toast('통을 흔들었다');
 }
 function hitHold(ev){
@@ -1115,8 +1120,11 @@ function drawChar(t, x, y, r, alpha, face){
 function draw(){
   ctx.setTransform(DPR,0,0,DPR,0,0);
   ctx.fillStyle = '#FDFBF5'; ctx.fillRect(0,0,W,H);
-  const sx = shake>0 ? (Math.random()-0.5)*7 : 0;
-  ctx.save(); ctx.translate(sx,0);
+  // 흔들림 세기를 shake 값에 비례시킨다. 합체(0.1~0.3)는 살짝, 통 흔들기(0.85)는 크게.
+  const amp = shake>0 ? Math.min(15, shake*17) : 0;
+  const sx = amp ? (Math.random()-0.5)*amp : 0;
+  const sy = amp ? (Math.random()-0.5)*amp*0.6 : 0;
+  ctx.save(); ctx.translate(sx,sy);
 
   // 벽 — HUD 아래를 상점 벽으로 덮는다 (cover 맞춤, 위쪽 정렬)
   drawWall(ctx, 0, HUD, W, H-HUD);
