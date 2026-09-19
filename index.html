@@ -284,6 +284,12 @@ function renderDex(){
     }
     list.appendChild(grid);
   }
+  // 솜솜 합체 앨범 — 한 판을 잘 끝낼 때마다 「끼토의 하루」 삽화가 한 장씩 열린다
+  let mc=[]; try{ mc=JSON.parse(localStorage.getItem('somsom_merge_cuts')||'[]'); }catch(e){}
+  const h3=document.createElement('div'); h3.className='achGrp'; h3.textContent='솜솜 합체 앨범'; list.appendChild(h3);
+  const mr=document.createElement('div'); mr.className='cutRow';
+  mr.innerHTML='<span class="nm">골목에서 열린 컷</span><span class="pg">'+mc.length+' / 295</span>';
+  list.appendChild(mr); have+=mc.length; total+=295;
   const h2=document.createElement('div'); h2.className='achGrp'; h2.textContent='짝맞추기 일상 컷'; list.appendChild(h2);
   for(const k in CUT_POOL){
     const n=(cuts[k]||[]).length, p=CUT_POOL[k]; have+=n; total+=p;
