@@ -1058,7 +1058,7 @@ function pauseGame(){ if(paused||!canPause())return; paused=true; pauseLock=g.lo
   $('pauseWrap').classList.add('on'); }
 function resumeGame(){ if(!paused)return; paused=false; $('pauseWrap').classList.remove('on');
   if(g && !g.done){ g.t0 = performance.now() - g.elapsed*1000; g.lock = pauseLock; tickTimer();
-    if(CHARS[g.key] && CHARS[g.key].rule==='sleepy') startSleepy(); startBgm(); } }
+    if(CHARS[curChar] && CHARS[curChar].rule==='sleepy') startSleepy();   /* g엔 key가 없어 보늘 졸기가 일시정지 후 안 켜졌음 */ startBgm(); } }
 function showPauseBtn(v){ $('pauseBtn').style.display = v ? 'block' : 'none'; if(!v){ paused=false; $('pauseWrap').classList.remove('on'); } }
 $('pauseBtn').addEventListener('click', e=>{ e.stopPropagation(); pauseGame(); });
 $('pauseResume').addEventListener('click', e=>{ e.stopPropagation(); resumeGame(); });
