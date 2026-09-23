@@ -303,7 +303,7 @@ const DROPS_MAX = 80;   // v3.1: 60 → 80. 조각을 줄인 만큼 한 판을 �
 // 높이 배수 (v3.2) — 통을 높이 채울수록 합체·소멸 점수가 커진다.
 // 판이 넘쳐서 끝나는 일이 없어 긴장이 없었다(자동 플레이 넘침 0%, 평균 높이 34%).
 // 높이 쌓으면 점수가 크지만 넘치면 남은 조각을 모두 잃는다. 욕심과 위험을 저울질하게 한다.
-let HM_FROM = 0.35, HM_TO = 0.85, HM_MAX = 2.5;
+let HM_FROM = 0.5, HM_TO = 0.92, HM_MAX = 2;
 let pileF = 0;                // 쌓인 높이 (통 높이 대비, 막 떨어진 것은 빼고)
 function updatePile(){
   let top = null;
@@ -366,9 +366,8 @@ const REF_W = 382;            // R_BASE 를 잰 기준 통 너비
 // 되지만, 너무 낮게 묶으면 세로로 긴 폰에서 위쪽이 텅 빈 채로 남는다.
 // 420×680 에서는 애초에 이 상한에 못 미치므로(1.29) 값이 걸리지 않고,
 // 긴 폰에서만 작동한다.
-let BOX_RATIO = 1.9;
-let BOX_DEPTH = 1;          // 통 깊이 배율 (모든 날). 통이 얕은 날은 여기에 한 번 더 곱한다
-let OVER_T = 1.15;          // 기준선 위에 이만큼 머물면 넘침
+let BOX_RATIO = 1.15;   // v3.2: 1.9 → 1.15. 높이 배수에 위험이 생기도록 얕게, 그리고 모든 기기에서 같은 비율로
+let OVER_T = 0.7;           // 기준선 위에 이만큼 머물면 넘침
 
 function layout(){
   const r = cv.getBoundingClientRect();
@@ -387,7 +386,6 @@ function layout(){
   // 긴 폰일수록 통이 깊어져서 같은 게임이 기기마다 쉬워진다.
   BOX.h = Math.min(Math.round(BOX.w*BOX_RATIO), H - (HUD+TOPGAP) - margin);
   BOX.h = Math.max(220, BOX.h);
-  BOX.h = Math.round(BOX.h * BOX_DEPTH);
   if(RULE.boxH) BOX.h = Math.round(BOX.h * RULE.boxH);   // 통이 얕은 날
   BOX.y = Math.max(HUD + TOPGAP, H - margin - BOX.h);   // 통은 아래에 붙인다
   LINE = BOX.y;
@@ -1451,6 +1449,20 @@ function draw(){
   // 벽 — HUD 아래를 상점 벽으로 덮는다 (cover 맞춤, 위쪽 정렬)
   drawWall(ctx, 0, HUD, W, H-HUD);
   drawCrate();
+  // 높이 배수 눈금 — 캐릭터 뒤에 (v3.2)
+  if((mode==='PLAY' || mode==='PAUSE') && GMODE === 'daily'){
+    ctx.save(); ctx.textBaseline = 'middle';
+    ctx.font = '800 9.5px sans-serif'; ctx.textAlign = 'right';
+    for(const f of [HM_FROM, (HM_FROM+HM_TO)/2, HM_TO]){
+      const y = BOX.y + BOX.h - f*BOX.h, on = pileF >= f;
+      ctx.strokeStyle = on ? 'rgba(216,84,47,.75)' : 'rgba(34,30,24,.22)'; ctx.lineWidth = 1.5;
+      ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(BOX.x+BOX.w-26, y); ctx.lineTo(BOX.x+BOX.w-3, y); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = on ? '#D8542F' : 'rgba(34,30,24,.38)';
+      ctx.fillText('×' + heightMulAt(f + 1e-6).toFixed(1), BOX.x+BOX.w-5, y - 7);
+    }
+    ctx.restore();
+  }
   // 몸통
   for(const b of bodies) drawChar(b.t, b.x, b.y, b.r, null, b.face);
   for(const b of bodies) if(b.say) drawSay(b);
@@ -1552,16 +1564,6 @@ function draw(){
       ctx.fillText('×' + hm.toFixed(1), h.x, h.y + 1);
       ctx.fillStyle = '#8A8271'; ctx.font = '800 10px sans-serif';
       ctx.fillText('높이 배수', h.x, h.y + h.r + 11);
-      // 벽 눈금
-      ctx.font = '800 9.5px sans-serif'; ctx.textAlign = 'right';
-      for(const f of [HM_FROM, (HM_FROM+HM_TO)/2, HM_TO]){
-        const y = BOX.y + BOX.h - f*BOX.h, on = pileF >= f;
-        ctx.strokeStyle = on ? 'rgba(216,84,47,.75)' : 'rgba(34,30,24,.22)'; ctx.lineWidth = 1.5;
-        ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(BOX.x+BOX.w-26, y); ctx.lineTo(BOX.x+BOX.w-3, y); ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.fillStyle = on ? '#D8542F' : 'rgba(34,30,24,.38)';
-        ctx.fillText('×' + heightMulAt(f + 1e-6).toFixed(1), BOX.x+BOX.w-5, y - 7);
-      }
       ctx.restore();
     }
     // 흔들기 (퍼즐에는 없다)
