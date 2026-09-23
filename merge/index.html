@@ -204,7 +204,8 @@
   <!-- 새로워진 것 -->
   <div id="wnSheet" class="sheetWrap">
     <div class="sheet">
-      <div class="hd"><span class="t">새로워진 것</span><span class="c">v3 · 한가위 업데이트</span></div>
+      <div class="hd"><span class="t">새로워진 것</span><span class="c">v3.1 · 한가위 업데이트</span></div>
+      <div class="wn"><b>한 판이 길어졌어요</b><span>친구들이 조금 작아지고 조각이 80개가 됐습니다. 할머니가 많은 날은 62개, 미개가 많은 날은 95개로 점수 차를 맞췄고, 바꾸기가 넉넉한 날 대신 과열이 긴 날이 생겼습니다.</span></div>
       <div class="wn"><b>오늘의 퍼즐</b><span>반쯤 찬 통에, 전부 보이는 조각 12개로 최대한 높이. 하루 한 문제, 모두 같은 문제입니다.</span></div>
       <div class="wn" id="wnEvent"><b>한가위 보름달</b><span>10월 5일까지. 보름달 벽, 보늘 소멸 1.5배, 한가위 컷 3장.</span></div>
       <div class="wn"><b>상자 꾸미기</b><span>보늘 10번 · 과열 10번 · 완벽 정리로 새 상자가 열립니다.</span></div>
@@ -255,7 +256,7 @@
 // 통 너비에 비례해 다시 계산한다(TIERS[i].r).
 // 크기를 크게 잡은 이유: 사다리가 여섯 칸뿐이라 짝이 안 맞아 남는 조각은
 // 람다·끼토·보늘 셋뿐이다. 이 셋이 통을 꽤 차지해야 비로소 판이 끝난다.
-const R_BASE = [26, 35, 46, 58, 72, 92];
+const R_BASE = [22, 30, 39, 49, 61, 78];   // v3.1: 0.85배로 줄여 통에 더 많이 들어가게(예전 26,35,46,58,72,92)
 // r 은 여기 안 적습니다. layout() 이 통 너비에 맞춰 R_BASE 에서 계산해 넣습니다.
 // (sc 는 원 안에 스프라이트를 얼마나 크게 넣을지의 비율입니다)
 const TIERS = [
@@ -292,7 +293,9 @@ let DROPPABLE = 3;
 // 넘침만으로는 판이 안 끝난다 — 사다리가 여섯 칸뿐이라 합체 속도가 투하 속도를
 // 따라잡아 통이 평형에 머문다(자동 플레이 250판으로 확인). 조각 수를 묶으면
 // 모두가 같은 예산으로 겨루게 되고, 빨리 누르는 사람이 유리해지지도 않는다.
-const DROPS_MAX = 60;
+const DROPS_MAX = 80;   // v3.1: 60 → 80. 조각을 줄인 만큼 한 판을 늘렸다
+function dropsMax(){ return (RULE && RULE.drops) || DROPS_MAX; }
+function feverTime(){ return (RULE && RULE.feverTime) || FEVER_TIME; }
 // 보늘 둘이 만나 사라질 때 조각을 더 준다. 한 판 길이가 실력에서 나오게 하는 장치다.
 // 잘 두면 70~80개까지 늘어나고, 못 두면 60개에서 끝난다.
 const POP_BONUS_DROPS = 5;
@@ -320,12 +323,16 @@ const HUD = 58;
 // 날짜를 씨앗으로 하루에 하나. 모두 같은 규칙·같은 순서라 순위판이 공정하다.
 // 규칙은 숫자만 바꾼다. 새 조작·새 조각·새 캐릭터는 없다.
 const RULES = [
-  { k:'plain',   n:'보통 날',           d:'',                                        w:2 },
-  { k:'migae',   n:'미개가 많은 날',     d:'작은 친구가 자주 옵니다',                   w:1, weights:[.55,.30,.15] },
-  { k:'granny',  n:'할머니가 많은 날',   d:'큰 친구가 자주 와서 통이 빨리 찹니다',        w:1, weights:[.15,.30,.55] },
-  { k:'hold',    n:'바꾸기가 넉넉한 날', d:'바꿔 두기를 여섯 번 할 수 있습니다',          w:1, hold:6 },
-  { k:'boneul',  n:'보늘이 후한 날',     d:'보늘 둘이 돌아가며 조각 열 개를 두고 갑니다', w:1, popBonus:10 },
-  { k:'shallow', n:'통이 얕은 날',       d:'통이 낮아 넘치기 쉽습니다',                 w:1, boxH:0.82 },
+  // v3.1: 규칙마다 점수 차가 크지 않게 맞췄다(자동 플레이 8판씩, 보통 날 대비 ±10% 안).
+  //  할머니 날은 재료가 많아 +31%였다 → 조각을 62개로 줄였다.
+  //  미개 날은 재료가 적어 −41%였다 → 비율을 누그러뜨리고 조각을 95개로 늘렸다.
+  //  바꾸기가 넉넉한 날은 실제로 바꾸기를 잘 안 써서 뺐고, 과열이 긴 날로 바꿨다.
+  { k:'plain',   n:'보통 날',           d:'',                                          w:2 },
+  { k:'migae',   n:'미개가 많은 날',     d:'작은 친구가 자주 오는 대신 조각이 95개',       w:1, weights:[.45,.33,.22], drops:95 },
+  { k:'granny',  n:'할머니가 많은 날',   d:'큰 친구가 자주 오는 대신 조각이 62개',         w:1, weights:[.15,.30,.55], drops:62 },
+  { k:'fever',   n:'과열이 긴 날',       d:'4연쇄로 들어가는 과열이 12초 갑니다',          w:1, feverTime:12 },
+  { k:'boneul',  n:'보늘이 후한 날',     d:'보늘 둘이 돌아가며 조각 여덟 개를 두고 갑니다', w:1, popBonus:8 },
+  { k:'shallow', n:'통이 얕은 날',       d:'통이 낮아 넘치기 쉽습니다',                   w:1, boxH:0.7 },
 ];
 function todayRule(){
   const r = mulberry32(dayKey()*31 + 7)();
@@ -586,6 +593,7 @@ let overGrace = 0;            // 흔든 직후엔 넘침을 봐준다
 let questDone = false;
 let maxChain = 0;
 let stat = { pops:0 };
+let usedDrops = 0;            // 이번 판에 실제로 놓은 조각 수
 let hold = null, holdLeft = HOLD_MAX;   // 바꾸기 칸에 든 단계, 남은 횟수
 let pops = [];                // 합체 이펙트
 let floats = [];              // 떠오르는 점수 글자 {x,y,txt,t,big}
@@ -662,13 +670,14 @@ function pickTier(){
 function startGame(m){
   GMODE = (m === 'puzzle') ? 'puzzle' : 'daily';
   bodies = []; score = 0; merges = 0; maxTier = 0; overT = 0;
-  left = GMODE==='puzzle' ? PUZZLE_N : DROPS_MAX; doneT = 0; endT = 0; overReason = 'over';
+  doneT = 0; endT = 0; overReason = 'over';
   chain = 0; chainT = 0; maxChain = 0; stat = { pops:0 };
   fever = 0; feverCount = 0; comboT = 0; comboN = 0; clears = 0;
   warnT = 3; made = []; shakeLeft = 1; overGrace = 0; questDone = false;
   QUEST = todayQuest();
   pops = []; floats = []; ghosts = []; moons = []; shake = 0; dropLock = 0; tut = 0; tutMerged = 0;
   RULE = GMODE==='puzzle' ? RULES[0] : (window.FORCE_RULE || todayRule());   // 퍼즐은 규칙 없이
+  left = GMODE==='puzzle' ? PUZZLE_N : dropsMax(); usedDrops = 0;
   layout();                                    // 자정을 넘겼을 수 있다 (FORCE_RULE 은 테스트용)
   hold = null; holdLeft = GMODE==='puzzle' ? 1 : (RULE.hold || HOLD_MAX);
   rng = mulberry32(dayKey() * 7919 + 13);      // 오늘의 통
@@ -753,7 +762,7 @@ function drop(){
   if(!seen[t]){ seen[t] = 1; saveAll(); }      // 떨어뜨린 단계도 도감에
   sfx('drop'); buzz(6);
   dropLock = 0.36;
-  left--;
+  left--; usedDrops++;
   if(left > 0){ cur = { t: nextT, x: cur.x }; nextT = nextT2; nextT2 = pickTier(); }
   else cur = null;                             // 마지막 조각을 놓았다
 }
@@ -870,11 +879,11 @@ function bumpChain(){
   if(chain > maxChain) maxChain = chain;
   if(chain > 1){ comboN = chain; comboT = 0.9; }
   if(chain >= FEVER_AT && fever <= 0){
-    fever = FEVER_TIME; feverCount++;
+    fever = feverTime(); feverCount++;
     sfx('fever'); buzz(50); shake = 0.4;
-    toast('과열! ' + FEVER_TIME + '초 동안 점수 ' + FEVER_MUL + '배');
+    toast('과열! ' + feverTime() + '초 동안 점수 ' + FEVER_MUL + '배');
   } else if(chain >= FEVER_AT){
-    fever = FEVER_TIME;                       // 과열 중에 또 내면 다시 채운다
+    fever = feverTime();                      // 과열 중에 또 내면 다시 채운다
     toast('과열 연장');
   }
 }
@@ -1032,8 +1041,8 @@ function gameOver(){
   $('resBig').innerHTML = score + '점';
   const parts = [];
   parts.push(overReason === 'over'
-    ? '통이 넘쳤습니다 · 조각 ' + (DROPS_MAX - left) + '개'
-    : '조각 ' + DROPS_MAX + '개를 다 놓았습니다');
+    ? '통이 넘쳤습니다 · 조각 ' + usedDrops + '개'
+    : '조각 ' + usedDrops + '개를 다 놓았습니다');
   parts.push('합체 ' + merges + '번' + (maxChain>1 ? ' · 최고 ' + maxChain + '연쇄' : ''));
   parts.push('제일 큰 친구 · <b>' + TIERS[maxTier].n + '</b>');
   if(stat.pops) parts.push('보늘 ' + stat.pops + '번 돌려보냄');
@@ -1216,7 +1225,7 @@ $('skinSheet').addEventListener('click', e=>{
   loadSkin(); openSkins(); toast(sk.n + '로 바꿨어요');
 });
 // 새로워진 것 — 업데이트 뒤 처음 한 번. 처음 온 사람에겐 모든 게 새것이라 띄우지 않는다.
-const WN_VER = 'v3';
+const WN_VER = 'v3.1';
 function maybeWhatsNew(){
   let seenV = null; try{ seenV = localStorage.getItem('somsom_merge_wn'); }catch(e){}
   if(seenV === WN_VER) return;
@@ -1455,7 +1464,7 @@ function draw(){
   }
   // 과열 — 남은 시간 띠를 통 위에 붙인다
   if(fever > 0 && (mode==='PLAY' || mode==='PAUSE')){
-    const k = fever/FEVER_TIME, bw = BOX.w*0.66, bx = BOX.x + (BOX.w-bw)/2, by = HUD + 8;
+    const k = Math.min(1, fever/feverTime()), bw = BOX.w*0.66, bx = BOX.x + (BOX.w-bw)/2, by = HUD + 8;
     ctx.save();
     ctx.fillStyle = 'rgba(196,82,28,.92)';
     ctx.beginPath(); ctx.roundRect(bx, by, bw, 20, 10); ctx.fill();
@@ -1617,7 +1626,7 @@ function drawHud(){
   // 튜토리얼 한 줄
   if(mode==='PLAY' && tut>0){
     const msg = tutMerged ? '둘이 만나 한 뼘 커졌습니다 · 왼쪽 칸을 누르면 조각을 바꿔 둘 수 있습니다'
-                          : '조각 ' + DROPS_MAX + '개로 몇 점까지 · 문질러 자리를 고르고 손을 떼면 떨어집니다';
+                          : '조각 ' + dropsMax() + '개로 몇 점까지 · 문질러 자리를 고르고 손을 떼면 떨어집니다';
     ctx.globalAlpha = Math.min(1, tut);
     ctx.fillStyle = 'rgba(34,30,24,.88)';
     ctx.textAlign = 'center';
