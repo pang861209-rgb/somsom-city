@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <link rel="apple-touch-icon" href="../assets/app_icon_180.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon_32.png">
+<script src="../village.js"></script>
 <title>솜솜시티: 은행 주의보 (프로토타입 M0.5)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap">
 <style>
@@ -1273,6 +1274,7 @@ function quickOver() {
   const earned = s.acorns + s.goldens * 5 + s.waves * 5;          // 도토리 지갑: 주운 도토리 + 황금잎 5 + 폭풍 돌파 5
   const wallet = walletAdd(earned);
   const rr = recordRun(s, score);                                // 낙엽피하기 진행 누적 (잠금해제 판정) — 판당 한 번
+  if (window.SV) SV.add('leaf', s.acorns, s.key);                  // 마을 창고 — 판당 한 번
   const isChal = !!(challenge && challenge.key === s.key);
   lastResult = { key: s.key, score, best, isNewBest, earned, detail: runDetail(s), rr, isChal };
   achReport({g:'leaf', key:s.key, score, combo:s.bestCombo||0, gold:s.goldens||0, coins:s.acorns||0,

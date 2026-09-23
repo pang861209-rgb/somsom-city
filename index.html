@@ -138,6 +138,25 @@
   .wkRow .br{display:flex;gap:3px;margin-left:6px;align-items:flex-end;}
   .wkRow .br i{width:6px;border-radius:2px;display:block;}
 
+  /* 마을 창고 */
+  #villageBox{flex:none;display:flex;align-items:center;gap:11px;background:rgba(242,193,75,.12);border-radius:16px;padding:9px 13px;cursor:pointer;}
+  #villageBox .vi{font-size:24px;flex:none;}
+  #villageBox .vt{flex:1;min-width:0;}
+  #villageBox .vl{display:flex !important;align-items:baseline;gap:8px;font-size:9.5px;font-weight:700;letter-spacing:.14em;color:#F2C14B;}
+  #villageBox .vl .vn{margin-left:auto;letter-spacing:0;font-size:12px;color:#EFE7D6;}
+  #villageBox .vl, #villageBox .vs{display:block;}
+  .vbar{display:block;flex:none;width:100%;height:7px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:6px;}
+  .vbar i{display:block;height:100%;background:#F2C14B;transition:width .6s;}
+  #villageBox .vs{font-size:10.5px;color:#A9A08C;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #villageBox .vc{width:42px;height:42px;border-radius:10px;object-fit:cover;flex:none;filter:blur(5px) grayscale(.6);opacity:.7;}
+  #villageBox.done .vc{filter:none;opacity:1;}
+  .vCut{width:100%;border-radius:16px;display:block;flex:none;}
+  .vCut.lock{filter:blur(14px) grayscale(.5);opacity:.55;}
+  .vRow{display:flex;align-items:center;gap:10px;padding:8px 11px;border-radius:12px;background:rgba(255,255,255,.05);font-size:12.5px;}
+  .vRow .nm{flex:1;font-weight:800;color:#EFE7D6;} .vRow .sc{font-weight:800;color:#F2C14B;}
+  .vAlbum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+  .vAlbum img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;}
+  @media (max-height:660px){ #villageBox .vs{display:none;} }
   @media (max-height:660px){ .blk .nm{font-size:18px;} .blk .ds{display:none;} #missionList{display:none;} .blk .ch{max-height:96px;} }
 </style>
 </head>
@@ -153,6 +172,16 @@
   <div id="missionBox">
     <div class="mh"><span class="lb">오늘의 미션</span><span id="missionChar"></span><span class="pg" id="missionPg">0/5</span></div>
     <div id="missionList"></div>
+  </div>
+
+  <div id="villageBox" role="button" aria-label="마을 창고">
+    <span class="vi">🧺</span>
+    <span class="vt">
+      <span class="vl">이번 주 마을 창고<span class="vn" id="vNum">…</span></span>
+      <span class="vbar"><i id="vBar" style="width:0%"></i></span>
+      <span class="vs" id="vSub">여섯 게임에서 모은 도토리가 여기로 모여요</span>
+    </span>
+    <img class="vc" id="vThumb" alt="">
   </div>
 
   <nav class="picker">
@@ -216,6 +245,21 @@
         <button class="footBtn pri" id="nameSave">저장</button>
       </div>
       <button class="footBtn" id="nameToAch">🏅 내 업적 보기</button>
+    </div>
+  </div>
+
+  <div id="villagePanel" class="sheetWrap">
+    <div class="sheet">
+      <div class="hd"><span class="t">🧺 마을 창고</span><span class="c" id="vpLeft"></span></div>
+      <div class="nameNote">여섯 게임 어디서든 한 판 하면 그 판의 도토리가 이번 주 창고에 모여요. 진 판도 채워져요. 목표를 채우면 이번 주 컷이 모두에게 열려요.</div>
+      <div class="vbar" style="height:10px"><i id="vpBar" style="width:0%"></i></div>
+      <div id="vpNum" style="font-size:13px;font-weight:800;color:#EFE7D6;text-align:center;"></div>
+      <img class="vCut lock" id="vpCut" alt="이번 주 컷">
+      <div class="achGrp">이번 주 가장 많이 채운 주민</div>
+      <div id="vpTop"></div>
+      <div class="achGrp">지난 창고 앨범</div>
+      <div id="vpAlbum" class="vAlbum"></div>
+      <button class="footBtn" id="vpClose">닫기</button>
     </div>
   </div>
 
@@ -504,5 +548,41 @@ document.getElementById('achOpen').addEventListener('click', renderTitleBar);
 
 </script>
 <script src="assets/bgm.js" data-btn="#bgmBtn" data-vol="0.5"></script>
+<script src="village.js"></script>
+<script>
+// ── 마을 창고 카드·시트 ──
+let VWEEKS=null;
+function daysLeft(w){ const d=Math.ceil((SV.weekEnd(w)-Date.now())/864e5); return d<=1?'오늘 마감':d+'일 남음'; }
+async function renderVillage(){
+  try{ VWEEKS=await SV.weeks(); }catch(e){ document.getElementById('vNum').textContent='연결 안 됨'; return; }
+  const w=SV.weekKey(), o=VWEEKS[w]||{total:0,top:[],reached:false,cut:SV.cutFor(w)};
+  const pct=Math.min(100,Math.round(o.total/SV.TARGET*100));
+  document.getElementById('vNum').textContent=o.total.toLocaleString()+' / '+SV.TARGET.toLocaleString();
+  document.getElementById('vBar').style.width=pct+'%';
+  document.getElementById('vSub').textContent = o.reached ? '🎉 이번 주 창고를 다 채웠어요! 눌러서 컷 보기'
+    : (o.top.length ? '이번 주 1등 '+o.top[0].n+' · '+daysLeft(w) : '아직 아무도 안 채웠어요 · '+daysLeft(w));
+  document.getElementById('vThumb').src=o.cut;
+  document.getElementById('villageBox').classList.toggle('done', !!o.reached);
+}
+function openVillage(){
+  const w=SV.weekKey(), o=(VWEEKS&&VWEEKS[w])||{total:0,top:[],reached:false,cut:SV.cutFor(w)};
+  document.getElementById('vpLeft').textContent=daysLeft(w);
+  document.getElementById('vpBar').style.width=Math.min(100,Math.round(o.total/SV.TARGET*100))+'%';
+  document.getElementById('vpNum').textContent=o.total.toLocaleString()+' / '+SV.TARGET.toLocaleString()+' 도토리'+(o.reached?' · 달성!':' · '+(SV.TARGET-o.total).toLocaleString()+'개 남음');
+  const cut=document.getElementById('vpCut'); cut.src=o.cut; cut.classList.toggle('lock',!o.reached);
+  const top=document.getElementById('vpTop');
+  top.innerHTML = o.top.length ? o.top.map((t,i)=>'<div class="vRow"><span>'+['🥇','🥈','🥉'][i]+'</span><span class="nm">'+String(t.n).replace(/[<>&]/g,'')+'</span><span class="sc">🌰 '+t.a+'</span></div>').join('')
+    : '<div class="vRow"><span class="nm" style="color:#A9A08C;font-weight:700">이름을 정하고 한 판 하면 여기에 올라가요</span></div>';
+  const past=Object.values(VWEEKS||{}).filter(x=>x.w!==w && x.reached).sort((a,b)=>b.w-a.w);
+  document.getElementById('vpAlbum').innerHTML = past.length ? past.map(x=>'<img loading="lazy" src="'+x.cut+'" alt="'+x.w+' 주 컷">').join('')
+    : '<div class="nameNote" style="grid-column:1/-1">채운 주의 컷이 여기 모여요</div>';
+  document.getElementById('villagePanel').classList.add('on');
+}
+document.getElementById('villageBox').addEventListener('click', openVillage);
+document.getElementById('vpClose').addEventListener('click', ()=>document.getElementById('villagePanel').classList.remove('on'));
+document.getElementById('villagePanel').addEventListener('click', e=>{ if(e.target.id==='villagePanel') e.currentTarget.classList.remove('on'); });
+renderVillage();
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) renderVillage(); });   // 게임에서 돌아오면 갱신
+</script>
 </body>
 </html>

@@ -10,6 +10,7 @@
 <meta name="theme-color" content="#e9e2d4">
 <link rel="apple-touch-icon" href="../assets/app_icon_180.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon_32.png">
+<script src="../village.js"></script>
 <title>달려라 솜솜시티! (솜솜시티 러너)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap">
 <style>
@@ -740,6 +741,7 @@ function quickOver(score){
   const best=Math.max(score,prev); localStorage.setItem('runner_best_'+key,best);
   const isNew=score>0&&score>prev;
   const wallet=walletAdd(s.coins);
+  if(window.SV) SV.add('run', s.coins, key);                          // 마을 창고 — 판당 한 번
   lastResult={key,score,coins:s.coins,best,isNew};
   achReport({g:'run', key, dist:score,   /* 화면에 보이는 m로 판정 (#33) */ nears:s.nears||0, tights:s.tights||0, combo:s.bestCombo||0, coins:s.coins||0});
   const head=$('qHead'); head.className='';

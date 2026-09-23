@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <link rel="apple-touch-icon" href="../assets/app_icon_180.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon_32.png">
+<script src="../village.js"></script>
 <title>솜솜시티: 솜솜 합체</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap">
@@ -1096,6 +1097,7 @@ function hubReport(){
   // 한 판에 30~40개 — 낙엽피하기·달리기에서 주워 오는 양과 비슷한 수준이다.
   // (칭호는 누적 2000개에서 열리므로 한 판에 수백 개를 주면 하루 만에 끝난다)
   st.coins = (st.coins||0) + Math.floor(score/200);
+  if (window.SV) SV.add('merge', Math.floor(score/200), topK);   // 마을 창고
   try{ localStorage.setItem('somsom_stats', JSON.stringify(st)); }catch(e){}
   // 도감 — 처음 본 단계
   try{
