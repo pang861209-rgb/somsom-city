@@ -1097,7 +1097,7 @@ function endGame() {
     $('resProg').textContent = '여섯 친구 모두 함께해요 · 업적은 홈에서 확인';
   }
 
-  logEvent('run_end', { c: s.key, s: score, tm: s.t, cause: s.deathCause || '', cb: s.bestCombo, g: s.goldens, a: s.acorns, r: leaf.runs, nb: isNewBest ? 1 : 0 });
+  logEvent('run_end', { c: s.key, s: score, tm: s.t, cause: s.deathCause || '', cb: s.bestCombo, gl: s.goldens, a: s.acorns, r: leaf.runs, nb: isNewBest ? 1 : 0 });
 
   document.querySelectorAll('#result .confetti').forEach(e => e.remove());
   if (isNewBest || rr.newUnlocks.length || (isChal && score > challenge.score)) confetti();
