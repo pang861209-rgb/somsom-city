@@ -476,7 +476,7 @@ function sfx(name) {
 }
 const BGM_NOTES = [392, 440, 523, 440, 587, 523, 440, 392, 523, 587, 659, 587, 523, 440, 392, 330];
 function startBgm() {
-  if (muted || bgmTimer) return;
+  if (window.SomsomBgm || muted || bgmTimer) return;   // 솜솜시티 테마곡이 배경음을 맡는다
   try { ac(); } catch (e) { return; }
   bgmTimer = setInterval(() => {
     if (muted || !state || state.over) return;
@@ -1288,5 +1288,6 @@ function missionDone(g){
   return true;
 }
 </script>
+<script src="../assets/bgm.js" data-pos="left:70px;top:8px" data-show-if="#pauseBtn:not([style*=block])"></script>
 </body>
 </html>

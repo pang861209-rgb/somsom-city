@@ -411,7 +411,7 @@ function sfx(n){ if(muted)return; try{
   else if(n==='thud'){tone(95,.14,'sine',.09,0,55);tone(60,.16,'triangle',.06,.02);}
 }catch(e){} }
 const BGM=[392,494,587,494,440,392,440,494,587,659,587,494,440,392,330,392];
-function startBgm(){ if(muted||bgmT)return; try{ac();}catch(e){return;} bgmT=setInterval(()=>{ if(muted||!S||S.over)return; tone(BGM[bgmStep%BGM.length],.26,'triangle',.018); bgmStep++; },230); }
+function startBgm(){ if(window.SomsomBgm||muted||bgmT)return; /* 테마곡이 배경음을 맡는다 */ try{ac();}catch(e){return;} bgmT=setInterval(()=>{ if(muted||!S||S.over)return; tone(BGM[bgmStep%BGM.length],.26,'triangle',.018); bgmStep++; },230); }
 function stopBgm(){ clearInterval(bgmT); bgmT=null; }
 
 // ================= 상태 =================
@@ -1008,5 +1008,6 @@ function slamLand(s){
   }
 }
 </script>
+<script src="../assets/bgm.js" data-pos="left:70px;top:8px" data-show-if="#pauseBtn:not([style*=block])"></script>
 </body>
 </html>
