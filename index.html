@@ -440,24 +440,33 @@ function renderTitleBar(){
 }
 document.getElementById('achOpen').addEventListener('click', renderTitleBar);
 
-// ── 솜솜시티 테마곡: 허브에 처음 들어와 화면을 누르면 한 번 재생(반복 없음). 음소거는 게임들과 같은 키를 씁니다 ──
+// ── 솜솜시티 테마곡: 허브에 있는 동안 반복 재생. 음소거는 게임들과 같은 키를 씁니다 ──
+// 휴대폰 브라우저는 사용자가 한 번 누르기 전엔 소리를 막는다. 그래서 바로 틀어 보고,
+// 막히면 첫 탭(손을 뗄 때)에 다시 튼다. 게임에 갔다 오면 끊긴 자리부터 이어서 튼다.
 (function(){
   const btn=document.getElementById('bgmBtn'); if(!btn) return;
-  const au=new Audio('assets/somsom_theme.mp3'); au.preload='metadata'; au.volume=0.55;
+  const au=new Audio('assets/somsom_theme.mp3'); au.preload='auto'; au.loop=true; au.volume=0.5;
   let muted=false; try{ muted=localStorage.getItem('somsom_muted')==='1'; }catch(e){}
-  let played=false; try{ played=sessionStorage.getItem('somsom_theme')==='1'; }catch(e){}
+  try{ const t=parseFloat(sessionStorage.getItem('somsom_theme_t')); if(t>0) au.currentTime=t; }catch(e){}
   const paint=()=>{ btn.classList.toggle('on', !au.paused); btn.classList.toggle('off', muted); };
-  const play=()=>{ au.currentTime=0; const pr=au.play(); if(pr&&pr.catch) pr.catch(()=>{}); played=true;
-    try{ sessionStorage.setItem('somsom_theme','1'); }catch(e){} };
-  au.addEventListener('play',paint); au.addEventListener('pause',paint); au.addEventListener('ended',paint);
-  document.addEventListener('pointerdown',e=>{ if(played||muted||btn.contains(e.target)) return; play(); },{once:false});
+  const tryPlay=()=>{ if(muted||!au.paused) return; const pr=au.play(); if(pr&&pr.catch) pr.catch(()=>{}); };
+  au.addEventListener('play',paint); au.addEventListener('pause',paint);
+  // 첫 탭을 기다리는 동안: pointerdown은 휴대폰에서 "사용자 동작"으로 인정되지 않아 pointerup·touchend·click을 쓴다
+  const kick=e=>{ if(btn.contains(e.target)) return; tryPlay(); };
+  ['pointerup','touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,kick,{passive:true}));
+  au.addEventListener('playing',()=>{ ['pointerup','touchend','click','keydown'].forEach(ev=>document.removeEventListener(ev,kick)); });
+  const keep=()=>{ try{ sessionStorage.setItem('somsom_theme_t', String(au.currentTime||0)); }catch(e){} };
+  addEventListener('pagehide',keep);
+  document.addEventListener('visibilitychange',()=>{ if(document.hidden){ keep(); au.pause(); } else tryPlay(); });
+  // 뒤로 가기로 돌아오면(페이지 캐시) 다시 이어서
+  addEventListener('pageshow',e=>{ if(e.persisted) tryPlay(); });
   btn.addEventListener('click',()=>{
     if(!au.paused){ au.pause(); muted=true; }
-    else { muted=false; play(); }
+    else { muted=false; tryPlay(); }
     try{ localStorage.setItem('somsom_muted', muted?'1':'0'); }catch(e){}
     paint();
   });
-  paint();
+  paint(); tryPlay();
 })();
 </script>
 </body>
