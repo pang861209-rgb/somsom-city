@@ -215,6 +215,22 @@
   #achToast{ top:calc(14px + env(safe-area-inset-top)); }
   img[src=""], img:not([src]){ visibility:hidden; }
 </style>
+
+<style id="heroTitle">
+  /* 솜솜시티 공통 히어로 타이틀 (가로형): 전면 삽화 + 왼쪽 로고 + 하단 바 */
+  #title{ padding:0 !important; gap:0 !important; justify-content:flex-start !important; align-items:flex-start !important; overflow:hidden; background:linear-gradient(#b898cb 0%,#efae7e 60%,#caa26a 100%) !important; }
+  #titleBg{ position:absolute !important; left:0 !important; top:0 !important; width:100% !important; height:calc(100% - 60px) !important; object-fit:cover; object-position:center bottom; filter:none !important; z-index:0; }
+  #titleTop{ position:relative; z-index:2; margin:44px 0 0 7%; display:flex; flex-direction:column; align-items:flex-start !important; text-align:left; gap:8px; }
+  .logoTop{ font-size:13px; font-weight:800; color:#fff7e8; letter-spacing:5px; text-shadow:0 2px 0 rgba(96,58,38,.5); font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; }
+  #logo{ font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif !important; font-size:40px !important; line-height:1.1 !important; font-weight:900 !important; color:#fff7e8 !important; letter-spacing:2px !important; transform:rotate(-2deg); transform-origin:left center; margin:0 !important;
+    text-shadow:0 3px 0 #7c4a2d, 0 7px 16px rgba(60,30,20,.4) !important; }
+  #logoSub{ margin-top:4px !important; font-size:11px !important; font-weight:700 !important; color:#5a4130 !important; background:rgba(255,247,232,.85); border:1.5px solid rgba(124,74,45,.5); border-radius:20px; padding:5px 12px; text-shadow:none !important; max-width:360px; }
+  #titleBtns{ position:absolute !important; left:0; right:0; bottom:0; z-index:2; height:60px; flex-direction:row !important; justify-content:center; align-items:center !important; gap:10px !important; padding:0 12px;
+    background:linear-gradient(#402419,#2f1a12); border-top:1.5px solid rgba(255,239,216,.16); box-shadow:0 -10px 22px rgba(40,20,10,.28); }
+  #titleBtns .cta{ font-size:16px !important; padding:10px 34px !important; border-radius:16px !important; background:#ffb35c !important; border:2px solid #5a2f1c !important; color:#4a2416 !important; box-shadow:0 4px 0 #5a2f1c !important; font-weight:800; }
+  #titleBtns .cta:active{ transform:translateY(4px) !important; box-shadow:none !important; }
+  #titleBtns .ghost{ font-size:12px !important; padding:8px 14px !important; border-radius:20px !important; background:rgba(255,247,232,.14) !important; color:#ffefd8 !important; border:1.5px solid rgba(255,239,216,.55) !important; box-shadow:none !important; }
+</style>
 </head>
 <body>
 <div id="rotate"><div class="rIcon"></div><div class="rTitle">가로로 돌려주세요</div><div class="rSub">마감 질주는 가로 화면 전용이에요</div><a class="rHome" href="../">← 솜솜시티로</a></div>
@@ -233,15 +249,16 @@
   <canvas id="cv" width="760" height="420"></canvas>
 
   <div id="title" class="screen">
-    <img id="titleBg" src="../assets/bg_runner.png" onerror="this.style.display='none'" alt="">
+    <img id="titleBg" src="../assets/title_hero_run.jpg" onerror="this.onerror=null;this.src='../assets/bg_runner.png';" alt="은행잎 골목을 달리는 끼토">
     <div id="titleTop">
-      <div id="logo">🏃 달려라 솜솜시티!</div>
+      <div class="logoTop">🥕 솜솜시티</div>
+      <div id="logo">달려라 솜솜시티!</div>
       <div id="logoSub">은행잎 골목을 달려 최대한 멀리! · 탭 / 스페이스 = 점프 (공중에서 한 번 더!)</div>
     </div>
     <div id="titleBtns" class="row">
-      <button onclick="ui.toSelect()">캐릭터 선택 ▶</button>
-      <button onclick="ui.showRanking()" style="font-size:13px;padding:7px 16px;">🏆 랭킹</button>
-      <button onclick="goFullscreen()" style="font-size:13px;padding:7px 16px;">⛶ 전체화면</button>
+      <button class="cta" onclick="ui.toSelect()">달리러 가기 ▶</button>
+      <button class="ghost" onclick="ui.showRanking()">🏆 랭킹</button>
+      <button class="ghost" onclick="goFullscreen()">⛶ 전체화면</button>
     </div>
   </div>
 
@@ -394,7 +411,7 @@ function sfx(n){ if(muted)return; try{
   else if(n==='thud'){tone(95,.14,'sine',.09,0,55);tone(60,.16,'triangle',.06,.02);}
 }catch(e){} }
 const BGM=[392,494,587,494,440,392,440,494,587,659,587,494,440,392,330,392];
-function startBgm(){ if(muted||bgmT)return; try{ac();}catch(e){return;} bgmT=setInterval(()=>{ if(muted||!S||S.over)return; tone(BGM[bgmStep%BGM.length],.26,'triangle',.018); bgmStep++; },230); }
+function startBgm(){ if(window.SomsomBgm||muted||bgmT)return; /* 테마곡이 배경음을 맡는다 */ try{ac();}catch(e){return;} bgmT=setInterval(()=>{ if(muted||!S||S.over)return; tone(BGM[bgmStep%BGM.length],.26,'triangle',.018); bgmStep++; },230); }
 function stopBgm(){ clearInterval(bgmT); bgmT=null; }
 
 // ================= 상태 =================
@@ -991,5 +1008,6 @@ function slamLand(s){
   }
 }
 </script>
+<script src="../assets/bgm.js" data-pos="left:70px;top:8px" data-show-if="#pauseBtn:not([style*=block])"></script>
 </body>
 </html>
