@@ -4,7 +4,9 @@
 //   data-pos     : 떠 있는 버튼 위치(CSS)
 //   data-show-if : 이 선택자에 맞는 요소가 보일 때만 버튼을 보인다(게임 중엔 숨길 때)
 //   data-vol     : 음량(기본 0.3, 게임 효과음보다 작게)
-// 음악만 끄는 키는 somsom_bgm_off. 게임의 전체 음소거(somsom_muted·runner_muted)를 켜도 멈춘다.
+//   data-mute-key: 이 페이지 게임의 전체 음소거 키(기본 somsom_muted, 달리기는 runner_muted)
+// 음악만 끄는 키는 somsom_bgm_off. 이 페이지 게임의 전체 음소거를 켜도 멈춘다.
+// 음소거를 localStorage에 따로 두지 않는 게임(방범대)은 SomsomBgm.setGameMuted(true/false)로 알려준다.
 // 페이지를 옮길 때마다 멈춘 자리(somsom_theme_t)부터 이어서 튼다.
 (function(){
   if(window.SomsomBgm) return;
@@ -13,7 +15,10 @@
   const au = new Audio(src); au.preload = 'auto'; au.loop = true; au.volume = parseFloat(d.vol || '0.3');
   const get = k => { try{ return localStorage.getItem(k); }catch(e){ return null; } };
   const off = () => get('somsom_bgm_off') === '1';
-  const gameMuted = () => get('somsom_muted') === '1' || get('runner_muted') === '1';
+  const muteKey = d.muteKey || 'somsom_muted';
+  let pageMuted = null;   // setGameMuted로 받은 값이 있으면 키 대신 이걸 쓴다
+  // 다른 게임의 음소거 키는 보지 않는다 (달리기 음소거가 모든 게임의 노래를 끄던 문제)
+  const gameMuted = () => pageMuted !== null ? pageMuted : get(muteKey) === '1';
   let forced = false;   // 게임 전체 음소거 중에 ♪로 노래만 켠 상태
   const should = () => !off() && (forced || !gameMuted());
   try{ const t = parseFloat(sessionStorage.getItem('somsom_theme_t')); if(t > 0) au.currentTime = t; }catch(e){}
@@ -72,6 +77,7 @@
   document.addEventListener('visibilitychange', () => { if(document.hidden){ keep(); au.pause(); } else tryPlay(); });
   addEventListener('pageshow', e => { if(e.persisted) tryPlay(); });
 
-  window.SomsomBgm = { audio: au, on: () => !au.paused };
+  window.SomsomBgm = { audio: au, on: () => !au.paused,
+    setGameMuted: m => { pageMuted = !!m; if(m){ forced = false; au.pause(); } else tryPlay(); paint(); } };
   paint(); tryPlay();
 })();
