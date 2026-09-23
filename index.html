@@ -4,8 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>솜솜시티 — 미니게임 마을</title>
-<meta name="description" content="솜솜시티 친구들과 즐기는 미니게임 3종: 낙엽피하기 · 달리기 · 짝맞추기">
+<meta name="description" content="솜솜시티 친구들과 즐기는 미니게임 5종: 낙엽피하기 · 달리기 · 짝맞추기 · 방범대 · 솜솜 합체">
 <meta name="theme-color" content="#221E18">
+<!-- 홈 화면 아이콘 — 아이폰 사파리 "홈 화면에 추가" · 안드로이드 크롬 · 브라우저 탭 -->
+<link rel="apple-touch-icon" href="assets/app_icon_180.png">
+<meta name="apple-mobile-web-app-title" content="솜솜시티">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon_32.png">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&display=swap">
@@ -27,6 +32,28 @@
   #profChip .pn{font-size:12px;font-weight:700;color:#EFE7D6;max-width:76px;overflow:hidden;
     text-overflow:ellipsis;white-space:nowrap;display:block;}
   #profChip .pc{font-size:11px;font-weight:700;color:#F2C14B;display:block;}
+  #profChip .ed{font-size:11px;opacity:.55;margin-left:-2px;}
+  #profChip.noname .pn{color:#F2C14B;}
+  /* 이름 정하기 */
+  #nameField{width:100%;background:rgba(255,255,255,.09);border:none;border-radius:14px;padding:13px 14px;
+    font:700 16px 'Gowun Dodum','Apple SD Gothic Neo',sans-serif;color:#EFE7D6;outline:none;}
+  #nameField::placeholder{color:#8A8271;}
+  #nameField:focus{box-shadow:0 0 0 2px #F2C14B inset;}
+  .nameNote{font-size:11.5px;color:#A9A08C;line-height:1.55;}
+  .nameErr{font-size:11.5px;color:#E48468;min-height:16px;}
+  .nameBtns{display:flex;gap:8px;}
+  .nameBtns .pri{background:#F2C14B;color:#221E18;}
+
+
+  /* 테마곡 */
+  #bgmBtn{flex:none;width:34px;height:34px;border-radius:50%;border:none;background:rgba(255,255,255,.09);
+    color:#F2C14B;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:2px;}
+  #bgmBtn.off{color:#7E7768;}
+  #bgmBtn .eq{display:none;align-items:flex-end;gap:2px;height:14px;}
+  #bgmBtn.on .eq{display:flex;} #bgmBtn.on .nt{display:none;}
+  #bgmBtn .eq i{width:3px;background:#F2C14B;border-radius:1px;animation:eq .9s ease-in-out infinite;}
+  #bgmBtn .eq i:nth-child(2){animation-delay:-.3s;} #bgmBtn .eq i:nth-child(3){animation-delay:-.6s;}
+  @keyframes eq{0%,100%{height:4px;}50%{height:14px;}}
 
   /* 오늘의 미션 */
   #missionBox{flex:none;background:rgba(255,255,255,.07);border-radius:16px;padding:10px 13px;
@@ -40,20 +67,21 @@
   .mRow.ok .bx{background:#F2C14B;border-color:#F2C14B;}
   .mRow.ok{color:#7E7768;text-decoration:line-through;}
 
-  /* 게임 블록 */
-  .picker{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:12px;}
-  .blk{position:relative;flex:1 1 0;min-height:0;border-radius:22px;display:flex;align-items:center;
-    padding:16px 18px;text-decoration:none;transition:transform .12s cubic-bezier(.2,.8,.3,1);overflow:visible;}
-  .blk:active{transform:scale(.978);}
-  .blk .mask{position:absolute;inset:0;border-radius:22px;overflow:hidden;z-index:1;}
+  /* 게임 블록 — 4종: 2×2 그리드 */
+  .picker{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:11px;}
+  .blk{position:relative;min-height:0;border-radius:20px;display:flex;align-items:flex-start;
+    padding:14px 14px;text-decoration:none;transition:transform .12s cubic-bezier(.2,.8,.3,1);overflow:visible;}
+  .blk:active{transform:scale(.972);}
+  .blk .mask{position:absolute;inset:0;border-radius:20px;overflow:hidden;z-index:1;}
   .blk .mask img{width:100%;height:100%;object-fit:cover;opacity:.20;mix-blend-mode:luminosity;}
-  .blk .txt{position:relative;z-index:2;max-width:62%;}
-  .blk .no{font-size:10px;font-weight:700;letter-spacing:.18em;opacity:.7;}
-  .blk .nm{font-family:'Black Han Sans',sans-serif;font-size:30px;line-height:1.05;margin-top:2px;}
-  .blk .ds{font-size:11.5px;opacity:.8;margin-top:4px;line-height:1.35;}
-  .blk .ch{position:absolute;right:10px;bottom:-4px;z-index:3;object-fit:contain;
-    filter:drop-shadow(-5px 8px 12px rgba(0,0,0,.5));pointer-events:none;}
-  .picker .blk:nth-child(1){z-index:3;} .picker .blk:nth-child(2){z-index:2;} .picker .blk:nth-child(3){z-index:1;}
+  .blk .txt{position:relative;z-index:2;max-width:92%;}
+  .blk .no{font-size:9px;font-weight:700;letter-spacing:.18em;opacity:.7;}
+  .blk .nm{font-family:'Black Han Sans',sans-serif;font-size:22px;line-height:1.08;margin-top:2px;}
+  .blk .ds{font-size:10.5px;opacity:.8;margin-top:3px;line-height:1.35;}
+  .blk .ch{position:absolute;right:2px;bottom:-3px;z-index:3;object-fit:contain;
+    filter:drop-shadow(-4px 6px 10px rgba(0,0,0,.5));pointer-events:none;}
+  .picker .blk:nth-child(1){z-index:4;} .picker .blk:nth-child(2){z-index:3;}
+  .picker .blk:nth-child(3){z-index:2;} .picker .blk:nth-child(4){z-index:1;}
 
   /* 아래 버튼 */
   .footRow{flex:none;display:flex;gap:8px;}
@@ -110,7 +138,7 @@
   .wkRow .br{display:flex;gap:3px;margin-left:6px;align-items:flex-end;}
   .wkRow .br i{width:6px;border-radius:2px;display:block;}
 
-  @media (max-height:660px){ .blk .nm{font-size:25px;} .blk .ds{display:none;} #missionList{display:none;} }
+  @media (max-height:660px){ .blk .nm{font-size:18px;} .blk .ds{display:none;} #missionList{display:none;} .blk .ch{max-height:96px;} }
 </style>
 </head>
 <body>
@@ -118,11 +146,12 @@
 
   <header>
     <div class="logo">솜솜시티</div>
-    <div id="profChip"><img id="profAv" src="assets/sd_kkito_t.png" alt=""><span><span class="pn" id="profName">솜솜이</span><span class="pc" id="profCoin">🌰 0</span></span></div>
+    <button id="bgmBtn" aria-label="솜솜시티 노래"><span class="nt">♪</span><span class="eq"><i></i><i></i><i></i></span></button>
+    <div id="profChip"><img id="profAv" src="assets/sd_kkito_t.png" alt=""><span><span class="pn" id="profName">솜솜이</span><span class="pc" id="profCoin">🌰 0</span></span><span class="ed">✏️</span></div>
   </header>
 
   <div id="missionBox">
-    <div class="mh"><span class="lb">오늘의 미션</span><span id="missionChar"></span><span class="pg" id="missionPg">0/3</span></div>
+    <div class="mh"><span class="lb">오늘의 미션</span><span id="missionChar"></span><span class="pg" id="missionPg">0/5</span></div>
     <div id="missionList"></div>
   </div>
 
@@ -130,17 +159,27 @@
     <a class="blk" href="leaf/" style="background:#E0A12B;color:#2B2005;">
       <div class="mask"><img src="assets/bg_alley.png" alt="" style="object-position:center 12%;"></div>
       <div class="txt"><div class="no">GAME 01</div><div class="nm">낙엽피하기</div><div class="ds">떨어지는 은행을 요리조리</div></div>
-      <img class="ch" src="assets/sd_kkito_t.png" alt="" style="height:142%;max-height:190px;">
+      <img class="ch" src="assets/sd_kkito_t.png" alt="" style="height:88%;max-height:132px;">
     </a>
     <a class="blk" href="run/" style="background:#D2612C;color:#2B1305;">
       <div class="mask"><img src="assets/bg_runner.png" alt=""></div>
-      <div class="txt"><div class="no">GAME 02</div><div class="nm">달리기</div><div class="ds">끼토의 마감 질주</div></div>
-      <img class="ch" src="assets/run_kkito_t.png" alt="" style="height:124%;max-height:168px;right:-2px;">
+      <div class="txt"><div class="no">GAME 02</div><div class="nm">달리기</div><div class="ds">은행잎 골목 마감 질주</div></div>
+      <img class="ch" src="assets/run_ramda_t.png" alt="" style="height:78%;max-height:118px;right:-2px;">
     </a>
     <a class="blk" href="match/" style="background:#5F8348;color:#0F2007;">
       <div class="mask"><img src="assets/title_bg_match.png" alt=""></div>
       <div class="txt"><div class="no">GAME 03</div><div class="nm">짝맞추기</div><div class="ds">뒤집힌 카드 속 짝꿍</div></div>
-      <img class="ch" src="assets/sd_boneul_t.png" alt="" style="height:138%;max-height:186px;">
+      <img class="ch" src="assets/sd_boneul_t.png" alt="" style="height:86%;max-height:128px;">
+    </a>
+    <a class="blk" href="https://pang861209-rgb.github.io/somsom-city-game/defense/" style="background:#6A5890;color:#150F26;">
+      <div class="mask"><img src="assets/bg_alley.png" alt="" style="object-position:center 78%;"></div>
+      <div class="txt"><div class="no">GAME 04 · NEW</div><div class="nm">방범대</div><div class="ds">꼬릿 구름에서 당근빌라를!</div></div>
+      <img class="ch" src="assets/sd_migae_t.png" alt="" style="height:84%;max-height:124px;">
+    </a>
+    <a class="blk" href="merge/" style="background:#3F7E86;color:#062024;grid-column:1 / -1;">
+      <div class="mask"><img src="assets/bg_day_acorn_shop.png" alt="" style="object-position:center 45%;"></div>
+      <div class="txt"><div class="no">GAME 05 · NEW</div><div class="nm">솜솜 합체</div><div class="ds">미개 둘이 만나면 북거씨가 됩니다. 통이 넘치기 전까지</div></div>
+      <img class="ch" src="assets/sd_bookgeo_t.png" alt="" style="height:76%;max-height:102px;right:8px;">
     </a>
   </nav>
 
@@ -166,6 +205,20 @@
     </div>
   </div>
 
+  <div id="namePanel" class="sheetWrap">
+    <div class="sheet">
+      <div class="hd"><span class="t">이름 정하기</span><span class="c" id="nameCount">0 / 8</span></div>
+      <input id="nameField" maxlength="8" placeholder="랭킹에 쓸 이름 (8자)" autocomplete="off" enterkeyhint="done">
+      <div class="nameErr" id="nameErr"></div>
+      <div class="nameNote">모든 게임의 랭킹에 이 이름으로 올라가요.<br>이름을 바꾸면 이전 이름으로 올린 기록은 그대로 남고, 앞으로의 기록부터 새 이름으로 올라가요.</div>
+      <div class="nameBtns">
+        <button class="footBtn" id="nameCancel">취소</button>
+        <button class="footBtn pri" id="nameSave">저장</button>
+      </div>
+      <button class="footBtn" id="nameToAch">🏅 내 업적 보기</button>
+    </div>
+  </div>
+
   <div id="achPanel" class="sheetWrap">
     <div class="sheet">
       <div class="hd"><span class="t">업적</span><span class="c" id="achCount"></span></div>
@@ -184,6 +237,9 @@ const ACH = [
   {id:'leaf_5000',  g:'낙엽피하기', n:'은행 도사',     d:'낙엽피하기 5,000점'},
   {id:'leaf_combo10',g:'낙엽피하기',n:'줍기의 달인',   d:'한 판에 10콤보'},
   {id:'leaf_gold5', g:'낙엽피하기', n:'황금잎 수집가', d:'한 판에 황금잎 5장'},
+  {id:'leaf_sur60', g:'낙엽피하기', n:'골목 터줏대감', d:'낙엽피하기 60초 생존'},
+  {id:'leaf_allchars',g:'낙엽피하기',n:'여섯 친구 집합', d:'잠긴 세 친구를 모두 해제'},
+  {id:'leaf_chalwin',g:'낙엽피하기', n:'도전 성공',     d:'친구의 기록을 넘었어요'},
   {id:'run_500',    g:'달리기',    n:'첫 질주',       d:'달리기 500m'},
   {id:'run_2000',   g:'달리기',    n:'출근길 정복',   d:'달리기 2,000m'},
   {id:'run_5000',   g:'달리기',    n:'마감 초월',     d:'달리기 5,000m'},
@@ -194,7 +250,23 @@ const ACH = [
   {id:'match_perfect',g:'짝맞추기',n:'한 번도 안 틀림',d:'실수 없이 클리어'},
   {id:'match_hard', g:'짝맞추기',  n:'열두 쌍의 기억',d:'어려움을 클리어'},
   {id:'match_fast', g:'짝맞추기',  n:'번개 기억력',   d:'60초 안에 클리어'},
+  {id:'defense_first',    g:'방범대', n:'방범대 입단',   d:'스테이지를 처음 지켜냈어요'},
+  {id:'defense_boss',     g:'방범대', n:'왕꼬릿 퇴치',   d:'왕꼬릿 구름을 돌려보냈어요'},
+  {id:'defense_allclear', g:'방범대', n:'골목 어귀 평정', d:'네 스테이지를 모두 클리어'},
+  {id:'defense_endless10',g:'방범대', n:'끝없는 방범',   d:'무한 골목 10웨이브 돌파'},
+  {id:'merge_first',  g:'솜솜 합체', n:'처음 만난 둘',   d:'미개 둘을 합쳐 봤어요'},
+  {id:'merge_kkito',  g:'솜솜 합체', n:'끼토까지',       d:'한 판에 끼토를 만들었어요'},
+  {id:'merge_boneul', g:'솜솜 합체', n:'제일 큰 친구',   d:'보늘을 만들었어요'},
+  {id:'merge_chain6', g:'솜솜 합체', n:'여섯 번 연달아', d:'한 번에 6연쇄를 냈어요'},
+  {id:'merge_4000',   g:'솜솜 합체', n:'사천 점',        d:'한 판에 4000점을 넘겼어요'},
+  {id:'merge_chain9', g:'솜솜 합체', n:'아홉 번 연달아', d:'한 번에 9연쇄를 냈어요'},
+  {id:'merge_fever3', g:'솜솜 합체', n:'뜨거운 하루',    d:'한 판에 과열에 세 번 들어갔어요'},
+  {id:'merge_clear',  g:'솜솜 합체', n:'말끔한 통',      d:'통을 깨끗이 비웠어요'},
+  {id:'merge_15000',  g:'솜솜 합체', n:'만오천 점',      d:'한 판에 15000점을 넘겼어요'},
+  {id:'merge_chuseok', g:'솜솜 합체', n:'한가위 보름달',  d:'한가위 컷 세 장을 모두 모았어요'},
+  {id:'merge_skins',   g:'솜솜 합체', n:'상자 수집가',    d:'상자 네 개를 모두 열었어요'},
   {id:'all_three',  g:'솜솜시티',  n:'마을 한 바퀴',  d:'세 게임을 모두 해봤어요'},
+  {id:'all_four',   g:'솜솜시티',  n:'네 골목 제패',  d:'네 게임을 모두 해봤어요'},
   {id:'all_chars',  g:'솜솜시티',  n:'여섯 친구',     d:'여섯 주민 모두와 놀았어요'},
   {id:'coins_500',  g:'솜솜시티',  n:'도토리 창고',   d:'도토리를 500개 모았어요'},
 ];
@@ -224,6 +296,14 @@ const DEX_ITEMS = [
     {id:'leaf_maple',    f:'assets/dex_leaf_maple.png',    n:'단풍잎'},
     {id:'leaf_chestnut', f:'assets/dex_leaf_chestnut.png', n:'알밤'},
   ]},
+  {g:'솜솜 합체 사다리', items:[
+    {id:'merge_migae',      f:'assets/sd_migae_t.png',      n:'미개'},
+    {id:'merge_bookgeo',    f:'assets/sd_bookgeo_t.png',    n:'북거씨'},
+    {id:'merge_lachilchin', f:'assets/sd_lachilchin_t.png', n:'라칠친 할머니'},
+    {id:'merge_ramda',      f:'assets/sd_ramda_t.png',      n:'람다'},
+    {id:'merge_kkito',      f:'assets/sd_kkito_t.png',      n:'끼토'},
+    {id:'merge_boneul',     f:'assets/sd_boneul_t.png',     n:'보늘'},
+  ]},
   {g:'달리기 랜드마크', items:[
     {id:'run_postbox', f:'assets/dex_run_postbox.png', n:'골목 우체통'},
     {id:'run_busstop', f:'assets/dex_run_busstop.png', n:'버스 정류장'},
@@ -251,6 +331,12 @@ function renderDex(){
     }
     list.appendChild(grid);
   }
+  // 솜솜 합체 앨범 — 한 판을 잘 끝낼 때마다 「끼토의 하루」 삽화가 한 장씩 열린다
+  let mc=[]; try{ mc=JSON.parse(localStorage.getItem('somsom_merge_cuts')||'[]'); }catch(e){}
+  const h3=document.createElement('div'); h3.className='achGrp'; h3.textContent='솜솜 합체 앨범'; list.appendChild(h3);
+  const mr=document.createElement('div'); mr.className='cutRow';
+  mr.innerHTML='<span class="nm">골목에서 열린 컷</span><span class="pg">'+mc.length+' / 295</span>';
+  list.appendChild(mr); have+=mc.length; total+=295;
   const h2=document.createElement('div'); h2.className='achGrp'; h2.textContent='짝맞추기 일상 컷'; list.appendChild(h2);
   for(const k in CUT_POOL){
     const n=(cuts[k]||[]).length, p=CUT_POOL[k]; have+=n; total+=p;
@@ -283,10 +369,13 @@ function missionSpec(){
   const leafGoal = [300,600,1000][r%3];
   const runGoal  = [500,1000,1500][(r>>>3)%3];
   const missGoal = [0,1,2][(r>>>6)%3];
+  const defGoal  = [1,2,3][(r>>>9)%3]; // 방범대 별점 목표 — defense 쪽 hubReport와 동일 수식
   return {leaf: {goal:leafGoal, label:'낙엽피하기 '+leafGoal+'점 넘기'},
           run:  {goal:runGoal,  label:'달리기 '+runGoal+'m 달리기'},
           match:{goal:missGoal, label:'짝맞추기 '+(missGoal===0 ? '실수 없이 클리어'
-                                                              : '실수 '+missGoal+'회 이하로 클리어')}};
+                                                              : '실수 '+missGoal+'회 이하로 클리어')},
+          defense:{goal:defGoal, label:'방범대 '+defGoal+'★로 스테이지 클리어'},
+          merge:{goal:1, label:'솜솜 합체에서 람다 이상 만들기'}};
 }
 function titleFor(coins){
   if(coins>=2000) return '은행나무 지킴이';
@@ -303,22 +392,25 @@ function renderProfile(){
   document.getElementById('profName').textContent=nm;
   document.getElementById('profCoin').textContent='🌰 '+(st.coins||0);
   const av=document.getElementById('profAv'); av.src=CH_AV[top]||CH_AV.kkito; av.alt=CH_NAME[top]||'';
-  document.getElementById('profChip').title=nm+' · '+titleFor(st.coins||0)+' · 대표 '+(CH_NAME[top]||'');
+  document.getElementById('profChip').title=nm+' · '+titleFor(st.coins||0)+' · 대표 '+(CH_NAME[top]||'')+' · 눌러서 이름 바꾸기';
+  const hasName=!!localStorage.getItem('somsom_name');
+  document.getElementById('profChip').classList.toggle('noname', !hasName);
+  if(!hasName) document.getElementById('profName').textContent='이름 정하기';
 }
 function renderMissions(){
   const sp=missionSpec(), done=(missionLoad()[String(dayKey())])||{};
   document.getElementById('missionChar').innerHTML='<span style="font-size:11.5px;font-weight:700;color:#8A6A1A;">오늘의 친구 '+CH_NAME[DAILY_CHAR_ID]+'</span>';
   const list=document.getElementById('missionList'); list.innerHTML='';
   let n=0;
-  for(const g of ['leaf','run','match']){
+  for(const g of ['leaf','run','match','defense','merge']){
     const ok=!!done[g]; if(ok) n++;
     const r=document.createElement('div'); r.className='mRow'+(ok?' ok':'');
     r.innerHTML='<span class="bx">'+(ok?'✓':'')+'</span><span>'+sp[g].label+'</span>';
     list.appendChild(r);
   }
-  document.getElementById('missionPg').textContent=n+'/3';
+  document.getElementById('missionPg').textContent=n+'/5';
 }
-// 주간 통합 랭킹 — 세 게임 점수를 각 게임 주간 최고 대비 100점으로 환산해 합산
+// 주간 통합 랭킹 — 각 게임 점수를 그 게임의 주간 최고 대비 100점으로 환산해 합산
 const FB_KEY='AIzaSyBfld7SRrVTxDG0nE_6Z3Mw5kSRTo5bIGY';
 const FB_DOCS='https://firestore.googleapis.com/v1/projects/somsom-city/databases/(default)/documents';
 async function fetchCol(col){
@@ -334,18 +426,20 @@ async function renderWeekly(){
   const list=document.getElementById('wkList');
   list.innerHTML='<div class="mRow" style="padding:14px;">불러오는 중…</div>';
   const since=Date.now()-7*24*3600*1000;
-  const cols=await Promise.all([fetchCol('scores'),fetchCol('runner_scores'),fetchCol('memory_scores')]);
+  const cols=await Promise.all([fetchCol('scores'),fetchCol('runner_scores'),fetchCol('memory_scores'),
+                                fetchCol('defense_scores'),fetchCol('merge_scores')]);
   const per=cols.map(rows=>{
     const best={}; for(const e of rows){ if(e.t<since) continue; if(!best[e.n]||e.s>best[e.n]) best[e.n]=e.s; }
     const max=Math.max(1,...Object.values(best));
     return {best,max};
   });
   const tot={};
-  per.forEach((p,gi)=>{ for(const n in p.best){ tot[n]=tot[n]||{n, parts:[0,0,0], sum:0};
+  per.forEach((p,gi)=>{ for(const n in p.best){ tot[n]=tot[n]||{n, parts:cols.map(()=>0), sum:0};
     const v=Math.round(p.best[n]/p.max*100); tot[n].parts[gi]=v; tot[n].sum+=v; } });
   const rows=Object.values(tot).sort((a,b)=>b.sum-a.sum).slice(0,12);
   const me=localStorage.getItem('somsom_name')||'';
-  document.getElementById('wkNote').textContent=rows.length?'최근 7일 · 300점 만점':'';
+  const live=per.filter(p=>Object.keys(p.best).length).length;
+  document.getElementById('wkNote').textContent=rows.length?('최근 7일 · '+(live*100)+'점 만점'):'';
   if(!rows.length){ list.innerHTML='<div class="mRow" style="padding:14px;">이번 주 기록이 아직 없어요.</div>'; return; }
   list.innerHTML='';
   rows.forEach((r,i)=>{
@@ -359,7 +453,33 @@ renderProfile(); renderMissions();
 document.getElementById('wkOpen').addEventListener('click', ()=>{ document.getElementById('wkPanel').classList.add('on'); renderWeekly(); });
 document.getElementById('wkClose').addEventListener('click', ()=> document.getElementById('wkPanel').classList.remove('on'));
 document.getElementById('wkPanel').addEventListener('click', e=>{ if(e.target.id==='wkPanel') e.currentTarget.classList.remove('on'); });
-document.getElementById('profChip').addEventListener('click', ()=>{ document.getElementById('achOpen').click(); });
+// ── 이름 정하기·바꾸기 — 여섯 게임이 모두 somsom_name 하나를 쓰므로 여기서 바꾸면 전부 반영 ──
+function cleanName(v){ return String(v||'').replace(/[<>&"'`\\]/g,'').replace(/\s+/g,' ').trim().slice(0,8); }
+function openNameSheet(){
+  const f=document.getElementById('nameField');
+  f.value=localStorage.getItem('somsom_name')||'';
+  document.getElementById('nameErr').textContent='';
+  document.getElementById('nameCount').textContent=f.value.length+' / 8';
+  document.getElementById('namePanel').classList.add('on');
+  setTimeout(()=>{ f.focus(); f.select(); }, 60);
+}
+function closeNameSheet(){ document.getElementById('namePanel').classList.remove('on'); }
+function saveName(){
+  const f=document.getElementById('nameField'), nm=cleanName(f.value);
+  if(!nm){ document.getElementById('nameErr').textContent='이름을 한 글자 이상 적어 주세요'; f.focus(); return; }
+  try{ localStorage.setItem('somsom_name', nm); }catch(e){}
+  closeNameSheet(); renderProfile();
+}
+document.getElementById('nameField').addEventListener('input', e=>{
+  document.getElementById('nameCount').textContent=e.target.value.length+' / 8';
+  document.getElementById('nameErr').textContent='';
+});
+document.getElementById('nameField').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); saveName(); } });
+document.getElementById('nameSave').addEventListener('click', saveName);
+document.getElementById('nameCancel').addEventListener('click', closeNameSheet);
+document.getElementById('nameToAch').addEventListener('click', ()=>{ closeNameSheet(); document.getElementById('achOpen').click(); });
+document.getElementById('namePanel').addEventListener('click', e=>{ if(e.target.id==='namePanel') closeNameSheet(); });
+document.getElementById('profChip').addEventListener('click', openNameSheet);
 </script>
 <script>
 // 누적 도토리로 열리는 칭호 — 도토리를 마을 공용 재화로 쓰는 첫 장치
@@ -381,6 +501,8 @@ function renderTitleBar(){
     + '<span class="tp">'+(next ? '다음 '+next.n+'까지 🌰'+(next.at-coins) : '🌰'+coins+' · 최고 칭호')+'</span>';
 }
 document.getElementById('achOpen').addEventListener('click', renderTitleBar);
+
 </script>
+<script src="assets/bgm.js" data-btn="#bgmBtn" data-vol="0.5"></script>
 </body>
 </html>

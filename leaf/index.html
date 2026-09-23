@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<link rel="apple-touch-icon" href="../assets/app_icon_180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon_32.png">
 <title>솜솜시티: 은행 주의보 (프로토타입 M0.5)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap">
 <style>
@@ -100,53 +102,6 @@
     font-size:13.5px;font-weight:800;color:#221E18;cursor:pointer;font-family:inherit;}
   #dailyBtn2:active{transform:translateY(1px);filter:brightness(.94);}
 
-  /* ── 한 판 더 (즉시 재시작 시트 · 강화) ── */
-  #quick{position:absolute;inset:0;z-index:58;display:none;flex-direction:column;justify-content:flex-end;
-    background:linear-gradient(to bottom,rgba(34,30,24,0) 30%,rgba(34,30,24,.78) 62%);cursor:pointer;
-    font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;}
-  #quick.on{display:flex;animation:qIn .28s ease-out;}
-  @keyframes qIn{from{opacity:0}to{opacity:1}}
-  #quickCard{margin:0 12px 14px;background:#2B2620;border-radius:22px;padding:16px 16px 12px;color:#EFE7D6;
-    box-shadow:0 18px 28px -16px rgba(0,0,0,.7);display:flex;flex-direction:column;gap:9px;animation:qUp .32s cubic-bezier(.2,.8,.3,1);}
-  @keyframes qUp{from{transform:translateY(40px)}to{transform:translateY(0)}}
-  #qHead{font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif;font-size:24px;color:#F2C14B;line-height:1.15;text-align:center;}
-  #qHead.near{color:#FF8A4C;animation:qPulse .9s ease-in-out infinite;}
-  @keyframes qPulse{50%{transform:scale(1.04)}}
-  #qSub{font-size:12.5px;color:#A9A08C;text-align:center;margin-top:-4px;}
-  #qUp{background:rgba(255,255,255,.07);border-radius:15px;padding:9px 12px;display:flex;flex-direction:column;gap:6px;}
-  #qUp .qr{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;gap:8px;}
-  #qUp .qr b{color:#F2C14B;}
-  #qUp .bar{height:7px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden;}
-  #qUp .bar i{display:block;height:100%;background:#F2C14B;border-radius:999px;transition:width .5s;}
-  #qTap{font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif;font-size:19px;color:#221E18;background:#F2C14B;
-    border-radius:16px;padding:12px;text-align:center;animation:qBlink 1.2s ease-in-out infinite;}
-  @keyframes qBlink{50%{filter:brightness(1.12)}}
-  #qRow{display:flex;gap:7px;}
-  #qRow button,#qUp button{flex:1;border:0;border-radius:15px;padding:9px 6px;font-size:12.5px;font-weight:800;
-    background:rgba(255,255,255,.10);color:#EFE7D6;font-family:inherit;cursor:pointer;box-shadow:none;}
-  #qUp button.go{background:#E0A12B;color:#221E18;flex:none;padding:6px 12px;}
-  #upModal{position:absolute;inset:0;z-index:85;display:none;align-items:center;justify-content:center;background:rgba(20,17,13,.6);padding:18px;}
-  #upModal.on{display:flex;}
-  #upCard{background:#2B2620;border-radius:22px;padding:18px 16px 14px;width:100%;max-width:360px;color:#EFE7D6;
-    display:flex;flex-direction:column;gap:10px;font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;}
-  #upCard .uh{display:flex;align-items:center;gap:10px;}
-  #upCard .uh img{width:46px;height:46px;object-fit:contain;}
-  #upCard .uh .ut{font-family:'Black Han Sans',sans-serif;font-size:20px;color:#F2C14B;}
-  #upCard .uh .uw{margin-left:auto;font-weight:800;font-size:15px;color:#F2C14B;}
-  .urow{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.07);border-radius:15px;padding:10px 12px;}
-  .urow .ui{font-size:22px;width:28px;text-align:center;}
-  .urow .un{font-weight:800;font-size:13.5px;}
-  .urow .ud{font-size:11px;color:#A9A08C;margin-top:2px;}
-  .urow .ulv{color:#F2C14B;letter-spacing:2px;font-size:12px;}
-  .urow button{margin-left:auto;border:0;border-radius:13px;padding:9px 11px;font-weight:800;font-size:12.5px;
-    background:#F2C14B;color:#221E18;font-family:inherit;cursor:pointer;white-space:nowrap;box-shadow:none;}
-  .urow button:disabled{background:rgba(255,255,255,.10);color:#8A8272;cursor:default;}
-  #upClose{border:0;border-radius:15px;padding:11px;font-weight:800;background:rgba(255,255,255,.10);color:#EFE7D6;font-family:inherit;cursor:pointer;box-shadow:none;}
-  .card{position:relative;}
-  .card .upChip{position:absolute;top:5px;right:5px;border:0;border-radius:999px;padding:2px 7px;font-size:10px;font-weight:800;
-    background:#E0A12B;color:#221E18;cursor:pointer;box-shadow:none;}
-  #walletChip{font-weight:800;color:#F2C14B;font-size:13px;margin-top:-6px;}
-
   /* ═══ B안 스킨 — 게임 화면(DOM)을 허브와 같은 톤으로. 캔버스 게임플레이는 밝게 유지 ═══ */
   body{background:#221E18;color:#EFE7D6;}
   .screen{background:#221E18;color:#EFE7D6;}
@@ -237,6 +192,51 @@
   .pauseBtn{ top:calc(8px + env(safe-area-inset-top)); }
   #achToast{ top:calc(14px + env(safe-area-inset-top)); }
   img[src=""], img:not([src]){ visibility:hidden; }   /* 런타임에 채워지는 이미지가 깨져 보이지 않게 */
+
+  /* ═══ V2 리텐션 — 죽음 화면·잠금 카드·온보딩·친구 도전 (허브 다크 톤) ═══ */
+  #resultImg { height:104px; }
+  #result { gap:8px; }
+  #resNear { font-size:14px; font-weight:800; color:#F2C14B; background:rgba(242,193,75,.14); border-radius:12px; padding:6px 14px; }
+  #resCause { font-size:11px; color:#8A8271; margin-top:-4px; }
+  #resUnlock { font-size:14px; font-weight:800; color:#8FBE74; background:rgba(143,190,116,.16); border-radius:12px; padding:6px 14px; }
+  #resProg { width:86%; font-size:12px; color:#A9A08C; }
+  #resProg .bar { height:8px; background:rgba(255,255,255,.12); border-radius:4px; overflow:hidden; margin-top:4px; }
+  #resProg .bar i { display:block; height:100%; background:#F2C14B; }
+  .btnPrimary { background:#F2C14B !important; color:#221E18 !important; font-size:18px; padding:12px 30px; }
+  .card.locked { background:rgba(255,255,255,.035); }
+  .card.locked img { filter:grayscale(1) brightness(.25); opacity:.55; }
+  .card.locked .nm { color:#7E7768; }
+  .card .prog { height:6px; background:rgba(255,255,255,.12); border-radius:4px; overflow:hidden; margin:3px 6px 0; }
+  .card .prog i { display:block; height:100%; background:#F2C14B; }
+  #chBanner { position:relative; z-index:1; background:rgba(34,30,24,.9); border-radius:14px; padding:9px 16px; font-weight:800; font-size:14px; color:#F2C14B; box-shadow:0 10px 30px -14px rgba(0,0,0,.8); }
+  #onboard { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(10,8,5,.6); z-index:70; }
+  #onboard.hidden { display:none; }
+  .obCard { background:#2B2620; border-radius:22px; box-shadow:0 16px 40px -18px rgba(0,0,0,.85); padding:18px 20px; width:84%; text-align:left; }
+  .obTitle { font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif; font-weight:400; font-size:20px; color:#F2C14B; text-align:center; margin-bottom:8px; }
+  .obRow { display:flex; align-items:center; gap:12px; font-size:14px; color:#E6DCC6; padding:9px 0; border-bottom:1px solid rgba(255,255,255,.09); }
+  .obRow:last-of-type { border-bottom:none; }
+  .obRow b { color:#F2C14B; }
+  .obIcon { width:56px; text-align:center; font-size:22px; flex:none; }
+  .obIcon img { height:28px; vertical-align:middle; }
+  .obHint { text-align:center; font-size:12px; color:#8A8271; margin-top:8px; animation:iblink 1.4s infinite; }
+</style>
+
+<style id="heroTitle">
+  /* 솜솜시티 공통 히어로 타이틀 (방범대 타이틀 구성과 동일): 전면 삽화 + 로고 + 하단 바 */
+  #title{ padding:0 !important; gap:0 !important; justify-content:flex-start !important; overflow:hidden; background:linear-gradient(#b898cb 0%,#efae7e 60%,#caa26a 100%) !important; }
+  #titleBg{ position:absolute !important; left:0 !important; top:0 !important; bottom:auto !important; width:100% !important; height:calc(100% - 104px) !important; object-fit:cover; object-position:center bottom; filter:none !important; z-index:0; }
+  .titleChar{ display:none !important; }
+  #titleTop{ position:relative; z-index:2; margin-top:52px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .logoTop{ font-size:14px; font-weight:800; color:#fff7e8; letter-spacing:5px; text-shadow:0 2px 0 rgba(96,58,38,.5); font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; }
+  #titleLogo{ font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif !important; font-size:44px !important; line-height:1.1 !important; font-weight:900 !important; color:#fff7e8 !important; letter-spacing:2px !important; transform:rotate(-2deg); margin:0 !important;
+    text-shadow:0 3px 0 #7c4a2d, 0 7px 16px rgba(60,30,20,.4) !important; }
+  #titleSub{ margin-top:2px !important; font-size:12px !important; font-weight:700 !important; color:#5a4130 !important; background:rgba(255,247,232,.85); border:1.5px solid rgba(124,74,45,.5); border-radius:20px; padding:5px 14px; text-shadow:none !important; }
+  #titleBottom{ position:absolute; left:0; right:0; bottom:0; z-index:2; height:104px; padding:12px 20px 8px; display:flex; flex-direction:column; align-items:center; gap:8px;
+    background:linear-gradient(#402419,#2f1a12); border-top:1.5px solid rgba(255,239,216,.16); box-shadow:0 -10px 22px rgba(40,20,10,.28); }
+  #titleBottom #startBtn{ font-size:17px !important; padding:12px 48px !important; border-radius:16px !important; background:#ffb35c !important; border:2px solid #5a2f1c !important; color:#4a2416 !important; box-shadow:0 4px 0 #5a2f1c !important; font-family:inherit; font-weight:800; }
+  #titleBottom #startBtn:active{ transform:translateY(4px) !important; box-shadow:none !important; }
+  .titleTag{ font-size:10px; font-weight:700; color:rgba(255,239,216,.55); letter-spacing:1px; }
+  #titleBottom #chBanner{ position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); white-space:nowrap; max-width:calc(100% - 24px); overflow:hidden; text-overflow:ellipsis; }   /* 친구 도전 배너: 높이 고정 하단 바 위에 띄움 */
 </style>
 </head>
 <body>
@@ -252,32 +252,30 @@
     </div>
   </div></div>
   <a href="../" class="homeBtn" title="솜솜시티 홈">← 홈</a>
-  <div id="quick">
-    <div id="quickCard">
-      <div id="qHead"></div>
-      <div id="qSub"></div>
-      <div id="qUp"></div>
-      <div id="qTap">탭하면 바로 다시 ▶</div>
-      <div id="qRow">
-        <button id="qUpBtn">🌰 강화</button>
-        <button id="qResBtn">결과·랭킹</button>
-        <button id="qSelBtn">캐릭터 변경</button>
-      </div>
-    </div>
-  </div>
-  <div id="upModal"><div id="upCard"></div></div>
   <canvas id="cv" width="420" height="680"></canvas>
   <button id="actionBtn">🐢 쉘터</button>
   <button id="muteBtn">🔊</button>
 
   <div id="title" class="screen">
-    <img id="titleBg" src="../assets/title_bg_leaf.png" onerror="this.onerror=null;this.src='../assets/title_main.png';" alt="가을 은행나무 골목">
-    <img class="titleChar" src="../assets/sd_kkito_t.png" alt="끼토" style="position:absolute;left:50%;bottom:98px;transform:translateX(-50%);width:130px;height:auto;z-index:1;pointer-events:none;filter:drop-shadow(0 4px 5px rgba(90,74,58,.22));">
+    <img id="titleBg" src="../assets/title_hero_leaf.jpg" onerror="this.onerror=null;this.src='../assets/title_bg_leaf.png';" alt="은행잎이 쏟아지는 골목의 끼토와 보늘">
     <div id="titleTop">
-      <h1 id="titleLogo">솜솜시티: 은행 주의보</h1>
+      <div class="logoTop">🥕 솜솜시티</div>
+      <h1 id="titleLogo">은행 주의보</h1>
       <div id="titleSub">가을이 왔다. 은행나무 골목을 무사히 버텨라!</div>
     </div>
-    <button id="startBtn" onclick="ui.toSelect()">시작하기</button>
+    <div id="titleBottom">
+      <div id="chBanner" class="hidden"></div>
+      <button id="startBtn" onclick="ui.toSelect()">은행 피하러 가기</button>
+      <span class="titleTag">GAME 01 · 낙엽 피하기</span>
+    </div>
+  </div>
+
+  <div id="onboard" class="hidden">
+    <div class="obCard">
+      <div class="obTitle">이렇게 놀아요</div>
+      <div id="obRows"></div>
+      <div class="obHint">탭해서 시작</div>
+    </div>
   </div>
 
   <div id="select" class="screen hidden">
@@ -288,7 +286,6 @@
       <span class="pill">🌰 콤보</span>
       <span class="pill">✨ 황금잎</span>
     </div>
-    <div id="walletChip"></div>
     <div id="dailyRow"><button id="dailyBtn2"></button></div>
     <div class="grid" id="charGrid"></div>
     <button onclick="ui.showRanking()">🏆 솜솜 랭킹</button>
@@ -315,14 +312,18 @@
     <img id="resultImg" src="">
     <div class="quote" id="resQuote"></div>
     <div id="resScore" style="font-size:20px;font-weight:800;"></div>
+    <div id="resNear"></div>
+    <div id="resCause"></div>
     <div id="resDetail" class="sub"></div>
     <div id="resBest" class="sub"></div>
+    <div id="resUnlock" class="hidden"></div>
+    <div id="resProg"></div>
     <div id="nameRow" style="display:none;gap:8px;align-items:center;">
       <input id="nameInput" maxlength="8" placeholder="이름 (8자)">
       <button id="submitBtn" onclick="submitScore()">🏆 랭킹 등록</button>
     </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
-      <button onclick="ui.retry()">다시 도전</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;">
+      <button class="btnPrimary" onclick="ui.retry()">🔁 한 판 더</button>
       <button onclick="ui.toSelect()">캐릭터 변경</button>
       <button onclick="shareCard()">📸 자랑하기</button>
     </div>
@@ -341,51 +342,9 @@ const CHARS = {
                 intro:'떨어지는 도토리, 전부 내 거야!', hit:'앗 따가! 방금 거 환불해줘!', record:'이 기록 완전 희귀템이야!', lose:'방금 그 도토리 완전 희귀템이었는데!' },
   lachilchin: { name:'라칠친 할머니', img:'../assets/06_lachilchin.png', sd:'../assets/sd_lachilchin_t.png', speed:3.8, lives:1, w:50, h:58, tag:'반전형', color:'#b0608a', diff:3, skill:'🔄 룰 반전', desc:'은행=점수! 나뭇가지 주의', flip:true,
                 intro:'아이구, 은행 줍기엔 내가 선수지. 그래~', hit:'아이구야! 참말로~', record:'아이구, 늙은이가 또 해냈네 그래~', lose:'아이구, 그래~ 오늘은 이만 줍자.' },
-  bookgeo:    { name:'북거씨',      img:'../assets/07_bookgeo.png',    sd:'../assets/sd_bookgeo_t.png',    speed:2.8, lives:1, w:70, h:52, hitScale:0.85, tag:'방어형', color:'#3a8a7a', diff:1, skill:'🐢 등딱지 쉘터', desc:'더블터치로 잠깐 무적', shell:true,
+  bookgeo:    { name:'북거씨',      img:'../assets/07_bookgeo.png',    sd:'../assets/sd_bookgeo_t.png',    speed:2.8, lives:1, w:70, h:52, hitScale:0.68, tag:'방어형', color:'#3a8a7a', diff:1, skill:'🐢 등딱지 쉘터', desc:'더블터치로 잠깐 무적', shell:true,
                 intro:'서두르지 않아도, 이길 수 있어요.', hit:'음... 다음엔 등딱지로 막죠.', record:'천천히 왔는데, 어느새 신기록이네요.', lose:'천천히, 천천히... 다시 해봅시다.' },
 };
-
-// ── 강화: 판과 판 사이에 캐릭터가 자란다. 도토리 지갑(somsom_wallet)으로 산다 ──
-// 지갑은 칭호용 누적치(somsom_stats.coins)와 따로 둔다 — 써도 칭호가 내려가면 안 되니까.
-const UP_COST = [20, 50, 100];                                    // Lv1·Lv2·Lv3 가격
-const SIG = {
-  kkito:      { i:'🐰', n:'귀 슬로우',   d:['쿨타임 6초','5초','4.2초','3.5초'] },
-  boneul:     { i:'🛡️', n:'맷집',        d:['피격 후 무적 없음','무적 0.6초','1.0초','1.4초'] },
-  migae:      { i:'🐜', n:'작은 몸',     d:['피격 판정 100%','92%','84%','76%'] },
-  ramda:      { i:'🧲', n:'줍줍 자석',   d:['범위 120','150','185','220'] },
-  lachilchin: { i:'🧺', n:'은행 줍기',   d:['은행 20점','30점','40점','50점'] },
-  bookgeo:    { i:'🐢', n:'등딱지 쉘터', d:['지속 1.2초','1.5초','1.8초','2.2초'] },
-};
-const UPS = [
-  { k:'spd',  i:'👟', n:'이동 속도', d:l => '+' + (l*8) + '%' },
-  { k:'sig',  i:null, n:null,        d:null },
-  { k:'luck', i:'🍀', n:'행운',      d:l => '도토리·황금잎 +' + (l*20) + '%' },
-];
-function upLoad(){ try{ return JSON.parse(localStorage.getItem('somsom_up_leaf')||'{}'); }catch(e){ return {}; } }
-function upLv(key){ const u = upLoad()[key] || {}; return { spd:u.spd||0, sig:u.sig||0, luck:u.luck||0 }; }
-function walletGet(){
-  let v = localStorage.getItem('somsom_wallet');
-  if (v === null) { v = String((achStats().coins)||0); try{ localStorage.setItem('somsom_wallet', v); }catch(e){} }   // 기존 플레이어는 모아둔 만큼으로 시작
-  return +v || 0;
-}
-function walletAdd(n){ const v = Math.max(0, walletGet() + n); try{ localStorage.setItem('somsom_wallet', String(v)); }catch(e){} return v; }
-function upBuy(key, k){
-  const all = upLoad(), lv = upLv(key), cost = UP_COST[lv[k]];
-  if (cost === undefined || walletGet() < cost) return false;
-  walletAdd(-cost); lv[k]++; all[key] = lv;
-  try{ localStorage.setItem('somsom_up_leaf', JSON.stringify(all)); }catch(e){}
-  return true;
-}
-function upInfo(key, u){                                         // 슬롯 하나의 표시용 정보
-  const lv = upLv(key)[u.k];
-  if (u.k === 'sig') { const S = SIG[key]; return { i:S.i, n:S.n, now:S.d[lv], next:S.d[lv+1], lv }; }
-  return { i:u.i, n:u.n, now:lv ? u.d(lv) : '기본', next:lv < 3 ? u.d(lv+1) : undefined, lv };
-}
-function upNext(key){                                             // 가장 싼 다음 강화
-  const lv = upLv(key); let best = null;
-  for (const u of UPS) { const c = UP_COST[lv[u.k]]; if (c !== undefined && (!best || c < best.cost)) best = { u, cost:c }; }
-  return best;
-}
 
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 let W = 420, H = 680, GROUND = H - 34;                    // 화면 비율에 맞춰 layout()에서 갱신
@@ -440,13 +399,21 @@ function keyOutWhiteBg(im) {
   x.putImageData(d, 0, 0);
   return c;
 }
+function trimCanvas(c) {   // 투명 여백 제거 — 1024 정사각 안에 작게 있던 캐릭터가 박스를 제대로 채우게
+  const x = c.getContext('2d'), w = c.width, h = c.height, d = x.getImageData(0, 0, w, h).data;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) if (d[(yy*w + xx)*4 + 3] > 10) { if (xx < x0) x0 = xx; if (xx > x1) x1 = xx; if (yy < y0) y0 = yy; if (yy > y1) y1 = yy; }
+  if (x1 < x0) return c;
+  const nw = x1 - x0 + 1, nh = y1 - y0 + 1, o = document.createElement('canvas'); o.width = nw; o.height = nh;
+  o.getContext('2d').drawImage(c, x0, y0, nw, nh, 0, 0, nw, nh); return o;
+}
 for (const k in CHARS) {
   const sd = new Image(); sd.src = CHARS[k].sd;
   const target = CHARS[k].w * 1.7 * DPR * 1.4;            // 실제 표시 크기에 맞춰 축소 캐시
-  sd.onload = () => { try { sprites[k] = downscale(keyOutWhiteBg(sd), target); } catch(e) { sprites[k] = sd; } };
+  sd.onload = () => { try { sprites[k] = downscale(trimCanvas(keyOutWhiteBg(sd)), target); } catch(e) { sprites[k] = sd; } };
   sd.onerror = () => {
     const im = new Image(); im.src = CHARS[k].img;
-    im.onload = () => { try { sprites[k] = downscale(keyOutWhiteBg(im), target); } catch(e) { sprites[k] = im; } };
+    im.onload = () => { try { sprites[k] = downscale(trimCanvas(keyOutWhiteBg(im)), target); } catch(e) { sprites[k] = im; } };
   };
   fallbacks[k] = sd;
 }
@@ -457,7 +424,7 @@ for (const k in CHARS) {
   for (const f of ['hit', 'win']) {
     const im = new Image(); im.src = `../assets/sd_${k}_${f}.png`;
     const target = CHARS[k].w * 1.7 * DPR * 1.4;
-    im.onload = () => { try { spritesFace[f][k] = downscale(keyOutWhiteBg(im), target); } catch(e) { spritesFace[f][k] = im; } };
+    im.onload = () => { try { spritesFace[f][k] = downscale(trimCanvas(keyOutWhiteBg(im)), target); } catch(e) { spritesFace[f][k] = im; } };
   }
 }
 
@@ -501,6 +468,56 @@ function buzz(pattern) {
     }
   } catch (e) {}
 }
+// ---------- 낙엽피하기 진행 데이터 (로컬) — 잠금해제·죽음 화면·계측이 공유. 허브 공용 somsom_stats와는 별개 ----------
+const LEAF_KEY = 'somsom_leaf';
+function loadLeaf() {
+  const def = { runs:0, acorns:0, goldens:0, ginkgos:0, survive30:0, survive60:0, bestCombo:0, bestScore:0,
+                unlocked:{}, lastT:{}, onboarded:0, legacyChecked:0 };
+  try { return Object.assign(def, JSON.parse(localStorage.getItem(LEAF_KEY) || '{}')); } catch (e) { return def; }
+}
+let leaf = loadLeaf();
+function saveLeaf() { try { localStorage.setItem(LEAF_KEY, JSON.stringify(leaf)); } catch (e) {} }
+
+// 잠금 캐릭터 — 조건은 "첫 10판 안에 자연히 열리는" 수준으로, 벽이 아니라 첫 세션의 성취 연출
+const UNLOCK = {
+  migae:      { key:'acorns',    need:100, label:'도토리 누적 100개' },
+  lachilchin: { key:'survive30', need:3,   label:'30초 생존 3회' },
+  bookgeo:    { key:'bestCombo', need:5,   label:'5콤보 달성' },
+};
+function isUnlocked(k) { return !UNLOCK[k] || !!leaf.unlocked[k]; }
+function unlockProgress(k) { const u = UNLOCK[k]; return Math.min(u.need, leaf[u.key] || 0); }
+// 잠긴 캐릭터도 '오늘의 친구'이거나 친구 도전 대상이면 그날/그 도전에 한해 체험 가능 (영구 해제는 아님)
+function dailyTrial() { try { return DAILY_CHAR_ID; } catch (e) { return null; } }   // 아래쪽 const라 첫 buildGrid 시점엔 아직 없음
+function isPlayable(k) { return isUnlocked(k) || (challenge && challenge.key === k) || k === dailyTrial(); }
+// 이미 기록이 있던 캐릭터는 최초 1회만 열어둔다 (이후 체험 기록으로는 열리지 않도록)
+if (!leaf.legacyChecked) {
+  for (const k in UNLOCK) if (+(localStorage.getItem('somsom2_best_' + k) || 0) > 0) leaf.unlocked[k] = 1;
+  leaf.legacyChecked = 1; saveLeaf();
+}
+
+// 판 종료 시 누적 반영 → 새로 열린 캐릭터 반환
+function recordRun(s, score) {
+  leaf.runs++; leaf.acorns += s.acorns; leaf.goldens += s.goldens; leaf.ginkgos += s.ginkgos;
+  if (s.t >= 30) leaf.survive30++;
+  if (s.t >= 60) leaf.survive60++;
+  if (s.bestCombo > leaf.bestCombo) leaf.bestCombo = s.bestCombo;
+  if (score > leaf.bestScore) leaf.bestScore = score;
+  const prevT = leaf.lastT[s.key]; leaf.lastT[s.key] = s.t;
+  const newUnlocks = [];
+  for (const k in UNLOCK) if (!isUnlocked(k) && unlockProgress(k) >= UNLOCK[k].need) {
+    leaf.unlocked[k] = 1; newUnlocks.push(k); logEvent('char_unlock', { c: k, r: leaf.runs });
+  }
+  saveLeaf();
+  return { newUnlocks, prevT };
+}
+
+// 친구 도전 링크 — ?c=점수&k=캐릭터&n=이름
+let challenge = null;
+try {
+  const q = new URLSearchParams(location.search), ck = q.get('k'), cs = Math.floor(+q.get('c'));
+  if (CHARS[ck] && cs > 0) challenge = { key: ck, score: cs, name: (q.get('n') || '친구').slice(0, 8) };
+} catch (e) {}
+
 let state = null, raf = null, curKey = null;
 
 function newState(key) {
@@ -514,21 +531,7 @@ function newState(key) {
     introT: 1.8,
     bubble: null, recordShown: false, prevBest: +(localStorage.getItem('somsom2_best_' + key) || 0),
     acorns: 0, ginkgos: 0, goldens: 0, combo: 0, comboT: 0, bestCombo: 0,
-    grazes: 0, waves: 0, storm: null, stormWarned: false, nextStorm: 30, invUntil: 0,
-    ...upStats(key),
-  };
-}
-function upStats(key){                                            // 강화 레벨 → 실제 수치
-  const lv = upLv(key), c = CHARS[key];
-  return {
-    spdMul: 1 + 0.08 * lv.spd,
-    luck:   1 + 0.20 * lv.luck,
-    slowCd:   c.slow   ? [6, 5, 4.2, 3.5][lv.sig] : 6,
-    shellDur: c.shell  ? [1.2, 1.5, 1.8, 2.2][lv.sig] : 1.2,
-    invDur:   key === 'boneul' ? [0, 0.6, 1.0, 1.4][lv.sig] : 0,
-    hitMul:   key === 'migae'  ? 1 - 0.08 * lv.sig : 1,
-    magnet:   c.magnet ? [120, 150, 185, 220][lv.sig] : 0,
-    gPts:     c.flip   ? [20, 30, 40, 50][lv.sig] : 20,
+    deathCause: null, hold: false,                            // hold: 온보딩 카드가 떠 있는 동안 시간 정지
   };
 }
 
@@ -562,15 +565,12 @@ function sfx(name) {
     else if (name === 'shell') tone(220, 0.25, 'sine', 0.06, 0, 330);
     else if (name === 'slow') tone(660, 0.45, 'sine', 0.06, 0, 150);
     else if (name === 'record') [523, 659, 784].forEach((f, i) => tone(f, 0.16, 'square', 0.05, i * 0.09));
-    else if (name === 'warn') [880, 0, 880].forEach((f, i) => f && tone(f, 0.12, 'square', 0.05, i * 0.16));
-    else if (name === 'storm') tone(140, 0.9, 'sawtooth', 0.05, 0, 70);
-    else if (name === 'graze') tone(1200, 0.06, 'triangle', 0.04, 0, 1600);
     else if (name === 'gameover') [392, 311, 233].forEach((f, i) => tone(f, 0.25, 'triangle', 0.07, i * 0.18));
   } catch (e) {}
 }
 const BGM_NOTES = [392, 440, 523, 440, 587, 523, 440, 392, 523, 587, 659, 587, 523, 440, 392, 330];
 function startBgm() {
-  if (muted || bgmTimer) return;
+  if (window.SomsomBgm || muted || bgmTimer) return;   // 솜솜시티 테마곡이 배경음을 맡는다
   try { ac(); } catch (e) { return; }
   bgmTimer = setInterval(() => {
     if (muted || !state || state.over) return;
@@ -601,21 +601,20 @@ function floatTxt(s, x, y, txt, col) { s.floaters.push({ x, y, txt, col, life: 0
 // ---------- spawn ----------
 function spawn(s) {
   if (s.t < s.spawnAt) return;
-  const interval = Math.max(0.20, 0.62 - s.t * 0.012) * (s.storm ? 0.4 : 1);   // 난이도 ↑ (완만하게) · 폭풍 땐 2.5배
+  let interval = Math.max(0.20, 0.62 - s.t * 0.012);            // 난이도 ↑ (완만하게)
+  if (leaf.runs < 3 && s.t < 15) interval *= 1.2;                // 첫 3판은 초반 15초만 살짝 느슨하게
   s.spawnAt = s.t + interval;
   const make = () => {
     const x = 24 + Math.random() * (W - 48);
     const r = Math.random();
     let type;
-    if (s.c.flip) type = r < 1 - 0.20 * s.luck ? (r < 0.45 ? 'ginkgo' : 'branch') : 'acorn';
-    else          type = r < 1 - 0.32 * s.luck ? 'ginkgo' : 'acorn';          // 행운 강화 = 도토리 비율 ↑
-    if (s.storm && type === 'acorn' && Math.random() < 0.5) type = s.c.flip ? 'branch' : 'ginkgo';   // 폭풍은 위험 위주
-    if (Math.random() < 0.05 * s.luck) type = 'golden';         // 가끔 떨어지는 귀한 황금잎(+200)
+    if (s.c.flip) type = r < 0.45 ? 'ginkgo' : (r < 0.80 ? 'branch' : 'acorn');
+    else          type = r < 0.68 ? 'ginkgo' : 'acorn';
+    if (Math.random() < 0.05) type = 'golden';                  // 가끔 떨어지는 귀한 황금잎(+200)
     if (Math.random() < 0.018) type = 'relic';                  // 아주 가끔 떨어지는 도감 소품
     const hs = GROUND / 646;                                   // 화면이 길수록 빠르게 → 기기별 난이도 통일
     const vy = (185 + s.t * 6.5 + Math.random() * 80) / 60 * hs * (type === 'golden' ? 0.65 : 1);  // 황금잎은 천천히
-    const vx = (s.t > 18 ? (Math.random() - 0.5) * Math.min(1.8, s.t * 0.04) : 0)   // 후반 커브볼
-             + (s.storm ? s.storm.dir * (0.8 + Math.random() * 0.9) : 0);                 // 폭풍 바람
+    const vx = s.t > 18 ? (Math.random() - 0.5) * Math.min(1.8, s.t * 0.04) : 0;  // 후반 커브볼
     const obj = { type, x, y: -20, vy, vx };
     if (s.c.telegraph) s.warns.push({ x, t: 0.5, obj });
     else s.objs.push(obj);
@@ -667,7 +666,8 @@ function drawLeaf(x, y, r, a) {
 // ---------- loop ----------
 function loop(now) {
   const s = state; if (!s || paused) return;   // 정지 중엔 프레임을 진행하지 않음
-  let dt = Math.max(0, Math.min(0.05, (now - s.last) / 1000)); s.last = now;   // rAF 시각이 시작 시각보다 앞서면 음수가 된다
+  let dt = Math.min(0.05, (now - s.last) / 1000); s.last = now;
+  if (s.hold) dt = 0;                                            // 온보딩 표시 중
   if (s.over) dt *= 0.18;                                        // 게임오버 슬로모
   if (s.hitstop > 0) { s.hitstop -= dt; dt = 0; }
   if (s.introT > 0) { s.introT -= dt; }
@@ -682,22 +682,9 @@ function loop(now) {
     burst(s, s.x, GROUND - s.c.h, ['#f3c14a','#fff','#e8915a'], 16, 160, 90);
   }
 
-  // 폭풍 웨이브: 30초마다 3초 예고 → 5초 폭풍 → 버티면 보너스
-  if (!s.over && s.introT <= 0) {
-    if (!s.storm && !s.stormWarned && s.t >= s.nextStorm - 3) { s.stormWarned = true; sfx('warn'); buzz([20, 60, 20]); }
-    if (!s.storm && s.t >= s.nextStorm) { s.storm = { end: s.t + 5, dir: Math.random() < .5 ? -1 : 1 }; s.shake = 0.25; sfx('storm'); buzz(60); }
-    if (s.storm && s.t >= s.storm.end) {
-      s.waves++; const b = 250 * s.waves;
-      s.score += b; s.scorePop = 0.7; s.storm = null; s.stormWarned = false; s.nextStorm = s.t + 25;
-      floatTxt(s, W/2, H*0.32, '폭풍 ' + s.waves + ' 돌파! +' + b + ' 🌰+5', '#d9a400');
-      burst(s, s.x, GROUND - s.c.h, ['#f3c14a','#fff','#e8915a'], 18, 180, 90);
-      showBubble(s, '휴— 살았다!', 1.2); sfx('record'); buzz([20, 40, 20, 40]);
-    }
-  }
-
   // move
   if (!s.over) {
-    const stepPx = s.c.speed * s.spdMul * 60 * dt;
+    const stepPx = s.c.speed * 60 * dt;
     if (s.targetX !== null) {                                   // 끌어서 위치 지정
       const d = s.targetX - s.x;
       if (Math.abs(d) <= stepPx) { s.x = s.targetX; s.dir = 0; }
@@ -714,10 +701,10 @@ function loop(now) {
   s.warns = s.warns.filter(w => w.t > 0);
 
   // 람다 자석
-  if (s.magnet) for (const o of s.objs) {
+  if (s.c.magnet) for (const o of s.objs) {
     if (o.type === 'acorn' || o.type === 'golden') {
       const dx = s.x - o.x, dy = (GROUND - 40) - o.y, d = Math.hypot(dx,dy) || 1;
-      if (d < s.magnet) {
+      if (d < s.c.magnet) {
         o.x += dx/d * 170 * dt; o.y += dy/d * 170 * dt;
         if (Math.random() < 0.3) s.particles.push({ x:o.x, y:o.y, vx:0, vy:0, g:0, life:0.25, max:0.25, size:2, col:'#e8c14a' });
       }
@@ -729,11 +716,11 @@ function loop(now) {
   for (const o of s.objs) {
     o.y += o.vy * 60 * dt * slowMo; o.x += (o.vx||0) * 60 * dt * slowMo;
     if (o.x < 14 || o.x > W-14) o.vx = -(o.vx||0);
-    const hs = (s.c.hitScale || 1) * s.hitMul;             // 덩치 큰 캐릭터 피탄 보정 · 미개 강화
+    const hs = s.c.hitScale || 1;                          // 덩치 큰 캐릭터 피탄 보정
     const rx = s.c.w * 0.38 * hs, ry = s.c.h * 0.42 * hs;
-    const harmful = s.c.flip ? (o.type === 'branch') : (o.type === 'ginkgo');
     if (!s.over && Math.abs(o.x - px) < rx + 13 && Math.abs(o.y - py) < ry + 13) {
       o.dead = true;
+      const harmful = s.c.flip ? (o.type === 'branch') : (o.type === 'ginkgo');
       if (o.type === 'relic') {
         const R = RELICS[(Math.random()*RELICS.length)|0];
         const m = bumpCombo(s), pts = 120 * m;
@@ -752,30 +739,21 @@ function loop(now) {
         burst(s, o.x, o.y, ['#b5824a','#e8c14a','#fff'], 10, 130, 60);
         floatTxt(s, o.x, o.y-12, '+' + pts + (m > 1 ? ' x' + m : ''), '#b08a3a');
       } else if (s.c.flip && o.type === 'ginkgo') {
-        const m = bumpCombo(s), pts = s.gPts * m;
+        const m = bumpCombo(s), pts = 20 * m;
         s.score += pts; s.scorePop = 0.3; s.ginkgos++; sfx('ding'); buzz(12);
         burst(s, o.x, o.y, ['#e8c14a','#f3e29a'], 8, 110, 50);
         floatTxt(s, o.x, o.y-12, '+' + pts + (m > 1 ? ' x' + m : '') + ' 그래~', '#b08a3a');
       } else if (harmful) {
-        if (s.t < s.invUntil) { /* 보늘 맷집 무적 — 그냥 통과 */ }
-        else if (shell) { floatTxt(s, px, py - s.c.h/2 - 14, '딱!', '#3a7a5a'); burst(s, o.x, o.y, ['#9ab87a'], 6, 90, 30); sfx('thud'); buzz(20); }
+        if (shell) { floatTxt(s, px, py - s.c.h/2 - 14, '딱!', '#3a7a5a'); burst(s, o.x, o.y, ['#9ab87a'], 6, 90, 30); sfx('thud'); buzz(20); }
         else {
-          s.lives--; s.combo = 0; s.comboT = 0; s.invUntil = s.t + s.invDur; s.hitFlash = 0.4; s.shake = 0.45; s.hitstop = 0.1; s.squash = 0.25;
+          s.lives--; s.combo = 0; s.comboT = 0; s.hitFlash = 0.4; s.shake = 0.45; s.hitstop = 0.1; s.squash = 0.25;
           burst(s, o.x, o.y, o.type==='ginkgo' ? ['#e8c14a','#c9a23f'] : ['#8a6a4a','#6a4a2a'], 14, 170, 80);
           if (o.type === 'ginkgo') { stink(s, px, py - 10); floatTxt(s, px, py - s.c.h/2 - 16, '윽, 냄새!', '#d2452a'); }
           else floatTxt(s, px, py - s.c.h/2 - 16, '아이쿠!', '#d2452a');
           sfx('hit'); buzz(70);
-          if (s.lives <= 0) { s.over = true; s.overAt = now; sfx('gameover'); stopBgm(); buzz([80, 60, 120]); }
+          if (s.lives <= 0) { s.over = true; s.overAt = now; s.deathCause = o.type; sfx('gameover'); stopBgm(); buzz([80, 60, 120]); }
           else showBubble(s, s.c.hit, 1.3);
         }
-      }
-    }
-    // 아슬아슬: 위험물이 몸 옆을 간발의 차로 지나가면 보상 (맞았으면 이미 dead)
-    if (harmful && !o.dead && !o.gz && !s.over && o.y > py) {
-      o.gz = true;
-      if (!shell && Math.abs(o.x - px) < rx + 13 + 22) {
-        s.grazes++; s.score += 30; s.scorePop = 0.25; sfx('graze'); buzz(8);
-        floatTxt(s, o.x, py - s.c.h/2 - 6, '아슬! +30', '#e8740a');
       }
     }
     // 바닥 얼룩
@@ -804,7 +782,7 @@ function loop(now) {
   s.squash = Math.max(0, s.squash - dt); s.scorePop = Math.max(0, s.scorePop - dt);
 
   draw(s, now, shell);
-  if (s.over && now - s.overAt > 700) return quickOver();
+  if (s.over && now - s.overAt > 700) return endGame();
   raf = requestAnimationFrame(loop);
 }
 
@@ -886,7 +864,13 @@ function draw(s, now, shell) {
   const im = (face && spritesFace[face][s.key]) || sprites[s.key] || fallbacks[s.key];
   const bob = s.dir !== 0 ? Math.sin(s.moveT*16) * 2.5 : 0;
   const sq = 1 - s.squash*0.5;
-  const dw = s.c.w * 1.7, dh = s.c.h * 1.7 * sq;
+  let dw = s.c.w * 1.7, dh = s.c.h * 1.7;                       // 캐릭터 박스
+  if (im && (im.width || im.naturalWidth)) {                      // 이미지 종횡비 보존(contain) — 눌림/늘어남 방지
+    const iw = im.width || im.naturalWidth, ih = im.height || im.naturalHeight, k = Math.min(dw / iw, dh / ih);
+    dw = iw * k; dh = ih * k;
+  }
+  dw *= 0.78; dh *= 0.78;                                        // 표시 크기 — 트림 후 커진 몸집을 6월 체감(=피탄 범위와 일치)으로 복원
+  dh *= sq;
   ctx.save();
   ctx.translate(s.x, GROUND - 4 + bob);
   ctx.rotate(s.dir * 0.12);
@@ -934,20 +918,12 @@ function draw(s, now, shell) {
   ctx.strokeStyle = '#fff'; ctx.lineWidth = 4; ctx.lineJoin = 'round';
   ctx.fillStyle = '#5a4a3a'; ctx.textAlign = 'left';
   ctx.font = `800 ${Math.round(19*pop)}px sans-serif`;
-  ctx.strokeText('점수 ' + Math.floor(s.score), 150, 31);
-  ctx.fillText('점수 ' + Math.floor(s.score), 150, 31);   // 홈·일시정지 버튼과 겹치지 않게
-  // 신기록 게이지 — 가까워질수록 눈에 띄게 (니어미스는 '얼마나 아까웠는지'가 보여야 생긴다)
-  if (s.prevBest > 0 && !s.recordShown) {
-    const r = Math.min(1, s.score / s.prevBest), gw = 110;
-    ctx.fillStyle = 'rgba(90,74,58,.22)'; ctx.beginPath(); ctx.roundRect(150, 38, gw, 6, 3); ctx.fill();
-    ctx.fillStyle = r > 0.8 ? '#e8740a' : '#d9a400'; ctx.beginPath(); ctx.roundRect(150, 38, Math.max(6, gw * r), 6, 3); ctx.fill();
-    if (r > 0.8) {
-      ctx.globalAlpha = 0.8 + 0.2 * Math.sin(now / 120);
-      ctx.font = '800 12px sans-serif'; ctx.fillStyle = '#e8740a';
-      const t2 = '신기록까지 ' + (s.prevBest - Math.floor(s.score) + 1);
-      ctx.strokeText(t2, 150, 60); ctx.fillText(t2, 150, 60);
-      ctx.globalAlpha = 1;
-    }
+  ctx.strokeText('점수 ' + Math.floor(s.score), 150, 31);   // 홈·일시정지 버튼과 겹치지 않게
+  ctx.fillText('점수 ' + Math.floor(s.score), 150, 31);
+  if (challenge && challenge.key === s.key) {                    // 친구 도전 목표
+    ctx.font = '800 13px sans-serif';
+    const t = '🎯 ' + challenge.name + ' ' + challenge.score;
+    ctx.strokeText(t, 150, 54); ctx.fillText(t, 150, 54);
   }
   ctx.font = '800 19px sans-serif'; ctx.textAlign = 'right';
   const hearts = '❤'.repeat(Math.max(0,s.lives));
@@ -975,26 +951,6 @@ function draw(s, now, shell) {
     ctx.globalAlpha = 1;
   }
 
-  // 폭풍 예고 · 진행
-  if (!s.over && (s.storm || s.stormWarned)) {
-    const warn = !s.storm;
-    const txt = warn ? '🌬️ 바람이 분다! ' + Math.max(1, Math.ceil(s.nextStorm - s.t))
-                     : '폭풍! 버텨라 ' + Math.max(0, s.storm.end - s.t).toFixed(1);
-    ctx.globalAlpha = warn ? 0.6 + 0.4 * Math.sin(now / 90) : 1;
-    ctx.font = "400 24px 'Black Han Sans', sans-serif"; ctx.textAlign = 'center';
-    ctx.lineWidth = 5; ctx.strokeStyle = '#fff'; ctx.fillStyle = warn ? '#e8740a' : '#d2452a';
-    ctx.strokeText(txt, W/2, H*0.2); ctx.fillText(txt, W/2, H*0.2);
-    ctx.globalAlpha = 1; ctx.lineWidth = 4;
-    if (s.storm) {                                                  // 바람 줄기
-      ctx.strokeStyle = 'rgba(110,95,70,.5)'; ctx.lineWidth = 2.5;
-      for (let i = 0; i < 9; i++) {
-        const yy = (i * 83 + now * 0.05) % H, xx = ((now * 0.9 * s.storm.dir + i * 137) % (W + 80) + W + 80) % (W + 80) - 40;
-        ctx.beginPath(); ctx.moveTo(xx, yy); ctx.lineTo(xx - s.storm.dir * 46, yy + 6); ctx.stroke();
-      }
-      ctx.lineWidth = 4;
-    }
-  }
-
   // 슬로우 모션 (끼토) — 푸른 잔물결 틴트
   if (s.c.slow && s.t < s.slowUntil) {
     ctx.globalAlpha = 0.12 + 0.05 * Math.sin(now / 110);
@@ -1015,14 +971,14 @@ function useShell() {
   // 벽시계로 재면 일시정지 중에도 쉘터가 그대로 흘러가 풀고 나면 사라져 있었다.
   const s = state; if (!s || !s.c.shell || s.over) return;
   if (s.t < s.shellCdUntil) return;
-  s.shellUntil = s.t + s.shellDur; s.shellCdUntil = s.t + 5.0;
+  s.shellUntil = s.t + 1.2; s.shellCdUntil = s.t + 5.0;
   sfx('shell');
   floatTxt(s, s.x, GROUND - s.c.h*1.7 - 16, '쉘터!', '#3a7a5a');
 }
 function useSlow() {
   const s = state; if (!s || !s.c.slow || s.over) return;   // 게임 시간 기준 — useShell 주석 참고
   if (s.t < s.slowCdUntil) return;
-  s.slowUntil = s.t + 1.4; s.slowCdUntil = s.t + s.slowCd;
+  s.slowUntil = s.t + 1.4; s.slowCdUntil = s.t + 6.0;
   sfx('slow'); buzz(20);
   floatTxt(s, s.x, GROUND - s.c.h*1.7 - 16, '슬로우!', '#5a7ab0');
   burst(s, s.x, GROUND - s.c.h, ['#cdd8ee','#fff'], 8, 100, 40);          // 귀 펄럭
@@ -1041,8 +997,9 @@ const INTRO = {
 };
 let introTimer = null, introPending = null;
 const ui = {
-  show(id) { for (const sc of ['title','select','intro','result','ranking']) $(sc).classList.toggle('hidden', sc !== id); showPauseBtn(id === 'none'); $('quick').classList.remove('on'); },
+  show(id) { for (const sc of ['title','select','intro','result','ranking']) $(sc).classList.toggle('hidden', sc !== id); showPauseBtn(id === 'none'); },
   showIntro(key) {
+    if (!isPlayable(key)) return;
     clearTimeout(introTimer);
     introPending = key;
     const im = $('introImg');
@@ -1079,7 +1036,9 @@ const ui = {
   },
   toSelect() { clearTimeout(introTimer); introPending = null; ui.show('select'); cancelAnimationFrame(raf); state = null; stopBgm(); $('actionBtn').style.display='none'; $('muteBtn').style.display='none'; },
   start(key) {
+    if (!isPlayable(key)) { ui.toSelect(); return; }
     curKey = key; ui.show('none'); state = newState(key);
+    if (!leaf.onboarded) showOnboard(CHARS[key]);
     $('actionBtn').textContent = CHARS[key].slow ? '🐰 슬로우' : '🐢 쉘터';
     $('actionBtn').style.display = ((CHARS[key].shell || CHARS[key].slow) && !IS_TOUCH) ? 'block' : 'none';   // 모바일은 더블 터치로 대체
     $('muteBtn').style.display = 'block';
@@ -1088,120 +1047,120 @@ const ui = {
     state.last = performance.now(); raf = requestAnimationFrame(loop);
   },
   retry() { ui.start(curKey); },
-  openUp(key) {
-    const c = CHARS[key], w = walletGet();
-    let html = '<div class="uh"><img src="' + c.sd + '"><span class="ut">' + c.name + ' 강화</span><span class="uw">🌰 ' + w + '</span></div>';
-    UPS.forEach(u => {
-      const inf = upInfo(key, u), cost = UP_COST[inf.lv];
-      html += '<div class="urow"><span class="ui">' + inf.i + '</span><div><div class="un">' + inf.n +
-        ' <span class="ulv">' + '●'.repeat(inf.lv) + '○'.repeat(3 - inf.lv) + '</span></div>' +
-        '<div class="ud">' + inf.now + (inf.next ? ' → <b style="color:#EFE7D6">' + inf.next + '</b>' : ' · 최대') + '</div></div>' +
-        (cost === undefined ? '<button disabled>MAX</button>'
-          : '<button data-k="' + u.k + '"' + (w < cost ? ' disabled' : '') + '>🌰 ' + cost + '</button>') + '</div>';
-    });
-    html += '<button id="upClose">닫기</button>';
-    $('upCard').innerHTML = html;
-    $('upCard').querySelectorAll('button[data-k]').forEach(b => b.onclick = e => {
-      e.stopPropagation();
-      if (upBuy(key, b.dataset.k)) { sfx('record'); buzz([20, 40, 20]); ui.openUp(key); if (state && state.over) quickRefresh(); buildGrid(); }
-    });
-    $('upClose').onclick = e => { e.stopPropagation(); $('upModal').classList.remove('on'); };
-    $('upModal').classList.add('on');
-  },
 };
-$('upModal').addEventListener('click', e => { if (e.target.id === 'upModal') $('upModal').classList.remove('on'); });
-function quickRefresh() { renderQuickUp(curKey, '✨ 강화 완료! 지갑 '); }   // 강화 후 갱신 (보상은 다시 주지 않음)
-function renderQuickUp(key, lead) {                              // 시트의 '다음 강화까지' 진행바
-  const nx = upNext(key), w = walletGet();
-  if (!nx) { $('qUp').innerHTML = '<div class="qr"><span>' + lead + '<b>' + w + '</b></span><span>강화 완료 👑</span></div>'; return; }
-  const inf = upInfo(key, nx.u);
-  $('qUp').innerHTML =
-    '<div class="qr"><span>' + lead + '<b>' + w + '</b></span>' +
-    (w >= nx.cost ? '<button class="go" id="qGo">지금 강화!</button>' : '<span>다음 강화까지 <b>' + (nx.cost - w) + '</b></span>') + '</div>' +
-    '<div class="bar"><i style="width:' + Math.min(100, Math.round(w / nx.cost * 100)) + '%"></i></div>' +
-    '<div class="qr" style="font-size:11.5px;color:#A9A08C;"><span>' + inf.i + ' ' + inf.n + ' Lv' + (inf.lv + 1) + ' · ' + inf.next + '</span><span>🌰' + nx.cost + '</span></div>';
-  const go = $('qGo'); if (go) go.onclick = e => { e.stopPropagation(); ui.openUp(key); };
-}
 
-// 죽으면 결과 화면으로 넘기지 않고 이 시트를 띄운다. 화면 아무 데나 탭 = 같은 캐릭터로 즉시 다음 판.
-// '한 판 더'가 결정이 아니라 반사가 되게 (플래피버드·슈퍼미트보이의 재시작 마찰 0).
-let quickAt = 0;
-function quickOver() {
-  const s = state; if (s.settled) return; s.settled = true;       // 판당 한 번만 정산 (보상 중복 방지)
-  const c = s.c, score = Math.floor(s.score), prev = s.prevBest;
-  const bk = 'somsom2_best_' + s.key, best = Math.max(score, prev);
+function endGame() {
+  const s = state, c = s.c, score = Math.floor(s.score);
+  const bk = 'somsom2_best_' + s.key, best = Math.max(score, +(localStorage.getItem(bk) || 0));
   localStorage.setItem(bk, best);
-  const isNewBest = score > 0 && score > prev;
-  const earned = s.acorns + s.goldens * 5 + s.waves * 5;          // 도토리 지갑: 주운 도토리 + 황금잎 5 + 폭풍 돌파 5
-  const wallet = walletAdd(earned);
-  lastResult = { key: s.key, score, best, isNewBest, earned, detail: runDetail(s) };
-  achReport({g:'leaf', key:s.key, score, combo:s.bestCombo||0, gold:s.goldens||0, coins:s.acorns||0});
-
-  const head = $('qHead');
-  head.className = '';
-  if (isNewBest) head.textContent = '🎉 신기록! ' + score + '점' + (prev ? ' (+' + (score - prev) + ')' : '');
-  else if (prev > 0 && score >= prev * 0.8) { head.textContent = '아깝다! 신기록까지 ' + (prev - score + 1) + '점'; head.className = 'near'; }
-  else head.textContent = score + '점';
-  $('qSub').textContent = (isNewBest ? '' : '최고 ' + best + '점 · ') + '"' + c.lose + '"';
-
-  renderQuickUp(s.key, '🌰 +' + earned + ' → 지갑 ');
-
-  showPauseBtn(false);
-  $('quick').classList.add('on'); quickAt = performance.now();
-  if (isNewBest) buzz([25, 50, 25, 50, 40]);
-}
-function runDetail(s) {
-  return '생존 ' + s.t.toFixed(1) + '초 · 도토리 ' + s.acorns + '개'
-    + (s.c.flip ? ' · 은행 ' + s.ginkgos + '개' : '')
-    + (s.goldens ? ' · 황금잎 ' + s.goldens + '개 ✨' : '')
-    + (s.waves ? ' · 폭풍 ' + s.waves + '번 돌파' : '')
-    + (s.grazes ? ' · 아슬 ' + s.grazes + '번' : '')
-    + (s.bestCombo >= 2 ? ' · 최고 ' + s.bestCombo + '콤보' : '');
-}
-function quickRetry() { if (performance.now() - quickAt < 450) return; ui.retry(); }   // 죽는 순간의 터치가 곧장 재시작되지 않게
-$('quick').addEventListener('click', quickRetry);
-$('qUpBtn').addEventListener('click', e => { e.stopPropagation(); ui.openUp(curKey); });
-$('qResBtn').addEventListener('click', e => { e.stopPropagation(); endGame(); });
-$('qSelBtn').addEventListener('click', e => { e.stopPropagation(); ui.toSelect(); });
-addEventListener('keydown', e => {
-  if (!$('quick').classList.contains('on') || $('upModal').classList.contains('on')) return;
-  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); quickRetry(); }
-});
-
-function endGame() {                                             // 결과·랭킹 화면 (한 판 더 시트의 '결과·랭킹' 버튼)
-  const s = state, c = s.c, score = lastResult.score, best = lastResult.best;
-  const isNewBest = lastResult.isNewBest;
-  $('resTitle').textContent = isNewBest ? '🎉 최고 기록!' : '게임 오버';
+  $('resTitle').textContent = best === score && score > 0 ? '🎉 최고 기록!' : '게임 오버';
+  const isNewBest = best === score && score > 0;
   const spr = (isNewBest ? spritesFace.win[s.key] : spritesFace.hit[s.key]) || sprites[s.key];
   $('resultImg').src = spr && spr.toDataURL ? spr.toDataURL() : c.img;
   $('resQuote').textContent = '"' + c.lose + '"';
   $('resScore').textContent = score + '점';
-  $('resDetail').textContent = lastResult.detail;
+  $('resDetail').textContent = '생존 ' + s.t.toFixed(1) + '초 · 도토리 ' + s.acorns + '개'
+    + (c.flip ? ' · 은행 ' + s.ginkgos + '개' : '')
+    + (s.goldens ? ' · 황금잎 ' + s.goldens + '개 ✨' : '')
+    + (s.bestCombo >= 2 ? ' · 최고 ' + s.bestCombo + '콤보' : '');
   $('resBest').textContent = c.name + ' 최고기록: ' + best + '점';
+  lastResult = { key: s.key, score, best, isNewBest, detail: $('resDetail').textContent };
+  const rr = recordRun(s, score);                                // 낙엽피하기 진행 누적 (잠금해제 판정)
+  const isChal = !!(challenge && challenge.key === s.key);
+  achReport({g:'leaf', key:s.key, score, combo:s.bestCombo||0, gold:s.goldens||0, coins:s.acorns||0,
+             sur:s.t, allUnlocked:Object.keys(UNLOCK).every(isUnlocked), chalWin:isChal && score > challenge.score});
   $('nameRow').style.display = (score >= 1 ? 'flex' : 'none');                 // 매 판 등록 가능 (랭킹은 이름당 최고점만 표시)
   $('nameInput').value = localStorage.getItem('somsom_name') || '';
   $('submitBtn').disabled = false; $('submitBtn').textContent = '🏆 랭킹 등록';
-  // 신기록 콘페티
-  document.querySelectorAll('#result .confetti').forEach(e => e.remove());
-  if (isNewBest) {
-    const cols = ['#e8c14a','#e8915a','#8a6fa8','#7fa05b','#d2452a','#375380'];
-    for (let i = 0; i < 26; i++) {
-      const sp = document.createElement('div');
-      sp.className = 'confetti';
-      sp.style.left = Math.random()*100 + '%';
-      sp.style.background = cols[i % cols.length];
-      sp.style.animationDelay = (Math.random()*0.9) + 's';
-      $('result').appendChild(sp);
-      setTimeout(() => sp.remove(), 4200);
-    }
+  // 죽음 화면: 항상 "거의"를 보여주고, 실패해도 게이지는 찬다 — "한 판 더"를 결정하는 유일한 순간
+  let near;
+  if (isChal && score > challenge.score) near = '🏆 ' + challenge.name + '의 ' + challenge.score + '점을 넘었어요!';
+  else if (isChal) near = '🎯 ' + challenge.name + '의 ' + challenge.score + '점까지 −' + (challenge.score - score) + '점';
+  else if (isNewBest) near = '🎉 ' + c.name + ' 최고기록 갱신!';
+  else {
+    const gap = best - score;
+    near = '최고기록까지 −' + gap + '점' + (gap <= Math.max(30, best * 0.2) ? ' — 거의 다 왔어요!' : '');
+    if (rr.prevT != null && s.t > rr.prevT + 0.05) near += ' · 지난 판보다 +' + (s.t - rr.prevT).toFixed(1) + '초';
   }
+  $('resNear').textContent = near;
+  $('resCause').textContent = '☠️ ' + (s.deathCause === 'branch' ? '나뭇가지' : '은행') + '에 맞음';
+  if (isChal) logEvent('challenge_result', { c: s.key, win: score > challenge.score ? 1 : 0, s: score, target: challenge.score });
+
+  const gained = rr.newUnlocks.map(k => '🔓 ' + CHARS[k].name + ' 해제!');
+  $('resUnlock').textContent = gained.join('  ');
+  $('resUnlock').classList.toggle('hidden', !gained.length);
+
+  let nextK = null, nextP = -1;                                  // 해제에 가장 가까운 잠긴 캐릭터
+  for (const k in UNLOCK) if (!isUnlocked(k)) { const p = unlockProgress(k) / UNLOCK[k].need; if (p > nextP) { nextP = p; nextK = k; } }
+  if (nextK) {
+    const u = UNLOCK[nextK], pr = unlockProgress(nextK);
+    $('resProg').innerHTML = `🔒 ${CHARS[nextK].name} 해제까지 — ${u.label} (${pr}/${u.need})<div class="bar"><i style="width:${Math.round(pr / u.need * 100)}%"></i></div>`;
+  } else {
+    $('resProg').textContent = '여섯 친구 모두 함께해요 · 업적은 홈에서 확인';
+  }
+
+  logEvent('run_end', { c: s.key, s: score, tm: s.t, cause: s.deathCause || '', cb: s.bestCombo, gl: s.goldens, a: s.acorns, r: leaf.runs, nb: isNewBest ? 1 : 0 });
+
+  document.querySelectorAll('#result .confetti').forEach(e => e.remove());
+  if (isNewBest || rr.newUnlocks.length || (isChal && score > challenge.score)) confetti();
   ui.show('result');
   buildGrid();
 }
+function confetti() {
+  const cols = ['#e8c14a','#e8915a','#8a6fa8','#7fa05b','#d2452a','#375380'];
+  for (let i = 0; i < 26; i++) {
+    const sp = document.createElement('div');
+    sp.className = 'confetti';
+    sp.style.left = Math.random()*100 + '%';
+    sp.style.background = cols[i % cols.length];
+    sp.style.animationDelay = (Math.random()*0.9) + 's';
+    $('result').appendChild(sp);
+    setTimeout(() => sp.remove(), 4200);
+  }
+}
+
+// ---------- 첫 판 온보딩 (기존 SD·소품 조합, 탭하면 시작) ----------
+let obTimer = null;
+function showOnboard(c) {
+  const rows = [
+    ['👈 👉', '화면 <b>왼쪽 / 오른쪽</b>을 누르면 이동 · 끌면 그 자리로'],
+    ['🌰 ✨', '도토리·황금잎 = <b>점수</b> (연속으로 콤보!)'],
+    c.flip ? ['<img src="../assets/prop_ginkgo.png" onerror="this.outerHTML=\'🟡\'">', '할머니는 <b>은행 = 점수</b>! 나뭇가지를 피해요']
+           : ['<img src="../assets/prop_ginkgo.png" onerror="this.outerHTML=\'🟡\'">', '<b>은행</b>은 피해요! 맞으면 냄새…'],
+  ];
+  if (c.shell || c.slow) rows.push(['👆👆', '<b>더블 터치</b> = ' + (c.shell ? '등딱지 쉘터' : '귀 슬로우')]);
+  $('obRows').innerHTML = rows.map(r => `<div class="obRow"><span class="obIcon">${r[0]}</span><span>${r[1]}</span></div>`).join('');
+  $('onboard').classList.remove('hidden');
+  state.hold = true;
+  obTimer = setTimeout(hideOnboard, 4500);
+}
+function hideOnboard() {
+  clearTimeout(obTimer);
+  $('onboard').classList.add('hidden');
+  if (state) { state.hold = false; state.last = performance.now(); }
+  if (!leaf.onboarded) { leaf.onboarded = 1; saveLeaf(); }
+}
+$('onboard').addEventListener('click', hideOnboard);
+$('onboard').addEventListener('touchstart', e => { e.preventDefault(); hideOnboard(); }, { passive: false });
 
 // ---------- 공유 랭킹보드 (Firebase Firestore) ----------
 const FB_KEY = 'AIzaSyBfld7SRrVTxDG0nE_6Z3Mw5kSRTo5bIGY';   // 공개용 식별자 (비밀키 아님)
 const FB_DOCS = 'https://firestore.googleapis.com/v1/projects/somsom-city/databases/(default)/documents';
+
+// ---------- 계측 (Firestore events, fire-and-forget) — 픽률·사망 시점·재플레이 분석용 ----------
+// ⚠️ Firestore 규칙에 /events/ 쓰기 허용이 있어야 저장됨 (없으면 조용히 실패, 게임엔 영향 없음)
+function logEvent(name, data) {
+  try {
+    const fields = { e: { stringValue: name }, g: { stringValue: 'leaf' }, t: { integerValue: String(Date.now()) },
+                     d: { stringValue: IS_TOUCH ? 'touch' : 'desktop' }, v: { stringValue: '2.0' } };
+    for (const k in (data || {})) {
+      const v = data[k];
+      fields[k] = typeof v === 'number' ? { integerValue: String(Math.round(v)) } : { stringValue: String(v) };
+    }
+    fetch(FB_DOCS + '/events?key=' + FB_KEY, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields }), keepalive: true }).catch(() => {});
+  } catch (e) {}
+}
 async function lbGet() {
   try {
     const r = await fetch(FB_DOCS + ':runQuery?key=' + FB_KEY, {
@@ -1249,6 +1208,9 @@ let lastResult = null;
 async function shareCard() {
   if (!lastResult) return;
   const c = CHARS[lastResult.key];
+  const myName = (localStorage.getItem('somsom_name') || '솜솜이').slice(0, 8);
+  const chUrl = location.origin + location.pathname + '?c=' + lastResult.score + '&k=' + lastResult.key + '&n=' + encodeURIComponent(myName);
+  logEvent('share_click', { c: lastResult.key, s: lastResult.score });
   const SC = 2, cw = 420, ch = 560;
   const cv2 = document.createElement('canvas'); cv2.width = cw*SC; cv2.height = ch*SC;
   const x = cv2.getContext('2d'); x.scale(SC, SC);
@@ -1264,29 +1226,40 @@ async function shareCard() {
   if (lastResult.isNewBest) { x.font = '800 18px sans-serif'; x.fillStyle = '#d2452a'; x.fillText('🎉 신기록 달성!', cw/2, 402); }
   x.font = '14px sans-serif'; x.fillStyle = '#5a4a3a'; x.fillText(lastResult.detail, cw/2, 436);
   x.font = '13px sans-serif'; x.fillText('"' + c.lose + '"', cw/2, 466);
+  x.font = '800 13px sans-serif'; x.fillStyle = '#d2452a';
+  x.fillText('🔥 이 기록에 도전하려면 링크를 눌러봐!', cw/2, 500);
   x.font = '12px sans-serif'; x.fillStyle = '#9a8b7a';
-  x.fillText('pang861209-rgb.github.io/somsom-city-game', cw/2, 524);
+  x.fillText('pang861209-rgb.github.io/somsom-city/leaf', cw/2, 524);
   const blob = await new Promise(r => cv2.toBlob(r, 'image/png'));
   const file = new File([blob], 'somsom_score.png', { type: 'image/png' });
+  const shareText = myName + '의 ' + c.name + ' ' + lastResult.score + '점에 도전! 🍂 솜솜시티: 은행 주의보';
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    try { await navigator.share({ files: [file], title: '솜솜시티: 은행 주의보' }); return; } catch (e) {}
+    try { await navigator.share({ files: [file], title: '솜솜시티: 은행 주의보', text: shareText, url: chUrl }); return; } catch (e) {}
   }
+  try { await navigator.clipboard.writeText(shareText + ' ' + chUrl); } catch (e) {}   // PC: 도전 링크 클립보드 복사
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob); a.download = 'somsom_score.png'; a.click();
 }
 
 function buildGrid() {
   const g = $('charGrid'); g.innerHTML = '';
-  $('walletChip').textContent = '🌰 ' + walletGet() + ' · 캐릭터를 강화해 더 멀리!';
   for (const k in CHARS) {
     const c = CHARS[k], best = localStorage.getItem('somsom2_best_' + k) || 0;
-    const stars = '★'.repeat(c.diff) + '☆'.repeat(3 - c.diff);
     const d = document.createElement('div');
-    d.className = 'card';
-    const lv = upLv(k), tot = lv.spd + lv.sig + lv.luck;
-    d.innerHTML = `<button class="upChip">🌰 Lv${tot}</button><img src="${c.sd}" onerror="this.src='${c.img}'" alt="${c.name}"><div class="nm">${c.name}</div><div class="ab">${c.desc}</div><div class="bs">BEST ${best}</div>`;
-    d.onclick = () => ui.showIntro(k);
-    d.querySelector('.upChip').onclick = e => { e.stopPropagation(); ui.openUp(k); };
+    const open = isPlayable(k), trial = open && !isUnlocked(k);   // trial: 오늘의 친구·친구 도전으로만 열린 체험 상태
+    d.className = 'card' + (open ? '' : ' locked');
+    const head = `<img src="${c.sd}" onerror="this.src='${c.img}'" alt="${c.name}"><div class="nm">${c.name}</div>`;
+    if (open) {
+      d.innerHTML = head + `<div class="ab">${trial ? (challenge && challenge.key === k ? '🎯 도전 체험' : '📅 오늘만 체험') + ' · ' : ''}${c.desc}</div><div class="bs">BEST ${best}</div>`;
+      d.onclick = () => ui.showIntro(k);
+    } else {
+      const u = UNLOCK[k], pr = unlockProgress(k);
+      d.innerHTML = head + `<div class="ab">🔒 ${u.label}</div><div class="prog"><i style="width:${Math.round(pr / u.need * 100)}%"></i></div><div class="bs">${pr} / ${u.need}</div>`;
+      d.onclick = () => {                                       // 잠긴 카드: 흔들림 + 진동으로 "아직"을 알림
+        d.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(0)' }], { duration: 240 });
+        buzz(30);
+      };
+    }
     g.appendChild(d);
   }
 }
@@ -1366,6 +1339,9 @@ const ACH = [
   {id:'leaf_5000',  g:'leaf',  n:'은행 도사',     d:'낙엽피하기 5,000점'},
   {id:'leaf_combo10',g:'leaf', n:'줍기의 달인',   d:'한 판에 10콤보'},
   {id:'leaf_gold5', g:'leaf',  n:'황금잎 수집가', d:'한 판에 황금잎 5장'},
+  {id:'leaf_sur60', g:'leaf',  n:'골목 터줏대감', d:'낙엽피하기 60초 생존'},
+  {id:'leaf_allchars',g:'leaf',n:'여섯 친구 집합', d:'잠긴 세 친구를 모두 해제'},
+  {id:'leaf_chalwin',g:'leaf', n:'도전 성공',     d:'친구의 기록을 넘었어요'},
   {id:'run_500',    g:'run',   n:'첫 질주',       d:'달리기 500m'},
   {id:'run_2000',   g:'run',   n:'출근길 정복',   d:'달리기 2,000m'},
   {id:'run_5000',   g:'run',   n:'마감 초월',     d:'달리기 5,000m'},
@@ -1411,6 +1387,9 @@ function achReport(ev){
     if(ev.score>=5000) achUnlock('leaf_5000');
     if((ev.combo||0)>=10) achUnlock('leaf_combo10');
     if((ev.gold||0)>=5)  achUnlock('leaf_gold5');
+    if((ev.sur||0)>=60)  achUnlock('leaf_sur60');
+    if(ev.allUnlocked)   achUnlock('leaf_allchars');
+    if(ev.chalWin)       achUnlock('leaf_chalwin');
   } else if(ev.g==='run'){
     if((ev.dist||0)>=500)  achUnlock('run_500');
     if((ev.dist||0)>=2000) achUnlock('run_2000');
@@ -1507,6 +1486,18 @@ function missionDone(g){
       setTimeout(()=>{ el.querySelector('.at').textContent='업적 달성'; }, 500); }, 2000); }
   return true;
 }
+
+// ── 친구 도전 링크로 들어온 경우: 타이틀 배너 + 시작 버튼이 해당 캐릭터 인트로로 직행 ──
+if (challenge) {
+  $('chBanner').textContent = '🔥 ' + challenge.name + '의 ' + CHARS[challenge.key].name + ' ' + challenge.score + '점에 도전!';
+  $('chBanner').classList.remove('hidden');
+  $('startBtn').textContent = '도전 받기';
+  $('startBtn').onclick = () => ui.showIntro(challenge.key);
+  logEvent('challenge_open', { c: challenge.key, target: challenge.score });
+}
+logEvent('session_start', { r: leaf.runs, ch: challenge ? 1 : 0 });
+buildGrid();                                                   // 오늘의 친구가 정해진 뒤 카드 체험 표시 갱신
 </script>
+<script src="../assets/bgm.js" data-pos="left:70px;top:8px" data-show-if="#pauseBtn:not([style*=block])"></script>
 </body>
 </html>

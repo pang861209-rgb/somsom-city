@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<link rel="apple-touch-icon" href="../assets/app_icon_180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon_32.png">
 <title>솜솜시티: 짝꿍을 찾아라!</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap">
 <style>
@@ -276,6 +278,23 @@
   #achToast{ top:calc(14px + env(safe-area-inset-top)); }
   img[src=""], img:not([src]){ visibility:hidden; }
 </style>
+
+<style id="heroTitle">
+  /* 솜솜시티 공통 히어로 타이틀 (방범대 타이틀 구성과 동일): 전면 삽화 + 로고 + 하단 바 */
+  #title{ padding:0 !important; gap:0 !important; justify-content:flex-start !important; overflow:hidden; background:linear-gradient(#b898cb 0%,#efae7e 60%,#caa26a 100%) !important; }
+  #titleBg{ position:absolute !important; left:0 !important; top:0 !important; bottom:auto !important; width:100% !important; height:calc(100% - 104px) !important; object-fit:cover; object-position:center bottom; filter:none !important; z-index:0; }
+  .titleChar{ display:none !important; }
+  #titleTop{ position:relative; z-index:2; margin-top:52px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .logoTop{ font-size:14px; font-weight:800; color:#fff7e8; letter-spacing:5px; text-shadow:0 2px 0 rgba(96,58,38,.5); font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; }
+  #titleLogo{ font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif !important; font-size:44px !important; line-height:1.1 !important; font-weight:900 !important; color:#fff7e8 !important; letter-spacing:2px !important; transform:rotate(-2deg); margin:0 !important;
+    text-shadow:0 3px 0 #7c4a2d, 0 7px 16px rgba(60,30,20,.4) !important; }
+  #titleSub{ margin-top:2px !important; font-size:12px !important; font-weight:700 !important; color:#5a4130 !important; background:rgba(255,247,232,.85); border:1.5px solid rgba(124,74,45,.5); border-radius:20px; padding:5px 14px; text-shadow:none !important; }
+  #titleBottom{ position:absolute; left:0; right:0; bottom:0; z-index:2; height:104px; padding:12px 20px 8px; display:flex; flex-direction:column; align-items:center; gap:8px;
+    background:linear-gradient(#402419,#2f1a12); border-top:1.5px solid rgba(255,239,216,.16); box-shadow:0 -10px 22px rgba(40,20,10,.28); }
+  #titleBottom #startBtn{ font-size:17px !important; padding:12px 48px !important; border-radius:16px !important; background:#ffb35c !important; border:2px solid #5a2f1c !important; color:#4a2416 !important; box-shadow:0 4px 0 #5a2f1c !important; font-family:inherit; font-weight:800; }
+  #titleBottom #startBtn:active{ transform:translateY(4px) !important; box-shadow:none !important; }
+  .titleTag{ font-size:10px; font-weight:700; color:rgba(255,239,216,.55); letter-spacing:1px; }
+</style>
 </head>
 <body>
 <div id="app">
@@ -291,13 +310,16 @@
   <a href="../" class="homeBtn" title="솜솜시티 홈">← 홈</a>
 
   <div id="title" class="screen">
-    <img id="titleBg" src="../assets/title_bg_match.png" onerror="this.onerror=null;this.src='../assets/title_main.png';" alt="카드가 깔린 테이블">
-    <img class="titleChar" src="../assets/sd_boneul_t.png" alt="보늘" style="position:absolute;right:6px;bottom:92px;width:120px;height:auto;z-index:1;pointer-events:none;filter:drop-shadow(0 4px 5px rgba(90,74,58,.22));">
+    <img id="titleBg" src="../assets/title_hero_match.jpg" onerror="this.onerror=null;this.src='../assets/title_bg_match.png';" alt="카페 테이블에서 카드를 고르는 보늘과 미개">
     <div id="titleTop">
-      <h1 id="titleLogo">솜솜시티: 짝꿍을 찾아라!</h1>
+      <div class="logoTop">🥕 솜솜시티</div>
+      <h1 id="titleLogo">짝꿍을 찾아라!</h1>
       <div id="titleSub">뒤집힌 카드 속, 솜솜 친구들의 하루를 맞춰봐!</div>
     </div>
-    <button id="startBtn" onclick="ui.toSetup()">시작하기</button>
+    <div id="titleBottom">
+      <button id="startBtn" onclick="ui.toSetup()">카드 뒤집으러 가기</button>
+      <span class="titleTag">GAME 03 · 짝맞추기</span>
+    </div>
   </div>
 
   <div id="setup" class="screen hidden">
@@ -371,7 +393,7 @@
       <button id="submitBtn" onclick="submitScore()">🏆 랭킹 등록</button>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
-      <button onclick="ui.retry()" style="background:#F2C14B;color:#221E18;">다시 도전 ▶</button>
+      <button onclick="ui.retry()">다시 도전</button>
       <button onclick="ui.toSetup()">친구 변경</button>
       <button onclick="shareCard()">📸 자랑하기</button>
     </div>
@@ -771,21 +793,13 @@ function finishGame() {
   setTimeout(() => showResult(score, timeBonus, effBonus, perfect), 900);
 }
 
-function walletGet(){                                             // 세 게임 공용 도토리 지갑 — 낙엽피하기 강화에 쓴다
-  let v = localStorage.getItem('somsom_wallet');
-  if (v === null) { v = String((achStats().coins) || 0); try { localStorage.setItem('somsom_wallet', v); } catch(e){} }
-  return +v || 0;
-}
-function walletAdd(n){ const v = Math.max(0, walletGet() + n); try { localStorage.setItem('somsom_wallet', String(v)); } catch(e){} return v; }
 function showResult(score, timeBonus, effBonus, perfect) {
   const c = CHARS[curChar];
-  const bk = 'somsom3_best_' + curChar, prev = +(localStorage.getItem(bk) || 0);
-  const best = Math.max(score, prev);
+  const bk = 'somsom3_best_' + curChar;
+  const best = Math.max(score, +(localStorage.getItem(bk) || 0));
   localStorage.setItem(bk, best);
-  const isNewBest = score > 0 && score > prev;                    // 예전엔 최고점과 '같아도' 신기록으로 떴다
-  const near = !isNewBest && prev > 0 && score >= prev * 0.8;     // 니어미스: 얼마나 아까웠는지 보여준다
-  $('resTitle').textContent = (curDaily ? '📅 오늘의 도전 ' : '') +
-    (isNewBest ? '🎉 최고 기록!' + (prev ? ' (+' + (score - prev) + ')' : '') : near ? '아깝다! 신기록까지 ' + (prev - score + 1) + '점' : '클리어!');
+  const isNewBest = best === score && score > 0;
+  $('resTitle').textContent = (curDaily ? '📅 오늘의 도전 ' : '') + (isNewBest ? '🎉 최고 기록!' : '클리어!');
   $('resultImg').src = c.win;
   $('resQuote').textContent = '"' + c.clear + '"';
   $('resScore').textContent = score + '점';
@@ -798,8 +812,7 @@ function showResult(score, timeBonus, effBonus, perfect) {
   const justCompleted = dexArr.length === c.pool && g.newDex > 0;
   $('resDex').textContent = (g.newDex > 0 ? `📖 새 컷 ${g.newDex}장 수집! ` : '') + `도감 ${dexArr.length}/${c.pool}` +
     (justCompleted ? ' 완성! 🎁 스페셜 컷 해금 — 도감에서 확인하세요!' : (dexArr.length === c.pool ? ' 완성! 🏅' : ''));
-  const wallet = walletAdd(c.pairs);                              // 공용 도토리 지갑: 짝 하나에 1개 (낙엽피하기 강화용)
-  $('resBest').textContent = c.name + ' 최고기록: ' + best + '점 · 🌰 +' + c.pairs + ' → 지갑 ' + wallet;
+  $('resBest').textContent = c.name + ' 최고기록: ' + best + '점';
   lastResult = { key: curChar, diff: c.diff, score, isNewBest, daily: curDaily, detail: $('resDetail').textContent };
   achReport({g:'match', key:curChar, diff:c.diff, cleared:true, misses:g.misses||0, time:g.elapsed||0, coins:0});
   $('nameRow').style.display = score >= 1 ? 'flex' : 'none';
@@ -1045,7 +1058,7 @@ function pauseGame(){ if(paused||!canPause())return; paused=true; pauseLock=g.lo
   $('pauseWrap').classList.add('on'); }
 function resumeGame(){ if(!paused)return; paused=false; $('pauseWrap').classList.remove('on');
   if(g && !g.done){ g.t0 = performance.now() - g.elapsed*1000; g.lock = pauseLock; tickTimer();
-    if(CHARS[g.key] && CHARS[g.key].rule==='sleepy') startSleepy(); startBgm(); } }
+    if(CHARS[curChar] && CHARS[curChar].rule==='sleepy') startSleepy();   /* g엔 key가 없어 보늘 졸기가 일시정지 후 안 켜졌음 */ startBgm(); } }
 function showPauseBtn(v){ $('pauseBtn').style.display = v ? 'block' : 'none'; if(!v){ paused=false; $('pauseWrap').classList.remove('on'); } }
 $('pauseBtn').addEventListener('click', e=>{ e.stopPropagation(); pauseGame(); });
 $('pauseResume').addEventListener('click', e=>{ e.stopPropagation(); resumeGame(); });
@@ -1058,7 +1071,7 @@ addEventListener('keydown', e=>{ if(e.key==='Escape'){ paused?resumeGame():pause
 let bgmTimer = null, bgmStep = 0;
 const BGM_NOTES = [523, 587, 659, 587, 523, 494, 440, 494, 523, 440, 392, 440, 523, 587, 523, 494];
 function startBgm() {
-  if (muted || bgmTimer) return;
+  if (window.SomsomBgm || muted || bgmTimer) return;   // 솜솜시티 테마곡이 배경음을 맡는다
   try { ac(); } catch (e) { return; }
   bgmTimer = setInterval(() => {
     if (muted || !g || g.done || paused) return;
@@ -1176,5 +1189,6 @@ function missionDone(g){
   return true;
 }
 </script>
+<script src="../assets/bgm.js" data-pos="left:70px;top:8px" data-show-if="#game.hidden"></script>
 </body>
 </html>
