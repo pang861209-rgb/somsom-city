@@ -27,6 +27,17 @@
   #profChip .pn{font-size:12px;font-weight:700;color:#EFE7D6;max-width:76px;overflow:hidden;
     text-overflow:ellipsis;white-space:nowrap;display:block;}
   #profChip .pc{font-size:11px;font-weight:700;color:#F2C14B;display:block;}
+  #profChip .ed{font-size:11px;opacity:.55;margin-left:-2px;}
+  #profChip.noname .pn{color:#F2C14B;}
+  /* 이름 정하기 */
+  #nameField{width:100%;background:rgba(255,255,255,.09);border:none;border-radius:14px;padding:13px 14px;
+    font:700 16px 'Gowun Dodum','Apple SD Gothic Neo',sans-serif;color:#EFE7D6;outline:none;}
+  #nameField::placeholder{color:#8A8271;}
+  #nameField:focus{box-shadow:0 0 0 2px #F2C14B inset;}
+  .nameNote{font-size:11.5px;color:#A9A08C;line-height:1.55;}
+  .nameErr{font-size:11.5px;color:#E48468;min-height:16px;}
+  .nameBtns{display:flex;gap:8px;}
+  .nameBtns .pri{background:#F2C14B;color:#221E18;}
 
 
   /* 테마곡 */
@@ -131,7 +142,7 @@
   <header>
     <div class="logo">솜솜시티</div>
     <button id="bgmBtn" aria-label="솜솜시티 노래"><span class="nt">♪</span><span class="eq"><i></i><i></i><i></i></span></button>
-    <div id="profChip"><img id="profAv" src="assets/sd_kkito_t.png" alt=""><span><span class="pn" id="profName">솜솜이</span><span class="pc" id="profCoin">🌰 0</span></span></div>
+    <div id="profChip"><img id="profAv" src="assets/sd_kkito_t.png" alt=""><span><span class="pn" id="profName">솜솜이</span><span class="pc" id="profCoin">🌰 0</span></span><span class="ed">✏️</span></div>
   </header>
 
   <div id="missionBox">
@@ -186,6 +197,20 @@
       <div class="hd"><span class="t">도감</span><span class="c" id="dexCount"></span></div>
       <div id="dexList"></div>
       <button class="footBtn" id="dexClose">닫기</button>
+    </div>
+  </div>
+
+  <div id="namePanel" class="sheetWrap">
+    <div class="sheet">
+      <div class="hd"><span class="t">이름 정하기</span><span class="c" id="nameCount">0 / 8</span></div>
+      <input id="nameField" maxlength="8" placeholder="랭킹에 쓸 이름 (8자)" autocomplete="off" enterkeyhint="done">
+      <div class="nameErr" id="nameErr"></div>
+      <div class="nameNote">모든 게임의 랭킹에 이 이름으로 올라가요.<br>이름을 바꾸면 이전 이름으로 올린 기록은 그대로 남고, 앞으로의 기록부터 새 이름으로 올라가요.</div>
+      <div class="nameBtns">
+        <button class="footBtn" id="nameCancel">취소</button>
+        <button class="footBtn pri" id="nameSave">저장</button>
+      </div>
+      <button class="footBtn" id="nameToAch">🏅 내 업적 보기</button>
     </div>
   </div>
 
@@ -359,7 +384,10 @@ function renderProfile(){
   document.getElementById('profName').textContent=nm;
   document.getElementById('profCoin').textContent='🌰 '+(st.coins||0);
   const av=document.getElementById('profAv'); av.src=CH_AV[top]||CH_AV.kkito; av.alt=CH_NAME[top]||'';
-  document.getElementById('profChip').title=nm+' · '+titleFor(st.coins||0)+' · 대표 '+(CH_NAME[top]||'');
+  document.getElementById('profChip').title=nm+' · '+titleFor(st.coins||0)+' · 대표 '+(CH_NAME[top]||'')+' · 눌러서 이름 바꾸기';
+  const hasName=!!localStorage.getItem('somsom_name');
+  document.getElementById('profChip').classList.toggle('noname', !hasName);
+  if(!hasName) document.getElementById('profName').textContent='이름 정하기';
 }
 function renderMissions(){
   const sp=missionSpec(), done=(missionLoad()[String(dayKey())])||{};
@@ -417,7 +445,33 @@ renderProfile(); renderMissions();
 document.getElementById('wkOpen').addEventListener('click', ()=>{ document.getElementById('wkPanel').classList.add('on'); renderWeekly(); });
 document.getElementById('wkClose').addEventListener('click', ()=> document.getElementById('wkPanel').classList.remove('on'));
 document.getElementById('wkPanel').addEventListener('click', e=>{ if(e.target.id==='wkPanel') e.currentTarget.classList.remove('on'); });
-document.getElementById('profChip').addEventListener('click', ()=>{ document.getElementById('achOpen').click(); });
+// ── 이름 정하기·바꾸기 — 여섯 게임이 모두 somsom_name 하나를 쓰므로 여기서 바꾸면 전부 반영 ──
+function cleanName(v){ return String(v||'').replace(/[<>&"'`\\]/g,'').replace(/\s+/g,' ').trim().slice(0,8); }
+function openNameSheet(){
+  const f=document.getElementById('nameField');
+  f.value=localStorage.getItem('somsom_name')||'';
+  document.getElementById('nameErr').textContent='';
+  document.getElementById('nameCount').textContent=f.value.length+' / 8';
+  document.getElementById('namePanel').classList.add('on');
+  setTimeout(()=>{ f.focus(); f.select(); }, 60);
+}
+function closeNameSheet(){ document.getElementById('namePanel').classList.remove('on'); }
+function saveName(){
+  const f=document.getElementById('nameField'), nm=cleanName(f.value);
+  if(!nm){ document.getElementById('nameErr').textContent='이름을 한 글자 이상 적어 주세요'; f.focus(); return; }
+  try{ localStorage.setItem('somsom_name', nm); }catch(e){}
+  closeNameSheet(); renderProfile();
+}
+document.getElementById('nameField').addEventListener('input', e=>{
+  document.getElementById('nameCount').textContent=e.target.value.length+' / 8';
+  document.getElementById('nameErr').textContent='';
+});
+document.getElementById('nameField').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); saveName(); } });
+document.getElementById('nameSave').addEventListener('click', saveName);
+document.getElementById('nameCancel').addEventListener('click', closeNameSheet);
+document.getElementById('nameToAch').addEventListener('click', ()=>{ closeNameSheet(); document.getElementById('achOpen').click(); });
+document.getElementById('namePanel').addEventListener('click', e=>{ if(e.target.id==='namePanel') closeNameSheet(); });
+document.getElementById('profChip').addEventListener('click', openNameSheet);
 </script>
 <script>
 // 누적 도토리로 열리는 칭호 — 도토리를 마을 공용 재화로 쓰는 첫 장치
