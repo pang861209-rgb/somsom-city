@@ -72,7 +72,8 @@
   #titleBottom #titleHint{font-size:10.5px;color:rgba(255,239,216,.72);line-height:1.45;
     text-align:center;margin:0;}
   /* 결과는 통을 가리지 않는다 — 끝난 통 모습이 "내 통 봐"가 된다 */
-  #sResult{background:rgba(253,251,245,.28);justify-content:flex-end;padding-bottom:26px;}
+  #sResult{background:rgba(253,251,245,.28);justify-content:flex-start;padding-bottom:26px;overflow-y:auto;}
+  #sResult .card{margin-top:auto;flex-shrink:0;}   /* 아래에 붙이되, 넘치면 위가 잘리지 않고 스크롤된다 */
   @keyframes cardUp{from{transform:translateY(36px);opacity:0}to{transform:none;opacity:1}}
   #sResult .card{animation:cardUp .4s ease-out;background:#FDFBF5;border:2px solid #221E18;border-radius:18px;
     box-shadow:3px 3px 0 #221E18;padding:18px 22px 20px;display:flex;flex-direction:column;
@@ -102,6 +103,7 @@
   #resCut img{height:210px;width:auto;max-width:100%;object-fit:contain;
     border-radius:13px;border:2px solid #221E18;box-shadow:2px 2px 0 #221E18;cursor:zoom-in;}
   #resCut span{font-size:11.5px;font-weight:800;color:#8A6A1A;}
+  @media (max-height:640px){ #resCut img{height:150px;} }
   /* 컷 크게 보기 */
   #cutBig{position:absolute;inset:0;z-index:40;display:none;align-items:center;justify-content:center;
     background:rgba(34,30,24,.88);padding:18px;}
@@ -1753,6 +1755,6 @@ show('sTitle');
 maybeWhatsNew();
 requestAnimationFrame(t=>{ last = t; frame(t); });
 </script>
-<script src="../assets/bgm.js" data-pos="left:90px;top:4px" data-show-if="#sTitle:not(.hidden), #sResult:not(.hidden)"></script>
+<script src="../assets/bgm.js" data-pos="left:90px;top:4px" data-show-if="#sTitle:not(.hidden)"></script>
 </body>
 </html>
