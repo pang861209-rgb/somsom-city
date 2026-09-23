@@ -127,6 +127,26 @@
     font-size:13.5px;font-weight:800;color:#221E18;cursor:pointer;font-family:inherit;}
   #dailyBtn2:active{transform:translateY(1px);filter:brightness(.94);}
 
+  /* ── 한 판 더 (즉시 재시작 시트) — 가로 화면이라 낮고 넓게 ── */
+  #quick{position:absolute;inset:0;z-index:58;display:none;align-items:flex-end;justify-content:center;cursor:pointer;
+    background:linear-gradient(to bottom,rgba(34,30,24,0) 25%,rgba(34,30,24,.75) 70%);font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;}
+  #quick.on{display:flex;animation:qIn .28s ease-out;}
+  @keyframes qIn{from{opacity:0}to{opacity:1}}
+  #quickCard{margin:0 12px 10px;width:min(520px,100%);background:#2B2620;border-radius:20px;padding:12px 14px 10px;color:#EFE7D6;
+    display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center;animation:qUp .32s cubic-bezier(.2,.8,.3,1);
+    box-shadow:0 18px 28px -16px rgba(0,0,0,.7);}
+  @keyframes qUp{from{transform:translateY(30px)}to{transform:translateY(0)}}
+  #qHead{font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif;font-size:21px;color:#F2C14B;line-height:1.15;}
+  #qHead.near{color:#FF8A4C;animation:qPulse .9s ease-in-out infinite;transform-origin:left center;}
+  @keyframes qPulse{50%{transform:scale(1.04)}}
+  #qSub{font-size:11.5px;color:#A9A08C;grid-column:1;}
+  #qTap{grid-column:2;grid-row:1 / span 2;font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif;font-size:17px;color:#221E18;
+    background:#F2C14B;border-radius:15px;padding:12px 16px;text-align:center;animation:qBlink 1.2s ease-in-out infinite;white-space:nowrap;}
+  @keyframes qBlink{50%{filter:brightness(1.12)}}
+  #qRow{grid-column:1 / span 2;display:flex;gap:7px;}
+  #qRow button{flex:1;border:0;border-radius:13px;padding:7px 6px;font-size:12px;font-weight:800;background:rgba(255,255,255,.10);
+    color:#EFE7D6;font-family:inherit;cursor:pointer;box-shadow:none;}
+
   /* ═══ B안 스킨 — 게임 화면(DOM)을 허브와 같은 톤으로. 캔버스 게임플레이는 밝게 유지 ═══ */
   body{background:#221E18;color:#EFE7D6;}
   .screen{background:#221E18;color:#EFE7D6;}
@@ -249,6 +269,17 @@
     </div>
   </div></div>
   <a href="../" class="homeBtn" title="솜솜시티 홈">← 홈</a>
+  <div id="quick">
+    <div id="quickCard">
+      <div id="qHead"></div>
+      <div id="qSub"></div>
+      <div id="qTap">탭하면 바로 다시 ▶</div>
+      <div id="qRow">
+        <button id="qResBtn">결과·랭킹</button>
+        <button id="qSelBtn">캐릭터 변경</button>
+      </div>
+    </div>
+  </div>
   <canvas id="cv" width="760" height="420"></canvas>
 
   <div id="title" class="screen">
@@ -455,7 +486,7 @@ function spawnGems(s){
 function loop(now){
   const s=S; if(!s||paused)return;   // 정지 중엔 프레임을 진행하지 않음
   if(H>W){ s.last=performance.now(); raf=requestAnimationFrame(loop); return; }   // 세로 화면 = 일시정지
-  let dt=Math.min(.05,(now-s.last)/1000); s.last=now;
+  let dt=Math.max(0,Math.min(.05,(now-s.last)/1000)); s.last=now;   // rAF 시각이 시작 시각보다 앞서면 음수가 된다
   if(s.over)dt*=.25; if(s.hitstop>0){ s.hitstop-=dt; dt=0; }
   if(s.c.zone && !s.over){                                  // 보늘: 위험이 가까우면 세상이 느려짐
     let near=1e9;
@@ -586,7 +617,7 @@ function loop(now){
   if(s.comboT>0 && !s.over){ s.comboT-=dt; if(s.comboT<=0) s.combo=0; }   // 줍기 끊기면 콤보 리셋
 
   draw(s,now,score);
-  if(s.over && now-s.overAt>800) return endGame(score);
+  if(s.over && now-s.overAt>800) return quickOver(score);
   raf=requestAnimationFrame(loop);
 }
 
@@ -665,6 +696,15 @@ function draw(s,now,score){
   if(s.introT>0){ ctx.globalAlpha=Math.min(1,s.introT/.4); ctx.font='800 18px sans-serif'; ctx.textAlign='center'; ctx.fillStyle='#5a4a3a'; ctx.strokeStyle='#fff'; ctx.lineWidth=4; ctx.strokeText(s.c.intro,W/2,80); ctx.fillText(s.c.intro,W/2,80); ctx.globalAlpha=1; }
   // HUD
   ctx.fillStyle='#5a4a3a'; ctx.font='800 22px sans-serif'; ctx.textAlign='left'; ctx.fillText(score+' m',150,36);   // 88: 좌상단 '← 홈' 버튼과 겹치지 않게
+  if(s.best>0 && !s.recordShown){                     // 신기록 게이지 — 가까울수록 눈에 띄게
+    const r=Math.min(1,score/s.best), gw=110;
+    ctx.fillStyle='rgba(90,74,58,.22)'; ctx.beginPath(); ctx.roundRect(150,44,gw,6,3); ctx.fill();
+    ctx.fillStyle=r>0.8?'#e8740a':'#d9a400'; ctx.beginPath(); ctx.roundRect(150,44,Math.max(6,gw*r),6,3); ctx.fill();
+    if(r>0.8){ ctx.globalAlpha=0.8+0.2*Math.sin(now/120); ctx.font='800 12px sans-serif'; ctx.fillStyle='#e8740a';
+      ctx.strokeStyle='#fff'; ctx.lineWidth=3; const t2='신기록까지 '+(s.best-score+1)+' m';
+      ctx.strokeText(t2,150,64); ctx.fillText(t2,150,64); ctx.globalAlpha=1; }
+    ctx.fillStyle='#5a4a3a';
+  }
   ctx.font='800 15px sans-serif'; ctx.textAlign='right'; ctx.fillText('🌰 '+s.coins,W-14,30);
   if(s.combo>=2){                                     // 콤보 표시 (남은 시간 줄면 흐려짐)
     ctx.globalAlpha=Math.min(1,0.4+s.comboT/3.0*0.6);
@@ -687,10 +727,40 @@ function draw(s,now,score){
 }
 
 // ================= 종료/결과 =================
-function endGame(score){
-  const s=S, key=s.key, c=s.c;
-  const best=Math.max(score,+(localStorage.getItem('runner_best_'+key)||0));
-  const isNew=score>0&&score>=best; localStorage.setItem('runner_best_'+key,best);
+// 죽으면 결과 화면 대신 이 시트. 화면 아무 데나 탭 = 같은 캐릭터로 즉시 다음 판 (재시작 마찰 0)
+function walletGet(){                                   // 세 게임 공용 도토리 지갑 — 낙엽피하기 강화에 쓴다
+  let v=localStorage.getItem('somsom_wallet');
+  if(v===null){ v=String((achStats().coins)||0); try{ localStorage.setItem('somsom_wallet',v); }catch(e){} }
+  return +v||0;
+}
+function walletAdd(n){ const v=Math.max(0,walletGet()+n); try{ localStorage.setItem('somsom_wallet',String(v)); }catch(e){} return v; }
+let quickAt=0;
+function quickOver(score){
+  const s=S; if(s.settled)return; s.settled=true;       // 판당 한 번만 정산
+  const key=s.key, c=s.c, prev=s.best;
+  const best=Math.max(score,prev); localStorage.setItem('runner_best_'+key,best);
+  const isNew=score>0&&score>prev;
+  const wallet=walletAdd(s.coins);
+  if(window.SV) SV.add('run', s.coins, key);                          // 마을 창고 — 판당 한 번
+  lastResult={key,score,coins:s.coins,best,isNew};
+  achReport({g:'run', key, dist:score,   /* 화면에 보이는 m로 판정 (#33) */ nears:s.nears||0, tights:s.tights||0, combo:s.bestCombo||0, coins:s.coins||0});
+  const head=$('qHead'); head.className='';
+  if(isNew) head.textContent='🎉 신기록! '+score+' m'+(prev?' (+'+(score-prev)+')':'');
+  else if(prev>0 && score>=prev*0.8){ head.textContent='아깝다! 신기록까지 '+(prev-score+1)+' m'; head.className='near'; }
+  else head.textContent=score+' m';
+  $('qSub').textContent=(isNew?'':'최고 '+best+' m · ')+'🌰 +'+s.coins+' → 지갑 '+wallet+' (낙엽피하기 강화에 쓸 수 있어요)';
+  showPauseBtn(false);
+  $('quick').classList.add('on'); quickAt=performance.now();
+}
+function quickRetry(){ if(performance.now()-quickAt<450)return; ui.replay(); }   // 죽는 순간의 탭이 곧장 재시작되지 않게
+$('quick').addEventListener('click',quickRetry);
+$('quick').addEventListener('touchstart',e=>{ e.stopPropagation(); },{passive:true});
+$('qResBtn').addEventListener('click',e=>{ e.stopPropagation(); endGame(lastResult.score); });
+$('qSelBtn').addEventListener('click',e=>{ e.stopPropagation(); ui.toSelect(); });
+addEventListener('keydown',e=>{ if(!$('quick').classList.contains('on'))return; if(e.key===' '||e.key==='Enter'||e.key==='ArrowUp'){ e.preventDefault(); quickRetry(); } });
+
+function endGame(score){                                // 결과·랭킹 화면 (시트의 '결과·랭킹' 버튼)
+  const s=S, key=s.key, c=s.c, best=lastResult.best, isNew=lastResult.isNew;
   $('resTitle').textContent=isNew?'🎉 최고 기록!':'게임 오버';
   const spr=(sprites[key]&&sprites[key].length)?sprites[key][0]:null; $('resImg').src=spr&&spr.toDataURL?spr.toDataURL():c.sd;
   $('resQuote').textContent='"'+(c.name==='끼토'?LOSE:c.intro)+'"';
@@ -701,9 +771,6 @@ function endGame(score){
     +(s.slams?' · 부순 장애물 '+s.slams:'')
     +(s.nears?' · 아슬아슬 '+s.nears+'회'+(s.tights?' (완벽 '+s.tights+')':''):'');
   $('resBest').textContent=c.name+' 최고기록: '+best+' m';
-  lastResult={key,score,coins:s.coins,best,isNew};
-  if (window.SV) SV.add('run', s.coins, key);                        // 마을 창고
-  achReport({g:'run', key, dist:score,   /* 화면에 보이는 m로 판정 — 예전엔 내부 픽셀 거리(≈화면의 12배)라 '500m' 업적이 42m에서 열렸다 */ nears:s.nears||0, tights:s.tights||0, combo:s.bestCombo||0, coins:s.coins||0});
   $('nameRow').style.display=score>=1?'flex':'none';
   $('nameInput').value=localStorage.getItem('somsom_name')||'';
   $('submitBtn').disabled=false; $('submitBtn').textContent='🏆 랭킹 등록';
@@ -781,7 +848,7 @@ const INTRO={
 };
 let introTimer=null, introPending=null;
 const ui={
-  show(id){ for(const s of ['title','select','intro','ranking','result']) $(s).classList.toggle('hidden',s!==id); showPauseBtn(id === 'none'); },
+  show(id){ for(const s of ['title','select','intro','ranking','result']) $(s).classList.toggle('hidden',s!==id); showPauseBtn(id === 'none'); $('quick').classList.remove('on'); },
   showIntro(key){
     clearTimeout(introTimer);
     introPending=key;
