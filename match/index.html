@@ -393,7 +393,7 @@
       <button id="submitBtn" onclick="submitScore()">🏆 랭킹 등록</button>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
-      <button onclick="ui.retry()">다시 도전</button>
+      <button onclick="ui.retry()" style="background:#F2C14B;color:#221E18;">다시 도전 ▶</button>
       <button onclick="ui.toSetup()">친구 변경</button>
       <button onclick="shareCard()">📸 자랑하기</button>
     </div>
@@ -793,13 +793,21 @@ function finishGame() {
   setTimeout(() => showResult(score, timeBonus, effBonus, perfect), 900);
 }
 
+function walletGet(){                                             // 세 게임 공용 도토리 지갑 — 낙엽피하기 강화에 쓴다
+  let v = localStorage.getItem('somsom_wallet');
+  if (v === null) { v = String((achStats().coins) || 0); try { localStorage.setItem('somsom_wallet', v); } catch(e){} }
+  return +v || 0;
+}
+function walletAdd(n){ const v = Math.max(0, walletGet() + n); try { localStorage.setItem('somsom_wallet', String(v)); } catch(e){} return v; }
 function showResult(score, timeBonus, effBonus, perfect) {
   const c = CHARS[curChar];
-  const bk = 'somsom3_best_' + curChar;
-  const best = Math.max(score, +(localStorage.getItem(bk) || 0));
+  const bk = 'somsom3_best_' + curChar, prev = +(localStorage.getItem(bk) || 0);
+  const best = Math.max(score, prev);
   localStorage.setItem(bk, best);
-  const isNewBest = best === score && score > 0;
-  $('resTitle').textContent = (curDaily ? '📅 오늘의 도전 ' : '') + (isNewBest ? '🎉 최고 기록!' : '클리어!');
+  const isNewBest = score > 0 && score > prev;                    // 예전엔 최고점과 '같아도' 신기록으로 떴다
+  const near = !isNewBest && prev > 0 && score >= prev * 0.8;     // 니어미스: 얼마나 아까웠는지 보여준다
+  $('resTitle').textContent = (curDaily ? '📅 오늘의 도전 ' : '') +
+    (isNewBest ? '🎉 최고 기록!' + (prev ? ' (+' + (score - prev) + ')' : '') : near ? '아깝다! 신기록까지 ' + (prev - score + 1) + '점' : '클리어!');
   $('resultImg').src = c.win;
   $('resQuote').textContent = '"' + c.clear + '"';
   $('resScore').textContent = score + '점';
@@ -812,7 +820,8 @@ function showResult(score, timeBonus, effBonus, perfect) {
   const justCompleted = dexArr.length === c.pool && g.newDex > 0;
   $('resDex').textContent = (g.newDex > 0 ? `📖 새 컷 ${g.newDex}장 수집! ` : '') + `도감 ${dexArr.length}/${c.pool}` +
     (justCompleted ? ' 완성! 🎁 스페셜 컷 해금 — 도감에서 확인하세요!' : (dexArr.length === c.pool ? ' 완성! 🏅' : ''));
-  $('resBest').textContent = c.name + ' 최고기록: ' + best + '점';
+  const wallet = walletAdd(c.pairs);                              // 공용 도토리 지갑: 짝 하나에 1개 (낙엽피하기 강화용)
+  $('resBest').textContent = c.name + ' 최고기록: ' + best + '점 · 🌰 +' + c.pairs + ' → 지갑 ' + wallet;
   lastResult = { key: curChar, diff: c.diff, score, isNewBest, daily: curDaily, detail: $('resDetail').textContent };
   achReport({g:'match', key:curChar, diff:c.diff, cleared:true, misses:g.misses||0, time:g.elapsed||0, coins:0});
   $('nameRow').style.display = score >= 1 ? 'flex' : 'none';
