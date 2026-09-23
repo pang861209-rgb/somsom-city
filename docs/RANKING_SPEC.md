@@ -126,6 +126,7 @@ async function pushProgress(){
 
 - 점수형 (`merge_scores`) — 한 판의 점수 `{ n, s, d, t }`. `d`는 그 판의 "오늘의 통" 날짜(YYYYMMDD 정수)라 같은 날끼리 비교할 수 있습니다. 주간 랭킹에 들어감.
 - 진도형 (`merge_progress`) — `{ n, st:최고 도달 단계, b:최고 점수, t }`. 문서 ID는 닉네임.
+- 퍼즐형 (`merge_puzzle`, v3) — 오늘의 퍼즐 한 판 `{ n, s, d, k:별 0~3, t }`. 모두 같은 문제를 푸니 `d`가 같은 기록끼리만 비교합니다. 주간 랭킹에는 넣지 않습니다. 규칙 블록은 `docs/firestore.rules` 맨 끝에 있습니다.
 
 > 2026-09-13 기준. 「골목 원정대」(`expedition_*`)는 M0 게이트에서 탈락해 허브에서 내렸습니다. 아래 규칙에서도 `merge_*`로 바뀌었습니다.
 
