@@ -637,7 +637,9 @@ function newState(key) {
     bubble: null, recordShown: false, prevBest: +(localStorage.getItem('somsom2_best_' + key) || 0),
     acorns: 0, ginkgos: 0, goldens: 0, combo: 0, comboT: 0, bestCombo: 0,
     deathCause: null, hold: false,                            // hold: 온보딩 카드가 떠 있는 동안 시간 정지
-    grazes: 0, waves: 0, storm: null, stormWarned: false, nextStorm: 30, invUntil: 0,
+    ev: null, nextEvAt: 30, evCount: 0, banner: null, lanes: [],   // V3 판 중반 사건
+    basketUntil: 0, itemSlowUntil: 0, shakesSurvived: 0,           // V3 줍는 아이템
+    grazes: 0, waves: 0, storm: null, stormWarned: false, nextStorm: Infinity,   /* 폭풍은 V3 사건 순환이 부른다 */ invUntil: 0,
     ...upStats(key),
   };
 }
@@ -722,8 +724,103 @@ function stink(s, x, y) {     // 은행 냄새 연기
 function floatTxt(s, x, y, txt, col) { s.floaters.push({ x, y, txt, col, life: 0.9 }); }
 
 // ---------- spawn ----------
+// ---------- V3 판 중반 사건 ----------
+// 30초마다 하나씩 순환: 까치 떼 → 폭풍(한 판 더 업데이트의 폭풍 웨이브) → 은행나무 흔들기(보스).
+const ITEMS = ['umbrella', 'basket', 'hourglass'];
+const ITEM_INFO = {
+  umbrella:  { icon:'🌂', name:'우산', txt:'우산! 3초 무적',       col:'#5a8ab0' },
+  basket:    { icon:'🧺', name:'바구니', txt:'바구니! 3초 넓게 줍기', col:'#b08a3a' },
+  hourglass: { icon:'⏳', name:'모래시계', txt:'모래시계! 3초 느리게', col:'#6a78c8' },
+};
+const EVENTS = {
+  magpie: { banner:'🐦 까치 떼가 온다! 틈으로 빠져나가요', dur:5.0, pause:true },
+  gust:   { storm:true },                                  // 폭풍 웨이브 — 자체 3초 예고·보상을 그대로 쓴다
+  shake:  { banner:'🌳 은행나무가 흔들린다! 붉은 줄을 피해요', dur:7.6, pause:true },
+};
+function fallVy(s, k) { return (185 + Math.min(s.t, 60) * 4 + Math.random() * 30) / 60 * (GROUND / 646) * (k || 1); }
+function badType(s) { return s.c.flip ? 'branch' : 'ginkgo'; }   // 라칠친에겐 나뭇가지가 위험물
+function eventTick(s, dt) {
+  if (s.banner) { s.banner.t -= dt; if (s.banner.t <= 0) s.banner = null; }
+  if (!s.ev) {
+    if (s.t >= s.nextEvAt - 3 && !s.evQueued) {                      // 예고
+      s.evCount++;
+      const name = s.evCount % 3 === 0 ? 'shake' : (s.evCount % 3 === 1 ? 'magpie' : 'gust');
+      s.evQueued = name;
+      if (name === 'gust') s.nextStorm = s.nextEvAt;                  // 폭풍은 3초 전 자체 예고를 띄운다
+      else { s.banner = { txt: EVENTS[name].banner, t: 3.2, max: 3.2 }; sfx('ding'); buzz([15, 40, 15]); }
+    }
+    if (s.evQueued && s.t >= s.nextEvAt) {
+      const name = s.evQueued; s.evQueued = null;
+      s.ev = { name, t: 0, dur: EVENTS[name].dur || 99, pause: !!EVENTS[name].pause, step: 0 };
+    }
+    return;
+  }
+  const e = s.ev; e.t += dt;
+  if (e.name === 'magpie') {                                    // 한 줄에 틈 하나, 1.5초 간격 세 줄
+    if (e.step < 3 && e.t >= 0.2 + e.step * 1.5) {
+      const gapW = Math.max(s.c.w * 1.7 + 26, 96), gap = 30 + Math.random() * (W - 60 - gapW);
+      for (let x = 22; x < W - 10; x += 40) if (x + 14 < gap || x - 14 > gap + gapW)
+        s.objs.push({ type: badType(s), x, y: -20, vy: fallVy(s, 0.9), vx: 0, ev: 1 });
+      s.objs.push({ type: 'acorn', x: gap + gapW / 2, y: -40, vy: fallVy(s, 0.9), vx: 0, ev: 1 });   // 틈엔 도토리
+      e.step++;
+    }
+  } else if (e.name === 'gust') {                               // 폭풍이 끝나면 순환으로 돌아온다
+    if (e.t > 0.5 && !s.storm) e.t = e.dur;
+  } else if (e.name === 'shake') {                              // 세 번 흔들기: 예고 0.9초 → 쏟아짐
+    const LN = 6, lw = W / LN, beat = 2.1;
+    const i = Math.floor(e.t / beat), ph = e.t - i * beat;
+    if (i < 3) {
+      if (!s.lanes.length && ph < 0.95) {                        // 이번에 쏟아질 줄 3개 (나란히 3개는 금지)
+        let pick; do { pick = [0,1,2,3,4,5].sort(() => Math.random() - 0.5).slice(0, 3).sort(); } while (pick[2] - pick[0] === 2);
+        s.lanes = pick.map(l => ({ l, x0: l * lw, x1: (l + 1) * lw })); s.shake = 0.25; sfx('thud');
+      }
+      if (s.lanes.length && ph >= 0.9 && !e['dumped' + i]) {
+        e['dumped' + i] = 1;
+        for (const L of s.lanes) for (let k = 0; k < 3; k++)
+          s.objs.push({ type: badType(s), x: L.x0 + lw * (0.22 + 0.28 * k), y: -20 - k * 26, vy: fallVy(s, 1.25), vx: 0, ev: 1 });
+        s.shake = 0.35; buzz(30);
+      }
+      if (ph >= 1.9) s.lanes = [];
+    } else if (!e.rain) {                                         // 버티면 황금잎 비
+      e.rain = 1; s.lanes = []; s.shakesSurvived++;
+      for (let k = 0; k < 7; k++) s.objs.push({ type: k % 3 ? 'acorn' : 'golden', x: 30 + Math.random() * (W - 60), y: -20 - k * 38, vy: fallVy(s, 0.7), vx: 0, ev: 1 });
+      floatTxt(s, W / 2, GROUND - s.c.h * 1.7 - 40, '버텼다! 황금잎 비', '#d9a400'); sfx('record');
+    }
+  }
+  if (e.t >= e.dur) { s.ev = null; s.lanes = []; s.nextEvAt = s.t + 28; }
+}
+function drawEventUnder(s, now) {                               // 낙하물 뒤: 흔들기 예고 줄, 돌풍 줄무늬, 까치
+  if (s.lanes.length) {
+    const blink = 0.18 + 0.12 * Math.sin(now / 70);
+    ctx.fillStyle = `rgba(210,69,42,${blink})`;
+    for (const L of s.lanes) ctx.fillRect(L.x0 + 2, 0, L.x1 - L.x0 - 4, GROUND);
+  }
+  if (s.ev && s.ev.name === 'magpie' && s.ev.t < 4.2) {
+    ctx.font = '28px serif'; ctx.textAlign = 'center';
+    const x = -40 + (W + 80) * (s.ev.t / 4.2);
+    for (let k = 0; k < 3; k++) ctx.fillText('🐦', x - k * 38, 62 + Math.sin(now / 90 + k) * 6 + k * 10);
+  }
+}
+function drawItem(o, now) {
+  const I = ITEM_INFO[o.type], pulse = 0.6 + 0.4 * Math.sin(now / 140);
+  ctx.save(); ctx.globalAlpha = 0.5 * pulse; ctx.fillStyle = '#fffaf0';
+  ctx.beginPath(); ctx.arc(o.x, o.y, 21, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+  ctx.strokeStyle = I.col; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(o.x, o.y, 19, 0, 7); ctx.stroke();
+  ctx.font = '24px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(I.icon, o.x, o.y + 1);
+  ctx.restore(); ctx.textBaseline = 'alphabetic';
+}
+function useItem(s, o) {
+  const I = ITEM_INFO[o.type];
+  if (o.type === 'umbrella') s.shellUntil = Math.max(s.shellUntil, s.t + 3);
+  if (o.type === 'basket') s.basketUntil = s.t + 3;
+  if (o.type === 'hourglass') s.itemSlowUntil = s.t + 3;
+  floatTxt(s, s.x, GROUND - s.c.h * 1.7 - 20, I.txt, I.col); sfx('shell'); buzz([15, 30, 15]);
+  burst(s, o.x, o.y, [I.col, '#fff'], 12, 140, 60);
+}
+
 function spawn(s) {
   if (s.t < s.spawnAt) return;
+  if (s.ev && s.ev.pause) { s.spawnAt = s.t + 0.3; return; }   // 까치 떼·흔들기 중엔 평소 낙하 멈춤
   let interval = Math.max(0.20, 0.62 - s.t * 0.012) * (s.storm ? 0.4 : 1);   // 난이도 ↑ (완만하게) · 폭풍 땐 2.5배
   if (leaf.runs < 3 && s.t < 15) interval *= 1.2;                // 첫 3판은 초반 15초만 살짝 느슨하게
   s.spawnAt = s.t + interval;
@@ -736,8 +833,9 @@ function spawn(s) {
     if (s.storm && type === 'acorn' && Math.random() < 0.5) type = s.c.flip ? 'branch' : 'ginkgo';   // 폭풍은 위험 위주
     if (Math.random() < 0.05 * s.luck) type = 'golden';         // 가끔 떨어지는 귀한 황금잎(+200)
     if (Math.random() < 0.018) type = 'relic';                  // 아주 가끔 떨어지는 도감 소품
+    if (s.t > 8 && Math.random() < 0.028) type = ITEMS[(Math.random() * ITEMS.length) | 0];   // 줍는 아이템
     const hs = GROUND / 646;                                   // 화면이 길수록 빠르게 → 기기별 난이도 통일
-    const vy = (185 + s.t * 6.5 + Math.random() * 80) / 60 * hs * (type === 'golden' ? 0.65 : 1);  // 황금잎은 천천히
+    const vy = (185 + s.t * 6.5 + Math.random() * 80) / 60 * hs * (type === 'golden' || ITEM_INFO[type] ? 0.65 : 1);  // 황금잎·아이템은 천천히
     const vx = (s.t > 18 ? (Math.random() - 0.5) * Math.min(1.8, s.t * 0.04) : 0)   // 후반 커브볼
              + (s.storm ? s.storm.dir * (0.8 + Math.random() * 0.9) : 0);                 // 폭풍 바람
     const obj = { type, x, y: -20, vy, vx };
@@ -813,7 +911,7 @@ function loop(now) {
     if (!s.storm && s.t >= s.nextStorm) { s.storm = { end: s.t + 5, dir: Math.random() < .5 ? -1 : 1 }; s.shake = 0.25; sfx('storm'); buzz(60); }
     if (s.storm && s.t >= s.storm.end) {
       s.waves++; const b = 250 * s.waves;
-      s.score += b; s.scorePop = 0.7; s.storm = null; s.stormWarned = false; s.nextStorm = s.t + 25;
+      s.score += b; s.scorePop = 0.7; s.storm = null; s.stormWarned = false; s.nextStorm = Infinity;
       floatTxt(s, W/2, H*0.32, '폭풍 ' + s.waves + ' 돌파! +' + b + ' 🌰+5', '#d9a400');
       burst(s, s.x, GROUND - s.c.h, ['#f3c14a','#fff','#e8915a'], 18, 180, 90);
       showBubble(s, '휴— 살았다!', 1.2); sfx('record'); buzz([20, 40, 20, 40]);
@@ -832,7 +930,7 @@ function loop(now) {
     }
     s.x = Math.max(s.c.w/2, Math.min(W - s.c.w/2, s.x));
     if (s.dir !== 0) s.moveT += dt; else s.moveT = 0;
-    if (s.introT <= 0) spawn(s);
+    if (s.introT <= 0) { spawn(s); eventTick(s, dt); }
   }
 
   for (const w of s.warns) { w.t -= dt; if (w.t <= 0) s.objs.push(w.obj); }
@@ -850,16 +948,20 @@ function loop(now) {
   }
 
   const px = s.x, py = GROUND - 6 - s.c.h/2, shell = s.t < s.shellUntil;
-  const slowMo = (s.c.slow && s.t < s.slowUntil) ? 0.32 : 1;            // 끼토 귀 슬로우
+  const slowMo = ((s.c.slow && s.t < s.slowUntil) || s.t < s.itemSlowUntil) ? 0.32 : 1;   // 끼토 귀 슬로우 · 모래시계
   for (const o of s.objs) {
     o.y += o.vy * 60 * dt * slowMo; o.x += (o.vx||0) * 60 * dt * slowMo;
     if (o.x < 14 || o.x > W-14) o.vx = -(o.vx||0);
     const hs = (s.c.hitScale || 1) * s.hitMul;             // 덩치 큰 캐릭터 피탄 보정 · 미개 강화
     const rx = s.c.w * 0.38 * hs, ry = s.c.h * 0.42 * hs;
     const harmful = s.c.flip ? (o.type === 'branch') : (o.type === 'ginkgo');
-    if (!s.over && Math.abs(o.x - px) < rx + 13 && Math.abs(o.y - py) < ry + 13) {
+    const good = o.type !== 'ginkgo' && o.type !== 'branch' || (s.c.flip && o.type === 'ginkgo');
+    const reach = (good && s.t < s.basketUntil) ? 2 : 1;          // 바구니: 좋은 것만 두 배로 넓게
+    if (!s.over && Math.abs(o.x - px) < (rx + 13) * reach && Math.abs(o.y - py) < ry + 13 * reach) {
       o.dead = true;
-      if (o.type === 'relic') {
+      if (ITEM_INFO[o.type]) {
+        useItem(s, o);
+      } else if (o.type === 'relic') {
         const R = RELICS[(Math.random()*RELICS.length)|0];
         const m = bumpCombo(s), pts = 120 * m;
         s.score += pts; s.scorePop = 0.45; sfx('record');
@@ -979,6 +1081,7 @@ function draw(s, now, shell) {
     ctx.globalAlpha = 1;
   }
 
+  drawEventUnder(s, now);                                       // V3 사건 표시
   // objects (생성 이미지 우선, 없으면 코드 드로잉)
   for (const o of s.objs) {
     const p = props[o.type];
@@ -992,6 +1095,7 @@ function draw(s, now, shell) {
     else if (o.type === 'golden') drawGolden(o.x, o.y, now);
     else if (o.type === 'ginkgo') drawGinkgo(o.x, o.y);
     else if (o.type === 'relic') drawRelic(o.x, o.y);
+    else if (ITEM_INFO[o.type]) drawItem(o, now);
     else if (o.type === 'acorn') drawAcorn(o.x, o.y);
     else drawBranch(o.x, o.y);
   }
@@ -1111,6 +1215,23 @@ function draw(s, now, shell) {
     ctx.globalAlpha = 1;
   }
 
+  // V3 사건 예고 배너 · 아이템 남은 시간
+  if (s.banner) {
+    const a = Math.min(1, s.banner.t / 0.3, (s.banner.max - s.banner.t) / 0.25 + 0.001);
+    ctx.save(); ctx.globalAlpha = Math.max(0, Math.min(1, a)); ctx.font = '800 15px sans-serif'; ctx.textAlign = 'center';
+    const tw = ctx.measureText(s.banner.txt).width + 34, by = 92;
+    ctx.fillStyle = 'rgba(34,30,24,.9)'; ctx.beginPath(); ctx.roundRect(W/2 - tw/2, by, tw, 38, 19); ctx.fill();
+    ctx.fillStyle = '#F2C14B'; ctx.fillText(s.banner.txt, W/2, by + 25); ctx.restore();
+  }
+  { const act = [];
+    if (s.t < s.basketUntil) act.push('🧺 ' + (s.basketUntil - s.t).toFixed(1));
+    if (s.t < s.itemSlowUntil) act.push('⏳ ' + (s.itemSlowUntil - s.t).toFixed(1));
+    if (s.t < s.shellUntil && !s.c.shell) act.push('🌂 ' + (s.shellUntil - s.t).toFixed(1));
+    if (act.length) { ctx.font = '800 13px sans-serif'; ctx.textAlign = 'center'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 4;
+      ctx.fillStyle = '#5a4a3a'; const t = act.join('   '); ctx.strokeText(t, W/2, 78); ctx.fillText(t, W/2, 78); } }
+  if (s.t < s.itemSlowUntil && !(s.c.slow && s.t < s.slowUntil)) {  // 모래시계도 슬로우 틴트
+    ctx.globalAlpha = 0.10; ctx.fillStyle = '#6a78c8'; ctx.fillRect(-10, -10, W+20, H+20); ctx.globalAlpha = 1;
+  }
   // 폭풍 예고 · 진행
   if (!s.over && (s.storm || s.stormWarned)) {
     const warn = !s.storm;
