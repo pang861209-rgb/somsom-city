@@ -60,6 +60,18 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // ── 방범대 R7 골목 순위 ─────────────────────────────────
+    // 닉네임마다 문서 하나. b 는 스테이지별 최고 점수 JSON 문자열({"s1":10200,"h5":...}), g 는 주민 등급 합계.
+    match /defense_best/{nick} {
+      allow read: if true;
+      allow create, update: if request.resource.data.keys().hasOnly(['n','b','g','t'])
+        && request.resource.data.n == nick && request.resource.data.n.size() >= 1 && request.resource.data.n.size() <= 12
+        && request.resource.data.b is string && request.resource.data.b.size() <= 4000
+        && request.resource.data.g is int && request.resource.data.g >= 0 && request.resource.data.g <= 60
+        && request.resource.data.t is int;
+      allow delete: if false;
+    }
+
     // ── 솜솜 합체 (GAME 05) ─────────────────────────────────
     // 점수형 — 한 판의 점수. 새 기록 추가만, 고치거나 지우기는 불가.
     // d 는 "오늘의 통" 날짜(YYYYMMDD 정수) — 같은 날끼리 비교하는 데 쓴다.
