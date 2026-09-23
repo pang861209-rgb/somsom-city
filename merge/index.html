@@ -35,13 +35,34 @@
     box-shadow:0 -10px 22px rgba(40,20,10,.28);}
   #titleBottom #ladder .ln{color:#d9c9ad;}
   #titleBottom #ladder .ar{color:#8a7658;}
-  #titleBottom #btnGo{font-size:17px;padding:11px 44px;border-radius:16px;background:#ffb35c;
-    border:2px solid #5a2f1c;color:#4a2416;box-shadow:0 4px 0 #5a2f1c;}
-  #titleBottom #btnGo:active{transform:translateY(4px);box-shadow:none;}
+  #goRow{gap:8px;flex-wrap:nowrap;}
+  #titleBottom #btnGo, #titleBottom #btnPuzzle{font-size:16px;padding:11px 20px;border-radius:16px;
+    border:2px solid #5a2f1c;color:#4a2416;box-shadow:0 4px 0 #5a2f1c;white-space:nowrap;}
+  #titleBottom #btnGo{background:#ffb35c;}
+  #titleBottom #btnPuzzle{background:#f3e3c4;}
+  #titleBottom #btnGo:active, #titleBottom #btnPuzzle:active{transform:translateY(4px);box-shadow:none;}
+  #resBig .stars{font-size:26px;letter-spacing:3px;color:#E0A12B;line-height:1.1;}
   #titleFoot{gap:7px;align-items:center;flex-wrap:nowrap;}
   #titleFoot .ghost{padding:5px 13px;font-size:12.5px;}
+  #evBand{position:absolute;top:12px;right:12px;z-index:3;background:#2A2350;color:#FFE9B0;
+    border:1.5px solid #FFE9B0;border-radius:14px;padding:5px 11px;font-size:11.5px;font-weight:800;
+    box-shadow:0 2px 0 rgba(0,0,0,.25);}
+  #evBand.hidden{display:none;}
+  #skinGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+  .skin{border:2px solid #221E18;border-radius:13px;overflow:hidden;background:#FDFBF5;cursor:pointer;text-align:left;
+    padding:0;box-shadow:none;font:inherit;}
+  .skin .sw{height:66px;background-size:120px;border-bottom:2px solid #221E18;}
+  .skin .sn{display:block;padding:7px 9px 1px;font-size:13px;font-weight:900;}
+  .skin .ss{display:block;padding:0 9px 8px;font-size:11px;font-weight:800;color:#8A8271;}
+  .skin.on{box-shadow:0 0 0 3px #E0A12B;}
+  .skin.lock .sw{filter:grayscale(1) brightness(.75);opacity:.55;}
+  .wn{display:flex;flex-direction:column;gap:2px;padding:9px 11px;border:1.5px solid #E6DCC6;border-radius:11px;background:#FFF9EC;}
+  .wn b{font-size:14px;}
+  .wn span{font-size:12.5px;color:#6B6357;line-height:1.5;}
+  #wnClose{align-self:center;margin-top:6px;}
   /* 앨범 — 모은 컷을 3열 격자로. 295장이라 안 연 칸은 그리지 않고 수만 적는다 */
   #albumGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}
+  #albumGrid .agrp{grid-column:1/-1;font-size:12px;font-weight:800;color:#8A6A1A;padding:6px 2px 0;}
   #albumGrid img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:9px;
     border:1.5px solid #221E18;cursor:zoom-in;background:#F4EFE1;}
   #titleBottom .ghost{padding:4px 10px;font-size:12px;background:rgba(255,239,216,.14);color:#f3e6cf;
@@ -119,6 +140,7 @@
   <div id="sTitle" class="screen">
     <img id="titleBg" src="../assets/title_hero_merge.jpg" alt="도토리 상점의 나무 상자 안에 차곡차곡 쌓인 여섯 친구">
     <div class="top"><a href="../">← 마을</a></div>
+    <div id="evBand" class="hidden"></div>
     <div id="titleTop">
       <div class="logoTop">솜솜시티</div>
       <h1 id="titleLogo">솜솜 합체</h1>
@@ -126,11 +148,15 @@
     </div>
     <div id="titleBottom">
       <div id="ladder"></div>
-      <button class="big" id="btnGo">떨어뜨리기</button>
+      <div class="row" id="goRow">
+        <button class="big" id="btnGo">떨어뜨리기</button>
+        <button class="big" id="btnPuzzle">오늘의 퍼즐</button>
+      </div>
       <div class="row" id="titleFoot">
         <button class="ghost" id="btnMute">🔊</button>
         <button class="ghost" id="btnBoard">순위</button>
         <button class="ghost" id="btnAlbum">앨범</button>
+        <button class="ghost" id="btnSkin">상자</button>
       </div>
       <p id="titleHint"></p>
     </div>
@@ -163,6 +189,26 @@
       <div class="hd"><span class="t">자랑하기</span><span class="c">길게 눌러 저장하거나 보내세요</span></div>
       <img id="shareImg" alt="결과 이미지" style="width:100%;border-radius:12px;border:2px solid #221E18;">
       <button class="ghost" id="shareClose">닫기</button>
+    </div>
+  </div>
+
+  <!-- 상자 꾸미기 -->
+  <div id="skinSheet" class="sheetWrap">
+    <div class="sheet">
+      <div class="hd"><span class="t">상자 꾸미기</span><span class="c">업적으로 열려요</span></div>
+      <div id="skinGrid"></div>
+      <button class="ghost" id="skinClose">닫기</button>
+    </div>
+  </div>
+
+  <!-- 새로워진 것 -->
+  <div id="wnSheet" class="sheetWrap">
+    <div class="sheet">
+      <div class="hd"><span class="t">새로워진 것</span><span class="c">v3 · 한가위 업데이트</span></div>
+      <div class="wn"><b>오늘의 퍼즐</b><span>반쯤 찬 통에, 전부 보이는 조각 12개로 최대한 높이. 하루 한 문제, 모두 같은 문제입니다.</span></div>
+      <div class="wn" id="wnEvent"><b>한가위 보름달</b><span>10월 5일까지. 보름달 벽, 보늘 소멸 1.5배, 한가위 컷 3장.</span></div>
+      <div class="wn"><b>상자 꾸미기</b><span>보늘 10번 · 과열 10번 · 완벽 정리로 새 상자가 열립니다.</span></div>
+      <button class="big" id="wnClose">좋아요</button>
     </div>
   </div>
 
@@ -333,15 +379,66 @@ layout();
 addEventListener('resize', ()=>{ layout(); });
 addEventListener('orientationchange', ()=>setTimeout(layout,250));
 
+// ── 한가위 이벤트 ───────────────────────────────────────────
+// 기간 한정. 끝나면 벽·배율·새 컷이 꺼지고, 모은 컷은 앨범에 "그해 추석"으로 남는다.
+const EVENT = { k:'chuseok2026', n:'한가위 보름달', from:20260923, to:20261005, until:'10월 5일',
+  cuts:['chuseok_1.jpg','chuseok_2.jpg','chuseok_3.jpg'], cutAt:2000, popMul:1.5 };
+const EKEY = 'somsom_merge_ecuts';
+function eventOn(){ const d = window.FORCE_DAY || dayKey(); return d >= EVENT.from && d <= EVENT.to; }
+function ecutsSeen(){ try{ return JSON.parse(localStorage.getItem(EKEY)||'[]'); }catch(e){ return []; } }
+// 평소 컷(5000점)보다 문턱을 낮춰, 기간 안에 세 장을 다 볼 수 있게 한다
+function unlockEventCut(){
+  if(!eventOn() || GMODE !== 'daily' || score < EVENT.cutAt) return null;
+  const seen = ecutsSeen(), next = EVENT.cuts.find(c => seen.indexOf(c) < 0);
+  if(!next) return null;
+  seen.push(next);
+  try{ localStorage.setItem(EKEY, JSON.stringify(seen)); }catch(e){}
+  if(seen.length === EVENT.cuts.length) achUnlock('merge_chuseok');
+  return next;
+}
+function popMul(){ return (eventOn() && GMODE === 'daily') ? EVENT.popMul : 1; }
+
+// ── 상자 꾸미기 ─────────────────────────────────────────────
+// 업적으로 연다. 도토리로 사는 게 아니다 — 도토리는 칭호용 공용 재화로만 둔다(v2 결정).
+const SKINS = [
+  { k:'wood',   n:'기본 나무',     img:'merge_plank.jpg',       need:null },
+  { k:'stone',  n:'조약돌 상자',   img:'merge_skin_stone.jpg',  need:['boneul', 10, '보늘 10번 만들기'] },
+  { k:'walnut', n:'호두나무 상자', img:'merge_skin_walnut.jpg', need:['fever',  10, '과열 10번'] },
+  { k:'gold',   n:'금테 상자',     img:'merge_skin_gold.jpg',   need:['clear',   1, '완벽 정리 1번'] },
+];
+const LKEY = 'somsom_merge_life', SKEY = 'somsom_merge_skin';
+function lifeLoad(){ try{ return JSON.parse(localStorage.getItem(LKEY)||'{}'); }catch(e){ return {}; } }
+function skinOpen(sk, life){ return !sk.need || ((life||lifeLoad())[sk.need[0]]||0) >= sk.need[1]; }
+function curSkin(){
+  const k = localStorage.getItem(SKEY) || 'wood', sk = SKINS.find(x => x.k === k) || SKINS[0];
+  return skinOpen(sk) ? sk : SKINS[0];
+}
+function loadSkin(){
+  const im = new Image(); im.src = '../assets/' + curSkin().img;
+  im.onload = ()=>{ PLANK = im; PLANK_PAT = null; };
+}
+// 판이 끝날 때 누적하고, 새로 열린 상자가 있으면 알려 준다
+function lifeAdd(){
+  const L = lifeLoad(), before = SKINS.filter(x => skinOpen(x, L)).length;
+  L.boneul = (L.boneul||0) + (made[5]||0);
+  L.fever  = (L.fever ||0) + feverCount;
+  L.clear  = (L.clear ||0) + clears;
+  try{ localStorage.setItem(LKEY, JSON.stringify(L)); }catch(e){}
+  const opened = SKINS.filter(x => skinOpen(x, L));
+  if(opened.length > before) setTimeout(()=> toast('새 상자가 열렸어요 · ' + opened[opened.length-1].n), 900);
+  if(opened.length === SKINS.length) achUnlock('merge_skins');
+}
+
 // ── 스프라이트 ──────────────────────────────────────────────
 // 벽 배경과 널빤지 — 통을 나무 상자로, 뒤를 상점 벽으로. 못 불러오면 예전 평면 그리기로 간다.
 let BG_WALL = null, PLANK = null, PLANK_PAT = null;
 // 계절 벽 — 선반 위 소품만 바뀐다. 3~5 봄, 6~8 여름, 9~11 가을, 12~2 겨울. 못 불러오면 v1 벽.
 function seasonName(){ const m = new Date().getMonth()+1; return m<=2||m===12 ? 'winter' : m<=5 ? 'spring' : m<=8 ? 'summer' : 'autumn'; }
-{ const w = new Image(); w.src = '../assets/merge_wall_' + seasonName() + '.jpg';
+{ const w = new Image();
+  w.src = '../assets/merge_wall_' + (eventOn() ? 'chuseok' : seasonName()) + '.jpg';   // 이벤트 중엔 보름달 벽
   w.onload = ()=>{ BG_WALL = w; };
   w.onerror = ()=>{ const f = new Image(); f.src = '../assets/merge_wall.jpg'; f.onload = ()=>{ BG_WALL = f; }; };
-  const k = new Image(); k.src = '../assets/merge_plank.jpg'; k.onload = ()=>{ PLANK = k; }; }
+  loadSkin(); }
 const IMG = {}, IMG_HIT = {}, IMG_WIN = {};   // 기본 · 눌림 · 기쁨 (세 포즈 다 기존 자산)
 for(const t of TIERS){
   for(const [bag, suf] of [[IMG,''],[IMG_HIT,'_hit'],[IMG_WIN,'_win']]){
@@ -493,6 +590,7 @@ let hold = null, holdLeft = HOLD_MAX;   // 바꾸기 칸에 든 단계, 남은 �
 let pops = [];                // 합체 이펙트
 let floats = [];              // 떠오르는 점수 글자 {x,y,txt,t,big}
 let ghosts = [];              // 보늘 소멸 — 떠올라 사라지는 둘 {x,y,r,t}
+let moons = [];               // 한가위 — 소멸 자리에서 떠오르는 보름달
 let shake = 0;
 
 function $(id){ return document.getElementById(id); }
@@ -511,7 +609,49 @@ function dayLabel(){ const d=new Date(); return (d.getMonth()+1)+'월 '+d.getDat
 function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a);
   t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 let rng = Math.random;
+// ── 오늘의 퍼즐 ─────────────────────────────────────────────
+// 이미 반쯤 찬 통에, 전부 보이는 조각 12개로, 최대한 높이. 운이 없는 짧은 생각.
+// 시작 통은 기준 상자(382×491)에서 가라앉혀 비율로 옮긴다 — 기기가 달라도 같은 문제.
+let GMODE = 'daily';              // daily | puzzle
+const PUZZLE_N = 12;
+const PKEY = 'somsom_merge_puzzle';
+let pq = [], pqi = 0;             // 퍼즐 조각 줄과 다음 꺼낼 자리
+function puzzleRng(){ return mulberry32(dayKey()*9973 + 41); }
+function puzzleLoad(){ try{ const p = JSON.parse(localStorage.getItem(PKEY)||'{}'); return p.day===dayKey() ? p : {day:dayKey()}; }catch(e){ return {day:dayKey()}; } }
+function puzzleStars(){ return (maxTier>=4?1:0) + (maxTier>=5?1:0) + ((stat.pops>0||clears>0)?1:0); }
+function starText(n){ return '★'.repeat(n) + '☆'.repeat(3-n); }
+function buildPuzzle(){
+  const r = puzzleRng(), REF_H = 491;
+  const save = { x:BOX.x, y:BOX.y, w:BOX.w, h:BOX.h };
+  BOX.x = 0; BOX.y = 0; BOX.w = REF_W; BOX.h = REF_H;
+  bodies = [];
+  const n = 7 + ((r()*3)|0), pool = [0,1,1,2,2,2,3,3];
+  for(let i=0;i<n;i++){
+    const t = pool[(r()*pool.length)|0], rr = R_BASE[t];
+    bodies.push({ x: rr + r()*(REF_W-2*rr), y: -rr-8, vx:0, vy:0, r:rr, t, id:nextId++, born:5 });
+    for(let k=0;k<90;k++) stepPhysics(FIXED);
+  }
+  // 같은 단계끼리 닿아 있으면 시작하자마자 저절로 합쳐진다. 한 단계 올려 다시 가라앉힌다.
+  for(let pass=0; pass<6; pass++){
+    for(let k=0;k<240;k++) stepPhysics(FIXED);
+    let bumped = false;
+    for(let i=0;i<bodies.length;i++) for(let j=i+1;j<bodies.length;j++){
+      const a = bodies[i], c = bodies[j];
+      if(a.t !== c.t || c.t >= 4) continue;
+      if(Math.hypot(c.x-a.x, c.y-a.y) > (a.r+c.r)*1.04) continue;
+      c.t++; c.r = R_BASE[c.t]; bumped = true;
+    }
+    if(!bumped) break;
+  }
+  const snap = bodies.map(b => ({ fx:b.x/REF_W, fyb:(REF_H-b.y)/REF_W, t:b.t }));
+  BOX.x = save.x; BOX.y = save.y; BOX.w = save.w; BOX.h = save.h;
+  bodies = snap.map(q => ({ x:BOX.x + q.fx*BOX.w, y:BOX.y + BOX.h - q.fyb*BOX.w, vx:0, vy:0,
+                            r:TIERS[q.t].r, t:q.t, id:nextId++, born:5 }));
+  pq = []; for(let i=0;i<PUZZLE_N+4;i++) pq.push((r()*DROPPABLE)|0);   // 4개는 바꾸기·미리 보기 여유분
+  pqi = 0;
+}
 function pickTier(){
+  if(GMODE === 'puzzle') return pqi < pq.length ? pq[pqi++] : 0;
   const w = RULE.weights;
   if(!w) return (rng()*DROPPABLE)|0;
   const r = rng(); let acc = 0;
@@ -519,22 +659,25 @@ function pickTier(){
   return DROPPABLE-1;
 }
 
-function startGame(){
+function startGame(m){
+  GMODE = (m === 'puzzle') ? 'puzzle' : 'daily';
   bodies = []; score = 0; merges = 0; maxTier = 0; overT = 0;
-  left = DROPS_MAX; doneT = 0; endT = 0; overReason = 'over';
+  left = GMODE==='puzzle' ? PUZZLE_N : DROPS_MAX; doneT = 0; endT = 0; overReason = 'over';
   chain = 0; chainT = 0; maxChain = 0; stat = { pops:0 };
   fever = 0; feverCount = 0; comboT = 0; comboN = 0; clears = 0;
   warnT = 3; made = []; shakeLeft = 1; overGrace = 0; questDone = false;
   QUEST = todayQuest();
-  pops = []; floats = []; ghosts = []; shake = 0; dropLock = 0; tut = 0; tutMerged = 0;
-  RULE = window.FORCE_RULE || todayRule(); layout();   // 자정을 넘겼을 수 있다 (FORCE_RULE 은 테스트용)
-  hold = null; holdLeft = RULE.hold || HOLD_MAX;
+  pops = []; floats = []; ghosts = []; moons = []; shake = 0; dropLock = 0; tut = 0; tutMerged = 0;
+  RULE = GMODE==='puzzle' ? RULES[0] : (window.FORCE_RULE || todayRule());   // 퍼즐은 규칙 없이
+  layout();                                    // 자정을 넘겼을 수 있다 (FORCE_RULE 은 테스트용)
+  hold = null; holdLeft = GMODE==='puzzle' ? 1 : (RULE.hold || HOLD_MAX);
   rng = mulberry32(dayKey() * 7919 + 13);      // 오늘의 통
+  if(GMODE === 'puzzle'){ buildPuzzle(); shakeLeft = 0; }
   cur = { t: pickTier(), x: W/2 };
   nextT = pickTier(); nextT2 = pickTier();
   mode = 'PLAY'; show(null);
   acc = 0;                            // 이전 판의 누적 시간이 넘어오지 않게
-  tut = (plays < 2) ? 4.5 : 0;        // 첫 두 판에만 안내 한 줄
+  tut = (plays < 2 && GMODE==='daily') ? 4.5 : 0;   // 첫 두 판에만 안내 한 줄
   last = performance.now();
 }
 
@@ -763,10 +906,12 @@ function resolveMerges(){
       // 연쇄 배수를 안 붙인다. 보늘 둘을 붙이는 건 작정하고 만드는 일이지
       // 굴러가다 우연히 터지는 게 아니고, 배수까지 붙이면 운으로 한 판이 갈린다.
       if(!isCascade(a, c)) chain = 0;
-      score += POP_SCORE * (fever>0 ? FEVER_MUL : 1);
+      const popGain = Math.round(POP_SCORE * (fever>0 ? FEVER_MUL : 1) * popMul());
+      score += popGain;
       ghosts.push({ x:a.x, y:a.y, r:a.r, t:0 }, { x:c.x, y:c.y, r:c.r, t:0 });
+      if(popMul() > 1) moons.push({ x:(a.x+c.x)/2, y:Math.min(a.y,c.y), r:a.r*0.9, t:0 });   // 보름달 소원
       floats.push({ x:(a.x+c.x)/2, y:Math.min(a.y,c.y) - a.r,
-                    txt:'+'+(POP_SCORE*(fever>0?FEVER_MUL:1)), t:0, big:true });
+                    txt:'+'+popGain + (popMul()>1 ? ' 보름달' : ''), t:0, big:true });
       merges++; bumpChain();
       pops.push({ x:(a.x+c.x)/2, y:(a.y+c.y)/2, r:a.r*1.4, t:0 });
       pops.push({ x:(a.x+c.x)/2, y:(a.y+c.y)/2, r:a.r*0.7, t:-0.08 });
@@ -849,10 +994,32 @@ function checkOver(dt){
     if(doneT > 0.7 || endT > 3.5){ overReason = 'done'; gameOver(); }
   }
 }
+function puzzleOver(){
+  const stars = puzzleStars(), p = puzzleLoad();
+  const isBest = !p.best || score > p.best;
+  if(isBest){ p.best = score; }
+  p.stars = Math.max(p.stars||0, stars); p.tries = (p.tries||0) + 1;
+  try{ localStorage.setItem(PKEY, JSON.stringify(p)); }catch(e){}
+  hubReport(); lifeAdd();
+  pushPuzzle(stars);
+  $('resTitle').textContent = '오늘의 퍼즐 · ' + dayLabel();
+  $('resBig').innerHTML = score + '점<div class="stars">' + starText(stars) + '</div>';
+  $('resNote').innerHTML = [
+    overReason === 'over' ? '통이 넘쳤습니다' : '조각 ' + PUZZLE_N + '개를 다 놓았습니다',
+    '★ 끼토 · ★★ 보늘 · ★★★ 보늘 소멸이나 완벽 정리',
+    '합체 ' + merges + '번' + (maxChain>1 ? ' · 최고 ' + maxChain + '연쇄' : ''),
+    isBest ? '<b>오늘 최고 기록</b>' : '오늘 최고 ' + p.best + '점 · ' + starText(p.stars),
+  ].join('<br>');
+  $('resCut').classList.add('hidden');
+  $('btnRetry').textContent = '다시 풀기';
+  show('sResult');
+}
 function gameOver(){
   mode = 'OVER';
   sfx('over');
   score = Math.round(score);
+  if(GMODE === 'puzzle'){ puzzleOver(); return; }
+  $('btnRetry').textContent = '한 판 더';
   const isBest = score > best;
   if(isBest) best = score;
   if(maxTier > bestTier) bestTier = maxTier;
@@ -862,7 +1029,7 @@ function gameOver(){
   pushRanking();
 
   $('resTitle').textContent = overReason === 'over' ? '통이 넘쳤다' : '조각을 다 놓았다';
-  $('resBig').textContent = score + '점';
+  $('resBig').innerHTML = score + '점';
   const parts = [];
   parts.push(overReason === 'over'
     ? '통이 넘쳤습니다 · 조각 ' + (DROPS_MAX - left) + '개'
@@ -876,14 +1043,24 @@ function gameOver(){
                        : '<span style="color:#8A8271;">오늘의 숙제 · ' + QUEST.n + '</span>');
   parts.push(isBest ? '<b>최고 기록을 세웠습니다</b>' : '최고 ' + best + '점');
   $('resNote').innerHTML = parts.join('<br>');
-  const cut = unlockCut();
-  if(cut){
+  lifeAdd();
+  const ecut = unlockEventCut(), cut = unlockCut();
+  if(ecut){
+    $('resCutImg').src = '../assets/event/' + ecut;
+    $('resCutCap').textContent = '한가위 컷이 열렸어요 · ' + ecutsSeen().length + ' / ' + EVENT.cuts.length
+      + (cut ? ' · 골목 컷도 한 장' : '');
+    $('resCut').classList.remove('hidden');
+  } else if(cut){
     $('resCutImg').src = '../assets/day/' + cut;
     $('resCutCap').textContent = '새 컷이 열렸어요 · 모은 컷 ' + cutsSeen().length + ' / ' + CUTS.length;
     $('resCut').classList.remove('hidden');
   } else {
     $('resCut').classList.add('hidden');
-    if(score < CUT_AT && CUTS.length > cutsSeen().length)
+    const eLeft = eventOn() && ecutsSeen().length < EVENT.cuts.length;
+    if(eLeft && score < EVENT.cutAt)
+      parts.push('<span style="color:#8A6A1A;">' + EVENT.cutAt + '점을 넘기면 한가위 컷이 열려요</span>'),
+      $('resNote').innerHTML = parts.join('<br>');
+    else if(score < CUT_AT && CUTS.length > cutsSeen().length)
       parts.push('<span style="color:#8A6A1A;">' + CUT_AT + '점을 넘기면 새 컷이 열려요</span>'),
       $('resNote').innerHTML = parts.join('<br>');
   }
@@ -931,6 +1108,7 @@ function hubReport(){
   if(clears > 0)          achUnlock('merge_clear');
   if(score >= 4000)       achUnlock('merge_4000');
   if(score >= 15000)      achUnlock('merge_15000');
+  { const L = lifeLoad(); if(SKINS.every(x => skinOpen(x, L))) achUnlock('merge_skins'); }
   // 오늘의 미션
   try{
     const mk = String(new Date().getFullYear()*10000 + (new Date().getMonth()+1)*100 + new Date().getDate());
@@ -942,6 +1120,16 @@ function hubReport(){
 // 랭킹 — 버튼 없이 조용히 (docs/RANKING_SPEC.md)
 const FB_KEY='AIzaSyBfld7SRrVTxDG0nE_6Z3Mw5kSRTo5bIGY';
 const FB_DOCS='https://firestore.googleapis.com/v1/projects/somsom-city/databases/(default)/documents';
+async function pushPuzzle(stars){
+  try{
+    const nm = localStorage.getItem('somsom_name'); if(!nm) return;
+    await fetch(FB_DOCS+'/merge_puzzle?key='+FB_KEY,{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({fields:{n:{stringValue:nm},s:{integerValue:String(score)},
+        d:{integerValue:String(dayKey())}, k:{integerValue:String(stars)},
+        t:{integerValue:String(Date.now())}}})});
+  }catch(e){}
+}
 async function pushRanking(){
   try{
     const nm = localStorage.getItem('somsom_name'); if(!nm) return;
@@ -1006,14 +1194,52 @@ async function shareResult(){
   $('shareImg').src = URL.createObjectURL(blob);
   $('shareSheet').classList.add('on');
 }
+function openSkins(){
+  const L = lifeLoad(), cur = curSkin().k;
+  $('skinGrid').innerHTML = SKINS.map(sk => {
+    const open = skinOpen(sk, L), have = sk.need ? Math.min(L[sk.need[0]]||0, sk.need[1]) : 0;
+    const st = sk.k === cur ? '쓰는 중' : open ? '고르기' : sk.need[2] + ' · ' + have + '/' + sk.need[1];
+    return '<button class="skin' + (sk.k===cur?' on':'') + (open?'':' lock') + '" data-k="' + sk.k + '">'
+      + '<span class="sw" style="display:block;background-image:url(../assets/' + sk.img + ')"></span>'
+      + '<span class="sn">' + sk.n + '</span><span class="ss">' + st + '</span></button>';
+  }).join('');
+  $('skinSheet').classList.add('on');
+}
+$('btnSkin').onclick   = openSkins;
+$('skinClose').onclick = ()=> $('skinSheet').classList.remove('on');
+$('skinSheet').addEventListener('click', e=>{
+  if(e.target.id === 'skinSheet'){ $('skinSheet').classList.remove('on'); return; }
+  const b = e.target.closest('.skin'); if(!b) return;
+  const sk = SKINS.find(x => x.k === b.dataset.k);
+  if(!skinOpen(sk)){ toast(sk.need[2] + '로 열려요'); return; }
+  try{ localStorage.setItem(SKEY, sk.k); }catch(e){}
+  loadSkin(); openSkins(); toast(sk.n + '로 바꿨어요');
+});
+// 새로워진 것 — 업데이트 뒤 처음 한 번. 처음 온 사람에겐 모든 게 새것이라 띄우지 않는다.
+const WN_VER = 'v3';
+function maybeWhatsNew(){
+  let seenV = null; try{ seenV = localStorage.getItem('somsom_merge_wn'); }catch(e){}
+  if(seenV === WN_VER) return;
+  try{ localStorage.setItem('somsom_merge_wn', WN_VER); }catch(e){}
+  if(plays < 1) return;
+  $('wnEvent').style.display = eventOn() ? '' : 'none';
+  $('wnSheet').classList.add('on');
+}
+$('wnClose').onclick = ()=> $('wnSheet').classList.remove('on');
 function openAlbum(){
   const seen = cutsSeen(), grid = $('albumGrid');
   $('albumCount').textContent = seen.length + ' / ' + CUTS.length;
   // 최근에 연 것부터 보여 준다
-  grid.innerHTML = seen.slice().reverse().map(c =>
+  const es = ecutsSeen();
+  grid.innerHTML =
+    (es.length ? '<div class="agrp">한가위 보름달 · ' + es.length + ' / ' + EVENT.cuts.length
+       + (eventOn() ? ' · ' + EVENT.until + '까지' : ' · 2026년 추석') + '</div>'
+       + es.map(c => '<img loading="lazy" src="../assets/event/' + c + '" alt="한가위 컷">').join('')
+       + '<div class="agrp">골목에서 열린 컷 · ' + seen.length + ' / ' + CUTS.length + '</div>' : '')
+    + seen.slice().reverse().map(c =>
     '<img loading="lazy" src="../assets/day/' + c + '" alt="솜솜시티 한 컷">').join('');
   const rest = CUTS.length - seen.length;
-  $('albumMsg').innerHTML = !seen.length
+  $('albumMsg').innerHTML = (!seen.length && !es.length)
     ? '아직 연 컷이 없어요.<br><b>한 판에 ' + CUT_AT + '점을 넘기면 한 장씩 열립니다.</b>'
     : (rest ? '아직 안 열린 컷 ' + rest + '장' : '<b>295장을 다 모았습니다</b>');
   $('album').classList.add('on');
@@ -1039,8 +1265,8 @@ $('shareSheet').addEventListener('click', e=>{ if(e.target.id==='shareSheet') $(
 // 어느 쪽도 정렬은 서버에 안 시킨다 (복합 인덱스 없이 단일 필드 조건만).
 let boardRange = 'today';
 function weekStart(){ return Date.now() - 7*24*3600*1000; }
-async function fetchScores(range){
-  const q = { from:[{collectionId:'merge_scores'}], limit: range==='all' ? 1000 : 500 };
+async function fetchScores(range, col){
+  const q = { from:[{collectionId: col || 'merge_scores'}], limit: range==='all' ? 1000 : 500 };
   if(range==='today') q.where = {fieldFilter:{field:{fieldPath:'d'},op:'EQUAL',value:{integerValue:String(dayKey())}}};
   else if(range==='week') q.where = {fieldFilter:{field:{fieldPath:'t'},op:'GREATER_THAN_OR_EQUAL',value:{integerValue:String(weekStart())}}};
   const r = await fetch(FB_DOCS+':runQuery?key='+FB_KEY,{method:'POST',
@@ -1058,22 +1284,36 @@ async function fetchScores(range){
   return best;
 }
 function esc(t){ return String(t).replace(/[<>&]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
-async function openBoard(range){
+let boardCol = 'merge_scores';
+async function openBoard(range, col){
   if(range) boardRange = range;
+  boardCol = col || 'merge_scores';
+  const isP = boardCol === 'merge_puzzle';
+  if(isP) boardRange = 'today';
+  document.querySelector('#board .tabs').style.display = isP ? 'none' : '';
+  document.querySelector('#board .t').textContent = isP ? '오늘의 퍼즐 순위' : '순위';
   document.querySelectorAll('#board .tab').forEach(b=> b.classList.toggle('on', b.dataset.r===boardRange));
   const me = localStorage.getItem('somsom_name') || '';
-  $('boardDay').textContent = boardRange==='today' ? (dayLabel() + ' · ' + RULE.n)
+  $('boardDay').textContent = isP ? dayLabel() : boardRange==='today' ? (dayLabel() + ' · ' + RULE.n)
                             : boardRange==='week' ? '최근 7일 · 사람마다 최고 한 판' : '지금까지 · 사람마다 최고 한 판';
   const list = $('boardList');
   list.innerHTML = '<div class="bMsg">불러오는 중…</div>';
   $('board').classList.add('on');
   const want = boardRange;
   let best;
-  try{ best = await fetchScores(want); }
-  catch(e){ if(want===boardRange) list.innerHTML = '<div class="bMsg">지금은 못 불러왔어요.<br>잠시 뒤 다시 열어 보세요.</div>'; return; }
+  try{ best = await fetchScores(want, boardCol); }
+  catch(e){
+    if(want!==boardRange) return;
+    const p = isP ? puzzleLoad() : null;
+    list.innerHTML = (p && p.best)
+      ? '<div class="bRow me"><span class="rk">내 기록</span><span class="nm">' + starText(p.stars||0)
+        + '</span><span class="sc">' + p.best + '</span></div><div class="bMsg">순위판은 아직 준비 중이에요</div>'
+      : '<div class="bMsg">지금은 못 불러왔어요.<br>잠시 뒤 다시 열어 보세요.</div>';
+    return;
+  }
   if(want !== boardRange) return;               // 그새 다른 탭을 눌렀다
   // 방금 끝난 내 판은 아직 서버에 안 올라갔을 수 있다 — 바로 얹는다
-  if(me && mode==='OVER' && (!(me in best) || score > best[me])) best[me] = Math.round(score);
+  if(me && mode==='OVER' && (GMODE==='puzzle') === isP && (!(me in best) || score > best[me])) best[me] = Math.round(score);
   const rows = Object.entries(best).map(([n,s])=>({n,s})).sort((a,b)=>b.s-a.s);
   if(!rows.length){
     list.innerHTML = '<div class="bMsg">' + (want==='today' ? '오늘은 아직 아무도 안 했어요.' : '아직 기록이 없어요.')
@@ -1085,7 +1325,7 @@ async function openBoard(range){
     + (!me ? '<div class="bMsg">허브에서 닉네임을 정하면 내 점수도 올라갑니다</div>' : '');
 }
 $('btnBoard').onclick  = ()=> openBoard('today');
-$('btnBoard2').onclick = ()=> openBoard('today');
+$('btnBoard2').onclick = ()=> openBoard('today', GMODE==='puzzle' ? 'merge_puzzle' : null);
 document.querySelectorAll('#board .tab').forEach(b=> b.onclick = ()=> openBoard(b.dataset.r));
 $('boardClose').onclick = ()=> $('board').classList.remove('on');
 $('board').addEventListener('click', e=>{ if(e.target.id==='board') $('board').classList.remove('on'); });
@@ -1132,6 +1372,7 @@ function frame(now){
   for(let i=pops.length-1;i>=0;i--){ pops[i].t += dt; if(pops[i].t>0.35) pops.splice(i,1); }
   for(let i=floats.length-1;i>=0;i--){ const f=floats[i]; f.t += dt; f.y -= 46*dt; if(f.t>0.95) floats.splice(i,1); }
   for(let i=ghosts.length-1;i>=0;i--){ const g=ghosts[i]; g.t += dt; g.y -= 95*dt; if(g.t>1.05) ghosts.splice(i,1); }
+  for(let i=moons.length-1;i>=0;i--){ const m=moons[i]; m.t += dt; m.y -= 70*dt; if(m.t>1.8) moons.splice(i,1); }
   draw();
 }
 
@@ -1174,6 +1415,17 @@ function draw(){
   for(const g of ghosts){
     const k = g.t/1.05;
     drawChar(TOP_TIER, g.x, g.y, g.r*(1+k*0.25), 1-k, 'win');
+  }
+  // 보름달 — 은은하게 떠올라 사라진다
+  for(const m of moons){
+    const k = m.t/1.8, a = k<0.25 ? k/0.25 : (1-k)/0.75;
+    ctx.save(); ctx.globalAlpha = Math.max(0, a)*0.9;
+    const g = ctx.createRadialGradient(m.x, m.y, m.r*0.2, m.x, m.y, m.r*1.6);
+    g.addColorStop(0, 'rgba(255,240,190,1)'); g.addColorStop(0.55, 'rgba(255,226,150,.55)'); g.addColorStop(1, 'rgba(255,226,150,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(m.x, m.y, m.r*1.6, 0, 7); ctx.fill();
+    ctx.fillStyle = '#FFF1C4'; ctx.strokeStyle = 'rgba(200,160,80,.7)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(m.x, m.y, m.r*0.75, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.restore();
   }
   // 합체 이펙트
   for(const p of pops){
@@ -1252,7 +1504,8 @@ function draw(){
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('바꾸기 ' + holdLeft, h.x, h.y + h.r + 10);
     ctx.restore();
-    // 흔들기
+    // 흔들기 (퍼즐에는 없다)
+    if(GMODE === 'puzzle'){ drawHud(); return; }
     const k = shakePos(), able = shakeLeft > 0;
     ctx.save(); ctx.globalAlpha = able ? 1 : 0.35;
     ctx.beginPath(); ctx.arc(k.x, k.y, k.r, 0, 7);
@@ -1326,9 +1579,9 @@ function drawHud(){
   ctx.fillStyle = '#221E18'; ctx.font = '900 24px sans-serif'; ctx.textAlign = 'left';
   ctx.fillText(Math.round(score), 14, HUD/2);
   ctx.fillStyle = '#8A8271'; ctx.font = '800 11.5px sans-serif';
-  ctx.fillText('최고 ' + best, 14, HUD/2 + 18);
+  ctx.fillText('최고 ' + (GMODE==='puzzle' ? (puzzleLoad().best||0) : best), 14, HUD/2 + 18);
   // 남은 조각 — 이 게임의 한 판 길이
-  if(mode==='PLAY' || mode==='PAUSE'){
+  if((mode==='PLAY' || mode==='PAUSE') && GMODE !== 'puzzle'){
     const warn = left <= 8;
     ctx.textAlign = 'center';
     ctx.fillStyle = warn ? '#D8542F' : '#8A8271';
@@ -1341,7 +1594,15 @@ function drawHud(){
   // 다음
   if(mode==='PLAY' || mode==='PAUSE'){
     ctx.fillStyle = '#8A8271'; ctx.font = '800 11px sans-serif'; ctx.textAlign = 'right';
-    if(cur){
+    if(GMODE === 'puzzle'){
+      // 다음 줄 전부 — 이 모드의 핵심이다
+      const up = cur ? [nextT, nextT2].concat(pq.slice(pqi)).slice(0, Math.max(0, left-1)) : [];
+      const x0 = 122, x1 = W - 52, n = up.length;
+      const sp = n ? Math.min(22, (x1-x0)/n) : 0, rr = Math.min(9, sp*0.44);
+      ctx.textAlign = 'left'; ctx.fillStyle = '#8A8271'; ctx.font = '800 10px sans-serif';
+      ctx.fillText(n ? '다음 줄 · ' + n + '개' : '마지막 조각', x0, 13);
+      up.forEach((t,i)=> drawChar(t, x0 + rr + i*sp, 37, i===0 ? rr+2 : rr, i===0 ? 1 : Math.max(0.45, 1-i*0.05)));
+    } else if(cur){
       ctx.fillText('다음', W-122, HUD/2);
       drawChar(nextT,  W-94, HUD/2, 15);
       drawChar(nextT2, W-64, HUD/2, 10, 0.55);   // 그다음 — 연쇄를 미리 설계하라고
@@ -1395,8 +1656,9 @@ function buildLadder(){
 }
 
 // ── 버튼 ────────────────────────────────────────────────────
-$('btnGo').onclick    = startGame;
-$('btnRetry').onclick = startGame;
+$('btnGo').onclick     = ()=> startGame('daily');
+$('btnPuzzle').onclick = ()=> startGame('puzzle');
+$('btnRetry').onclick  = ()=> startGame(GMODE);
 $('btnHome').onclick  = ()=>{ mode='TITLE'; show('sTitle'); refreshTitle(); };
 $('btnMute').onclick  = ()=>{
   muted = !muted;
@@ -1407,6 +1669,11 @@ $('btnMute').onclick  = ()=>{
 function refreshTitle(){
   $('btnMute').textContent = muted?'🔇':'🔊';
   RULE = window.FORCE_RULE || todayRule(); QUEST = todayQuest();
+  const band = $('evBand');
+  if(eventOn()){ band.textContent = '🌕 ' + EVENT.n + ' · ' + EVENT.until + '까지'; band.classList.remove('hidden'); }
+  else band.classList.add('hidden');
+  const pz = puzzleLoad();
+  $('btnPuzzle').textContent = pz.best ? '퍼즐 ' + starText(pz.stars||0) : '오늘의 퍼즐';
   const qs = questLoad(), qDoneToday = qs.day === dayKey();
   // 두 줄로 묶는다. 세 줄이면 좁은 화면에서 하단 바를 넘친다.
   // 규칙 설명은 판이 시작되면 HUD에 다시 뜨므로 여기선 이름만 적는다.
@@ -1420,6 +1687,7 @@ function refreshTitle(){
 buildLadder();
 refreshTitle();
 show('sTitle');
+maybeWhatsNew();
 requestAnimationFrame(t=>{ last = t; frame(t); });
 </script>
 </body>

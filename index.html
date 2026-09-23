@@ -28,6 +28,17 @@
     text-overflow:ellipsis;white-space:nowrap;display:block;}
   #profChip .pc{font-size:11px;font-weight:700;color:#F2C14B;display:block;}
 
+
+  /* 테마곡 */
+  #bgmBtn{flex:none;width:34px;height:34px;border-radius:50%;border:none;background:rgba(255,255,255,.09);
+    color:#F2C14B;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:2px;}
+  #bgmBtn.off{color:#7E7768;}
+  #bgmBtn .eq{display:none;align-items:flex-end;gap:2px;height:14px;}
+  #bgmBtn.on .eq{display:flex;} #bgmBtn.on .nt{display:none;}
+  #bgmBtn .eq i{width:3px;background:#F2C14B;border-radius:1px;animation:eq .9s ease-in-out infinite;}
+  #bgmBtn .eq i:nth-child(2){animation-delay:-.3s;} #bgmBtn .eq i:nth-child(3){animation-delay:-.6s;}
+  @keyframes eq{0%,100%{height:4px;}50%{height:14px;}}
+
   /* 오늘의 미션 */
   #missionBox{flex:none;background:rgba(255,255,255,.07);border-radius:16px;padding:10px 13px;
     display:flex;flex-direction:column;gap:7px;}
@@ -119,6 +130,7 @@
 
   <header>
     <div class="logo">솜솜시티</div>
+    <button id="bgmBtn" aria-label="솜솜시티 노래"><span class="nt">♪</span><span class="eq"><i></i><i></i><i></i></span></button>
     <div id="profChip"><img id="profAv" src="assets/sd_kkito_t.png" alt=""><span><span class="pn" id="profName">솜솜이</span><span class="pc" id="profCoin">🌰 0</span></span></div>
   </header>
 
@@ -218,6 +230,8 @@ const ACH = [
   {id:'merge_fever3', g:'솜솜 합체', n:'뜨거운 하루',    d:'한 판에 과열에 세 번 들어갔어요'},
   {id:'merge_clear',  g:'솜솜 합체', n:'말끔한 통',      d:'통을 깨끗이 비웠어요'},
   {id:'merge_15000',  g:'솜솜 합체', n:'만오천 점',      d:'한 판에 15000점을 넘겼어요'},
+  {id:'merge_chuseok', g:'솜솜 합체', n:'한가위 보름달',  d:'한가위 컷 세 장을 모두 모았어요'},
+  {id:'merge_skins',   g:'솜솜 합체', n:'상자 수집가',    d:'상자 네 개를 모두 열었어요'},
   {id:'all_three',  g:'솜솜시티',  n:'마을 한 바퀴',  d:'세 게임을 모두 해봤어요'},
   {id:'all_four',   g:'솜솜시티',  n:'네 골목 제패',  d:'네 게임을 모두 해봤어요'},
   {id:'all_chars',  g:'솜솜시티',  n:'여섯 친구',     d:'여섯 주민 모두와 놀았어요'},
@@ -425,6 +439,26 @@ function renderTitleBar(){
     + '<span class="tp">'+(next ? '다음 '+next.n+'까지 🌰'+(next.at-coins) : '🌰'+coins+' · 최고 칭호')+'</span>';
 }
 document.getElementById('achOpen').addEventListener('click', renderTitleBar);
+
+// ── 솜솜시티 테마곡: 허브에 처음 들어와 화면을 누르면 한 번 재생(반복 없음). 음소거는 게임들과 같은 키를 씁니다 ──
+(function(){
+  const btn=document.getElementById('bgmBtn'); if(!btn) return;
+  const au=new Audio('assets/somsom_theme.mp3'); au.preload='metadata'; au.volume=0.55;
+  let muted=false; try{ muted=localStorage.getItem('somsom_muted')==='1'; }catch(e){}
+  let played=false; try{ played=sessionStorage.getItem('somsom_theme')==='1'; }catch(e){}
+  const paint=()=>{ btn.classList.toggle('on', !au.paused); btn.classList.toggle('off', muted); };
+  const play=()=>{ au.currentTime=0; const pr=au.play(); if(pr&&pr.catch) pr.catch(()=>{}); played=true;
+    try{ sessionStorage.setItem('somsom_theme','1'); }catch(e){} };
+  au.addEventListener('play',paint); au.addEventListener('pause',paint); au.addEventListener('ended',paint);
+  document.addEventListener('pointerdown',e=>{ if(played||muted||btn.contains(e.target)) return; play(); },{once:false});
+  btn.addEventListener('click',()=>{
+    if(!au.paused){ au.pause(); muted=true; }
+    else { muted=false; play(); }
+    try{ localStorage.setItem('somsom_muted', muted?'1':'0'); }catch(e){}
+    paint();
+  });
+  paint();
+})();
 </script>
 </body>
 </html>

@@ -82,5 +82,16 @@ service cloud.firestore {
         && request.resource.data.t is int;
       allow delete: if false;
     }
+
+    match /merge_puzzle/{doc} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['n','s','d','k','t'])
+        && request.resource.data.n is string && request.resource.data.n.size() >= 1 && request.resource.data.n.size() <= 12
+        && request.resource.data.s is int && request.resource.data.s >= 0 && request.resource.data.s < 1000000
+        && request.resource.data.d is int && request.resource.data.d >= 20000101 && request.resource.data.d <= 21001231
+        && request.resource.data.k is int && request.resource.data.k >= 0 && request.resource.data.k <= 3
+        && request.resource.data.t is int;
+      allow update, delete: if false;
+    }
   }
 }
