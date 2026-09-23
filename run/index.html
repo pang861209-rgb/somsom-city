@@ -701,7 +701,7 @@ function endGame(score){
     +(s.nears?' · 아슬아슬 '+s.nears+'회'+(s.tights?' (완벽 '+s.tights+')':''):'');
   $('resBest').textContent=c.name+' 최고기록: '+best+' m';
   lastResult={key,score,coins:s.coins,best,isNew};
-  achReport({g:'run', key, dist:Math.floor(s.dist), nears:s.nears||0, tights:s.tights||0, combo:s.bestCombo||0, coins:s.coins||0});
+  achReport({g:'run', key, dist:score,   /* 화면에 보이는 m로 판정 — 예전엔 내부 픽셀 거리(≈화면의 12배)라 '500m' 업적이 42m에서 열렸다 */ nears:s.nears||0, tights:s.tights||0, combo:s.bestCombo||0, coins:s.coins||0});
   $('nameRow').style.display=score>=1?'flex':'none';
   $('nameInput').value=localStorage.getItem('somsom_name')||'';
   $('submitBtn').disabled=false; $('submitBtn').textContent='🏆 랭킹 등록';
