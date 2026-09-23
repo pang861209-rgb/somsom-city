@@ -453,10 +453,10 @@ let S=null, raf=null, curKey='kkito';
 const GRAV_BASE=2500;
 function newState(key){
   const c=CHARS[key];
-  return { key, c, dist:0, speed:195*c.spd, base:195*c.spd, cap:560*c.spd, coins:0, coinPts:0,
+  return { key, c, dist:0, time:0, speed:235*c.spd, base:235*c.spd, cap:560*c.spd, coins:0, coinPts:0,
     y:0, vy:0, spin:0, airJumps:0, onGround:true, jumps:(c.jumps||2), run:0, shield:c.shield, inv:0, introT:1.8, recordShown:false,
     hold:false, slamming:false, slams:0, slowT:0, glideD:0, glideT:0, glideCut:0,
-    obs:[], gems:[], parts:[], floats:[], nextObs:540, nextGem:260, drops:[], nextDrop:1100,
+    obs:[], gems:[], parts:[], floats:[], nextObs:200, nextGem:260, drops:[], pend:[], chunkN:0, lastChunk:'',
     combo:0, comboT:0, bestCombo:0, marks:[], nextMark:700,
     over:false, overAt:0, shake:0, hitstop:0, last:performance.now(),
     best:+(localStorage.getItem('runner_best_'+key)||0) };
@@ -469,13 +469,64 @@ function jump(){ const s=S; if(!s||s.over||paused)return;
   s.vy = dj ? -s.c.djv : -s.c.jv;
   s.onGround=false; if(dj)s.spin=1; sfx(dj?'dj':'jump'); for(let i=0;i<6;i++)s.parts.push({x:PX-10,y:GROUND,vx:-60-Math.random()*60,vy:-20-Math.random()*30,g:300,life:.4,max:.4,size:3,col:'#d8c8a8'}); }
 
-// ================= 스폰 =================
-function spawnObstacle(s){
-  const r=Math.random(); let h,w;
-  if(r<0.6){ h=28+Math.random()*12; w=28+Math.random()*16; }
-  else if(r<0.9){ h=44+Math.random()*12; w=26+Math.random()*10; }
-  else { s.obs.push({x:W+40+130,w:26,h:40}); h=38; w=24; }   // 연속 2개 (10%)
-  s.obs.push({x:W+40,w,h});
+// ================= 스폰: 패턴 조각(청크) =================
+// 장애물을 하나씩 랜덤으로 던지지 않고, 미리 설계한 '조각'을 이어 붙인다 — 배울 수 있는 패턴이 생긴다.
+// t = 조각 시작부터의 시간(초). 속도가 바뀌어도 박자가 같도록 px가 아니라 초로 적는다.
+// b = 택배 상자(s 작은 / m 중간 / t 2단)   d = 도착하는 순간 머리 위로 떨어지는 은행
+// g = 도토리 (arc: 바로 앞 상자 위 포물선 유도선)
+// band = 등장 시작 단계 (0: ~15초, 1: ~40초, 2: ~70초, 3: 그 후 간격만 더 좁아짐)
+// ※ 새 조각을 넣으면 runner/test_chunks.js로 여섯 캐릭터 모두 통과 가능한지 확인할 것
+const CHUNKS = [
+  {n:'single_s', band:0, dur:0.2,  it:[['b',0,'s']]},
+  {n:'single_m', band:0, dur:0.2,  it:[['b',0,'m']]},
+  {n:'lure',     band:0, dur:0.2,  it:[['b',0,'m'],['g',0,'arc']]},
+  {n:'pair',     band:1, dur:0.45, it:[['b',0,'s'],['b',0.22,'s']]},
+  {n:'stairs',   band:1, dur:2.2,  it:[['b',0,'s'],['b',1.0,'m'],['b',2.0,'t'],['g',2.0,'arc']]},
+  {n:'sky',      band:1, dur:0.3,  it:[['d',0]]},
+  {n:'tall_low', band:1, dur:0.8,  it:[['b',0,'t'],['b',0.62,'s']]},
+  {n:'box_sky',  band:2, dur:1.1,  it:[['b',0,'m'],['d',0.95]]},
+  {n:'triple',   band:2, dur:1.9,  it:[['b',0,'s'],['b',0.9,'s'],['b',1.8,'m']]},
+  {n:'wide',     band:2, dur:1.6,  it:[['b',0,'m'],['b',0.24,'m'],['d',1.4]]},
+];
+const CHUNK_GAP = [[1.2,1.7],[0.95,1.4],[0.8,1.2],[0.7,1.0]];   // 조각 사이 숨 고르기(초), 단계별
+function bandOf(s){ return s.time<15?0 : s.time<40?1 : s.time<70?2 : 3; }
+function makeBox(x,sz){
+  if(sz==='s') return {x, w:32+Math.random()*8, h:30+Math.random()*8};
+  if(sz==='m') return {x, w:30+Math.random()*6, h:44+Math.random()*6};
+  return {x, w:34, h:58+Math.random()*4};
+}
+// 조각 하나를 화면 오른쪽 밖에 깔고, 다음 조각까지의 시간(초)을 돌려준다
+function spawnChunk(s){
+  const band=bandOf(s), x0=W+40, v=s.speed;
+  s.chunkN++;
+  if(s.chunkN%7===0 && band>0){                     // 긴장 뒤 휴식: 장애물 없는 도토리 길
+    const n=10; for(let i=0;i<n;i++) s.gems.push({x:x0+i*34, y:GROUND-30, taken:false});
+    s.floats.push({x:W*0.55, y:GROUND*0.4, txt:'🌰 도토리 길!', col:'#b08a3a', life:1.4});
+    return (n*34)/v + 0.6;
+  }
+  const pool=CHUNKS.filter(c=>c.band<=band && c.n!==s.lastChunk);
+  const c=pool[Math.random()*pool.length|0]; s.lastChunk=c.n;
+  let box=null;
+  for(const [k,t,a] of c.it){
+    const x=x0+t*v;
+    if(k==='b'){ box=makeBox(x,a); s.obs.push(box); }
+    else if(k==='d') s.pend.push({x});
+    else if(k==='g' && box){                        // 상자 꼭대기를 넘는 포물선 = 올바른 점프 궤적
+      for(let i=0;i<5;i++) s.gems.push({x:box.x+box.w/2+(i-2)*34, y:GROUND-box.h-34-Math.sin(i/4*Math.PI)*34, taken:false});
+    }
+  }
+  const g=CHUNK_GAP[band];
+  return c.dur + g[0] + Math.random()*(g[1]-g[0]);
+}
+// 은행 예고 시간: 기본 0.75초, 화면이 좁거나 빠르면 예고 표시가 화면 안에 보이도록 줄인다.
+// 착지 지점은 플레이어 '바로 앞'(ahead초 거리) — 정확히 머리 위에 떨어뜨리면 느린 캐릭터(보늘·북거씨)는
+// 어떤 타이밍으로도 못 피한다(test_chunks.js로 확인). 앞에 떨어진 은행을 '늦게' 넘는 게 요령.
+const DROP_AHEAD = 0.35;
+function dropLead(s){
+  const fall=(GROUND+56)/1500;                      // y=-70에서 GROUND-14까지 1500px/s
+  let warn=0.75;
+  if(PX+s.speed*(warn+fall+DROP_AHEAD) > W-24) warn=Math.max(0.35,(W-24-PX)/s.speed-fall-DROP_AHEAD);
+  return {warn, fall:fall+DROP_AHEAD};
 }
 function spawnGems(s){
   const cnt=3+(Math.random()*3|0), baseY=GROUND-(46+Math.random()*150), arc=Math.random()<.5;
@@ -500,8 +551,8 @@ function loop(now){
   if(s.inv>0)s.inv-=dt;
 
   if(!s.over){
-    s.speed=Math.min(s.cap, s.speed+4.2*s.c.spd*dt);
-    s.dist+=s.speed*dt; s.run+=s.speed*dt;
+    s.speed=Math.min(s.cap, s.speed+5.0*s.c.spd*dt);   // 최고속까지 ~65초 (예전 ~87초 — 초반이 지루했다)
+    s.dist+=s.speed*dt; s.run+=s.speed*dt; s.time+=dt;
     s.vy+=s.c.grav*dt; s.y+=s.vy*dt;
 
   // ── 시그니처: 길게 누르기 ──
@@ -533,11 +584,15 @@ function loop(now){
     if(s.y>=0){ if(s.slamming){ slamLand(s); }
       if(!s.onGround){ sfx('land'); for(let i=0;i<5;i++)s.parts.push({x:PX,y:GROUND,vx:(Math.random()-.3)*80,vy:-15,g:300,life:.3,max:.3,size:3,col:'#d8c8a8'}); } s.y=0; s.vy=0; s.onGround=true; s.jumps=(s.c.jumps||2); s.airJumps=0; s.glideT=0; }
     if(s.onGround&&Math.random()<.25)s.parts.push({x:PX-15,y:GROUND-2,vx:-55,vy:-8,g:120,life:.3,max:.3,size:2.5,col:'rgba(180,160,120,.5)'});
-    s.nextObs-=s.speed*dt; if(s.nextObs<=0){ spawnObstacle(s); s.nextObs=420+Math.random()*300; }
+    s.nextObs-=s.speed*dt; if(s.nextObs<=0){ s.nextObs=spawnChunk(s)*s.speed; }
+    // 떨어지는 은행: 플레이어가 그 자리에 도착하는 순간 착지하도록, 남은 거리가 맞을 때 예고를 띄운다
+    const L=dropLead(s);
+    for(const p of s.pend){ p.x-=s.speed*dt;
+      if(p.x <= PX+s.speed*(L.warn+L.fall)){ p.done=true; s.drops.push({x:p.x,ph:0,t:0,y:-70,warn:L.warn}); } }
+    s.pend=s.pend.filter(p=>!p.done);
     s.nextGem-=s.speed*dt; if(s.nextGem<=0){ spawnGems(s); s.nextGem=360+Math.random()*260; }
     s.nextMark-=s.speed*dt; if(s.nextMark<=0){ const L=LANDMARKS[(s.markIdx=(s.markIdx||0)+1)%LANDMARKS.length];
       s.marks.push({x:W+60, id:L.id, n:L.n, got:false}); s.nextMark=900+Math.random()*500; }   // 코스 랜드마크
-    s.nextDrop-=s.speed*dt; if(s.nextDrop<=0 && s.dist>500){ s.drops.push({x:W+70,ph:0,t:0,y:-70}); s.nextDrop=850+Math.random()*750; }   // 낙하 은행 (경고→낙하→잔류)
   }
 
   const _set=sprites[s.key], _fa=(_set&&_set.length)?_set[0]:null;
@@ -578,7 +633,7 @@ function loop(now){
     else { s.over=true; s.overAt=now; s.shake=.5; s.hitstop=.12; sfx('hit'); sfx('over'); stopBgm(); } };
   for(const d of s.drops){
     d.x-=s.speed*dt; d.t+=dt;
-    if(d.ph===0){ if(d.t>0.75){ d.ph=1; d.t=0; sfx('warn'); } }
+    if(d.ph===0){ if(d.t>(d.warn||0.75)){ d.ph=1; d.t=0; sfx('warn'); } }
     else if(d.ph===1){
       d.y+=1500*dt;
       if(d.y>=GROUND-14){ d.y=GROUND-14; d.ph=2; d.t=0; s.shake=Math.max(s.shake,.18); sfx('thud');
@@ -637,7 +692,7 @@ function draw(s,now,score){
   for(const m of s.marks){ const im=lmImg[m.id]; if(!im) continue;
     const h=Math.min(96,GROUND*0.30), w=h*(im.width||im.naturalWidth)/(im.height||im.naturalHeight);
     ctx.globalAlpha=.92; ctx.drawImage(im, m.x-w/2, GROUND-h, w, h); ctx.globalAlpha=1; }
-  for(const o of s.obs){ const top=GROUND-o.h; ctx.fillStyle=o.h>48?'#b07a4a':'#9a7a4a'; ctx.strokeStyle='#222'; ctx.lineWidth=2; ctx.beginPath(); ctx.roundRect(o.x,top,o.w,o.h,5); ctx.fill(); ctx.stroke(); ctx.fillStyle='rgba(255,255,255,.18)'; ctx.beginPath(); ctx.roundRect(o.x+3,top+3,o.w-6,6,3); ctx.fill(); }
+  for(const o of s.obs) drawBox(o);
   // ── 낙하 은행(썩은 열매) 렌더 — '먹는 것'과 확실히 구분되게 위험 신호 강조 ──
   for(const d of s.drops){
     if(d.ph===0){                                        // 경고: 붉은 링 + 깜빡임 + ⚠
@@ -724,6 +779,19 @@ function draw(s,now,score){
     ctx.fillStyle='#b06a9a'; ctx.font='800 11px sans-serif'; ctx.textAlign='right';
     ctx.fillText('활강 보너스 '+Math.floor(s.glideD/12*0.45),W-14,68); }
   ctx.restore();
+}
+
+// 장애물 = 골목의 택배 상자. 2단(높은 것)은 상자를 쌓아서 높이를 한눈에 읽히게
+function drawBox(o){
+  const part=(x,y,w,h)=>{
+    ctx.fillStyle='#caa274'; ctx.strokeStyle='#222'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.roundRect(x,y,w,h,3); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#ecdcb6'; ctx.fillRect(x+w/2-3,y+1,6,h-2);                 // 테이프
+    ctx.strokeStyle='rgba(34,34,34,.35)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(x+3,y+7); ctx.lineTo(x+w-3,y+7); ctx.stroke(); // 뚜껑 접힌 선
+  };
+  if(o.h>=56){ const h1=Math.round(o.h*0.55); part(o.x,GROUND-h1,o.w,h1); part(o.x+3,GROUND-o.h,o.w-6,o.h-h1); }
+  else part(o.x,GROUND-o.h,o.w,o.h);
 }
 
 // ================= 종료/결과 =================
