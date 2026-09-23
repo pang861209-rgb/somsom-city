@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <link rel="apple-touch-icon" href="../assets/app_icon_180.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon_32.png">
+<script src="../village.js"></script>
 <title>솜솜시티: 은행 주의보 (프로토타입 M0.5)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap">
 <style>
@@ -1067,6 +1068,7 @@ function endGame() {
   lastResult = { key: s.key, score, best, isNewBest, detail: $('resDetail').textContent };
   const rr = recordRun(s, score);                                // 낙엽피하기 진행 누적 (잠금해제 판정)
   const isChal = !!(challenge && challenge.key === s.key);
+  if (window.SV) SV.add('leaf', s.acorns, s.key);                  // 마을 창고
   achReport({g:'leaf', key:s.key, score, combo:s.bestCombo||0, gold:s.goldens||0, coins:s.acorns||0,
              sur:s.t, allUnlocked:Object.keys(UNLOCK).every(isUnlocked), chalWin:isChal && score > challenge.score});
   $('nameRow').style.display = (score >= 1 ? 'flex' : 'none');                 // 매 판 등록 가능 (랭킹은 이름당 최고점만 표시)

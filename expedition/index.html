@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <link rel="apple-touch-icon" href="../assets/app_icon_180.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon_32.png">
+<script src="../village.js"></script>
 <title>솜솜시티: 골목 원정대</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap">
@@ -811,6 +812,7 @@ function hubReport(stars){
   st.played=st.played||{}; st.played.expedition=(st.played.expedition||0)+1;
   st.chars=st.chars||{}; st.chars.kkito=(st.chars.kkito||0)+1; st.last='kkito';
   st.coins=(st.coins||0)+g.acorn;
+  if(window.SV) SV.add('expedition', g.acorn, 'kkito');   // 마을 창고
   try{ localStorage.setItem('somsom_stats',JSON.stringify(st)); }catch(e){}
   // 도감 (허브 공용 키)
   try{
