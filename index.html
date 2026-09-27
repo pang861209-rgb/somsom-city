@@ -82,6 +82,7 @@
     filter:drop-shadow(-4px 6px 10px rgba(0,0,0,.5));pointer-events:none;}
   .picker .blk:nth-child(1){z-index:4;} .picker .blk:nth-child(2){z-index:3;}
   .picker .blk:nth-child(3){z-index:2;} .picker .blk:nth-child(4){z-index:1;}
+  .picker .blk:nth-child(5){z-index:1;} .picker .blk:nth-child(6){z-index:0;}
 
   /* 아래 버튼 */
   .footRow{flex:none;display:flex;gap:8px;}
@@ -179,7 +180,7 @@
     <span class="vt">
       <span class="vl">이번 주 마을 창고<span class="vn" id="vNum">…</span></span>
       <span class="vbar"><i id="vBar" style="width:0%"></i></span>
-      <span class="vs" id="vSub">여섯 게임에서 모은 도토리가 여기로 모여요</span>
+      <span class="vs" id="vSub">일곱 게임에서 모은 도토리가 여기로 모여요</span>
     </span>
     <img class="vc" id="vThumb" alt="">
   </div>
@@ -205,10 +206,15 @@
       <div class="txt"><div class="no">GAME 04 · NEW</div><div class="nm">방범대</div><div class="ds">꼬릿 구름에서 당근빌라를!</div></div>
       <img class="ch" src="assets/sd_migae_t.png" alt="" style="height:84%;max-height:124px;">
     </a>
-    <a class="blk" href="merge/" style="background:#3F7E86;color:#062024;grid-column:1 / -1;">
+    <a class="blk" href="merge/" style="background:#3F7E86;color:#062024;">
       <div class="mask"><img src="assets/bg_day_acorn_shop.png" alt="" style="object-position:center 45%;"></div>
-      <div class="txt"><div class="no">GAME 05 · NEW</div><div class="nm">솜솜 합체</div><div class="ds">미개 둘이 만나면 북거씨가 됩니다. 통이 넘치기 전까지</div></div>
-      <img class="ch" src="assets/sd_bookgeo_t.png" alt="" style="height:76%;max-height:102px;right:8px;">
+      <div class="txt"><div class="no">GAME 05</div><div class="nm">솜솜 합체</div><div class="ds">미개 둘이 만나면 북거씨가 돼요</div></div>
+      <img class="ch" src="assets/sd_bookgeo_t.png" alt="" style="height:76%;max-height:102px;right:4px;">
+    </a>
+    <a class="blk" href="basket/" style="background:#B8652E;color:#2A1204;">
+      <div class="mask"><img src="assets/basket/title.webp" alt="" style="object-position:center 70%;"></div>
+      <div class="txt"><div class="no">GAME 06 · NEW</div><div class="nm">가을 바구니</div><div class="ds">은행 한 알에서 당근 케이크까지</div></div>
+      <img class="ch" src="assets/sd_lachilchin_t.png" alt="" style="height:84%;max-height:124px;">
     </a>
   </nav>
 
@@ -251,7 +257,7 @@
   <div id="villagePanel" class="sheetWrap">
     <div class="sheet">
       <div class="hd"><span class="t">🧺 마을 창고</span><span class="c" id="vpLeft"></span></div>
-      <div class="nameNote">여섯 게임 어디서든 한 판 하면 그 판의 도토리가 이번 주 창고에 모여요. 진 판도 채워져요. 목표를 채우면 이번 주 컷이 모두에게 열려요.</div>
+      <div class="nameNote">일곱 게임 어디서든 한 판 하면 그 판의 도토리가 이번 주 창고에 모여요. 진 판도 채워져요. 목표를 채우면 이번 주 컷이 모두에게 열려요.</div>
       <div class="vbar" style="height:10px"><i id="vpBar" style="width:0%"></i></div>
       <div id="vpNum" style="font-size:13px;font-weight:800;color:#EFE7D6;text-align:center;"></div>
       <img class="vCut lock" id="vpCut" alt="이번 주 컷">
@@ -309,6 +315,12 @@ const ACH = [
   {id:'merge_15000',  g:'솜솜 합체', n:'만오천 점',      d:'한 판에 15000점을 넘겼어요'},
   {id:'merge_chuseok', g:'솜솜 합체', n:'한가위 보름달',  d:'한가위 컷 세 장을 모두 모았어요'},
   {id:'merge_skins',   g:'솜솜 합체', n:'상자 수집가',    d:'상자 네 개를 모두 열었어요'},
+  {id:'basket_first',  g:'가을 바구니', n:'첫 바구니',      d:'가을 바구니를 한 판 채웠어요'},
+  {id:'basket_apple',  g:'가을 바구니', n:'사과 한 알',      d:'한 판에 사과를 만들었어요'},
+  {id:'basket_pumpkin',g:'가을 바구니', n:'호박이 넝쿨째',   d:'한 판에 호박을 만들었어요'},
+  {id:'basket_cake',   g:'가을 바구니', n:'당근빌라 명물',   d:'당근 케이크를 만들었어요'},
+  {id:'basket_chain5', g:'가을 바구니', n:'줄줄이 합치기',   d:'한 번에 5연쇄를 냈어요'},
+  {id:'basket_3000',   g:'가을 바구니', n:'삼천 점',         d:'한 판에 3000점을 넘겼어요'},
   {id:'all_three',  g:'솜솜시티',  n:'마을 한 바퀴',  d:'세 게임을 모두 해봤어요'},
   {id:'all_four',   g:'솜솜시티',  n:'네 골목 제패',  d:'네 게임을 모두 해봤어요'},
   {id:'all_chars',  g:'솜솜시티',  n:'여섯 친구',     d:'여섯 주민 모두와 놀았어요'},
@@ -347,6 +359,19 @@ const DEX_ITEMS = [
     {id:'merge_ramda',      f:'assets/sd_ramda_t.png',      n:'람다'},
     {id:'merge_kkito',      f:'assets/sd_kkito_t.png',      n:'끼토'},
     {id:'merge_boneul',     f:'assets/sd_boneul_t.png',     n:'보늘'},
+  ]},
+  {g:'가을 바구니 열매', items:[
+    {id:'basket_ginkgo',      f:'assets/basket/f_ginkgo.webp',      n:'은행'},
+    {id:'basket_acorn',       f:'assets/basket/f_acorn.webp',       n:'도토리'},
+    {id:'basket_chestnut',    f:'assets/basket/f_chestnut.webp',    n:'알밤'},
+    {id:'basket_pinecone',    f:'assets/basket/f_pinecone.webp',    n:'솔방울'},
+    {id:'basket_grape',       f:'assets/basket/f_grape.webp',       n:'포도'},
+    {id:'basket_persimmon',   f:'assets/basket/f_persimmon.webp',   n:'감'},
+    {id:'basket_apple',       f:'assets/basket/f_apple.webp',       n:'사과'},
+    {id:'basket_pear',        f:'assets/basket/f_pear.webp',        n:'배'},
+    {id:'basket_pomegranate', f:'assets/basket/f_pomegranate.webp', n:'석류'},
+    {id:'basket_pumpkin',     f:'assets/basket/f_pumpkin.webp',     n:'호박'},
+    {id:'basket_cake',        f:'assets/basket/f_cake.webp',        n:'당근 케이크'},
   ]},
   {g:'달리기 랜드마크', items:[
     {id:'run_postbox', f:'assets/dex_run_postbox.png', n:'골목 우체통'},
@@ -414,12 +439,14 @@ function missionSpec(){
   const runGoal  = [500,1000,1500][(r>>>3)%3];
   const missGoal = [0,1,2][(r>>>6)%3];
   const defGoal  = [1,2,3][(r>>>9)%3]; // 방범대 별점 목표 — defense 쪽 hubReport와 동일 수식
+  const basketGoal = [5,6,7][(r>>>12)%3]; // 가을 바구니 열매 단계 — basket 쪽 hubMissionGoal과 동일 수식
   return {leaf: {goal:leafGoal, label:'낙엽피하기 '+leafGoal+'점 넘기'},
           run:  {goal:runGoal,  label:'달리기 '+runGoal+'m 달리기'},
           match:{goal:missGoal, label:'짝맞추기 '+(missGoal===0 ? '실수 없이 클리어'
                                                               : '실수 '+missGoal+'회 이하로 클리어')},
           defense:{goal:defGoal, label:'방범대 '+defGoal+'★로 스테이지 클리어'},
-          merge:{goal:1, label:'솜솜 합체에서 람다 이상 만들기'}};
+          merge:{goal:1, label:'솜솜 합체에서 람다 이상 만들기'},
+          basket:{goal:basketGoal, label:'가을 바구니에서 '+['감','사과','배'][basketGoal-5]+' 만들기'}};
 }
 function titleFor(coins){
   if(coins>=2000) return '은행나무 지킴이';
@@ -446,13 +473,13 @@ function renderMissions(){
   document.getElementById('missionChar').innerHTML='<span style="font-size:11.5px;font-weight:700;color:#8A6A1A;">오늘의 친구 '+CH_NAME[DAILY_CHAR_ID]+'</span>';
   const list=document.getElementById('missionList'); list.innerHTML='';
   let n=0;
-  for(const g of ['leaf','run','match','defense','merge']){
+  for(const g of ['leaf','run','match','defense','merge','basket']){
     const ok=!!done[g]; if(ok) n++;
     const r=document.createElement('div'); r.className='mRow'+(ok?' ok':'');
     r.innerHTML='<span class="bx">'+(ok?'✓':'')+'</span><span>'+sp[g].label+'</span>';
     list.appendChild(r);
   }
-  document.getElementById('missionPg').textContent=n+'/5';
+  document.getElementById('missionPg').textContent=n+'/6';
 }
 // 주간 통합 랭킹 — 각 게임 점수를 그 게임의 주간 최고 대비 100점으로 환산해 합산
 const FB_KEY='AIzaSyBfld7SRrVTxDG0nE_6Z3Mw5kSRTo5bIGY';
@@ -471,7 +498,7 @@ async function renderWeekly(){
   list.innerHTML='<div class="mRow" style="padding:14px;">불러오는 중…</div>';
   const since=Date.now()-7*24*3600*1000;
   const cols=await Promise.all([fetchCol('scores'),fetchCol('runner_scores'),fetchCol('memory_scores'),
-                                fetchCol('defense_scores'),fetchCol('merge_scores')]);
+                                fetchCol('defense_scores'),fetchCol('merge_scores'),fetchCol('basket_scores')]);
   const per=cols.map(rows=>{
     const best={}; for(const e of rows){ if(e.t<since) continue; if(!best[e.n]||e.s>best[e.n]) best[e.n]=e.s; }
     const max=Math.max(1,...Object.values(best));
@@ -497,7 +524,7 @@ renderProfile(); renderMissions();
 document.getElementById('wkOpen').addEventListener('click', ()=>{ document.getElementById('wkPanel').classList.add('on'); renderWeekly(); });
 document.getElementById('wkClose').addEventListener('click', ()=> document.getElementById('wkPanel').classList.remove('on'));
 document.getElementById('wkPanel').addEventListener('click', e=>{ if(e.target.id==='wkPanel') e.currentTarget.classList.remove('on'); });
-// ── 이름 정하기·바꾸기 — 여섯 게임이 모두 somsom_name 하나를 쓰므로 여기서 바꾸면 전부 반영 ──
+// ── 이름 정하기·바꾸기 — 일곱 게임이 모두 somsom_name 하나를 쓰므로 여기서 바꾸면 전부 반영 ──
 function cleanName(v){ return String(v||'').replace(/[<>&"'`\\]/g,'').replace(/\s+/g,' ').trim().slice(0,8); }
 function openNameSheet(){
   const f=document.getElementById('nameField');
