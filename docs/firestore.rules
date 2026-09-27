@@ -72,9 +72,7 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // ── 솜솜 합체 (GAME 05) ─────────────────────────────────
-    // 점수형 — 한 판의 점수. 새 기록 추가만, 고치거나 지우기는 불가.
-    // d 는 "오늘의 통" 날짜(YYYYMMDD 정수) — 같은 날끼리 비교하는 데 쓴다.
+    // ── 솜솜 합체 (허브에서 내림, 기록 보존용) ───────────────
     match /merge_scores/{doc} {
       allow read: if true;
       allow create: if request.resource.data.keys().hasOnly(['n','s','d','t'])
@@ -84,18 +82,6 @@ service cloud.firestore {
         && request.resource.data.t is int;
       allow update, delete: if false;
     }
-    // ── 가을 바구니 (GAME 06) — 점수형, 새 기록 추가만 ─────────────
-    // c 는 함께한 친구(주민 키)
-    match /basket_scores/{doc} {
-      allow read: if true;
-      allow create: if request.resource.data.keys().hasOnly(['n','s','t','c'])
-        && request.resource.data.n is string && request.resource.data.n.size() >= 1 && request.resource.data.n.size() <= 12
-        && request.resource.data.s is int && request.resource.data.s >= 0 && request.resource.data.s < 1000000
-        && request.resource.data.t is int
-        && request.resource.data.c is string && request.resource.data.c.size() <= 20;
-      allow update, delete: if false;
-    }
-    // 진도형 — 닉네임이 문서 이름. 최고 단계(st 0~5)와 최고 점수(b)를 덮어쓴다.
     match /merge_progress/{nick} {
       allow read: if true;
       allow create, update: if request.resource.data.keys().hasOnly(['n','st','b','t'])
@@ -105,7 +91,6 @@ service cloud.firestore {
         && request.resource.data.t is int;
       allow delete: if false;
     }
-
     match /merge_puzzle/{doc} {
       allow read: if true;
       allow create: if request.resource.data.keys().hasOnly(['n','s','d','k','t'])
@@ -116,7 +101,8 @@ service cloud.firestore {
         && request.resource.data.t is int;
       allow update, delete: if false;
     }
-    // 창고 정리 (GAME 05, 솜솜 합체 자리) — 한 판 점수. d 는 오늘의 판 날짜(YYYYMMDD)
+
+    // ── 창고 정리 (GAME 05) — 한 판 점수. d 는 오늘의 판 날짜(YYYYMMDD) ──
     match /boxes_scores/{doc} {
       allow read: if true;
       allow create: if request.resource.data.keys().hasOnly(['n','s','d','t'])
@@ -124,6 +110,44 @@ service cloud.firestore {
         && request.resource.data.s is int && request.resource.data.s >= 0 && request.resource.data.s < 1000000
         && request.resource.data.d is int && request.resource.data.d >= 20000101 && request.resource.data.d <= 21001231
         && request.resource.data.t is int;
+      allow update, delete: if false;
+    }
+
+    // ── 가을 바구니 (GAME 06) — 한 판 점수. c 는 함께한 친구(주민 키) ──
+    match /basket_scores/{doc} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['n','s','t','c'])
+        && request.resource.data.n is string && request.resource.data.n.size() >= 1 && request.resource.data.n.size() <= 12
+        && request.resource.data.s is int && request.resource.data.s >= 0 && request.resource.data.s < 1000000
+        && request.resource.data.t is int
+        && request.resource.data.c is string && request.resource.data.c.size() <= 20;
+      allow update, delete: if false;
+    }
+
+    // ── 계측 (낙엽피하기 V2) ────────────────────────────────
+    // 판 종료·세션 시작·공유·해제·친구 도전 기록. 추가만 가능, 아무도 읽을 수 없음(콘솔에서만 확인).
+    match /events/{doc} {
+      function str(k, n) { return !(k in request.resource.data) || (request.resource.data[k] is string && request.resource.data[k].size() <= n); }
+      function num(k) { return !(k in request.resource.data) || request.resource.data[k] is int; }
+      allow create: if request.resource.data.keys().hasAll(['e','g','t'])
+        && request.resource.data.keys().hasOnly(['e','g','t','d','v','c','s','tm','cause','cb','gl','a','r','nb','win','target','ch'])
+        && str('e', 30) && str('g', 12) && str('d', 10) && str('v', 8) && str('c', 12) && str('cause', 12)
+        && num('t') && num('s') && num('tm') && num('cb') && num('gl') && num('a')
+        && num('r') && num('nb') && num('win') && num('target') && num('ch');
+      allow read, update, delete: if false;
+    }
+
+    // ── 마을 창고 (V3) ──────────────────────────────────────
+    // 여러 게임의 이번 주 도토리. 누구나 읽을 수 있고, 추가만 가능. g 목록에 basket·boxes 추가
+    match /village_week/{doc} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['n','g','a','w','t','c'])
+        && request.resource.data.n is string && request.resource.data.n.size() <= 12
+        && request.resource.data.g in ['leaf','run','match','merge','expedition','defense','basket','boxes']
+        && request.resource.data.a is int && request.resource.data.a >= 1 && request.resource.data.a <= 300
+        && request.resource.data.w is int && request.resource.data.w >= 20260101 && request.resource.data.w <= 21001231
+        && request.resource.data.t is int
+        && request.resource.data.c is string && request.resource.data.c.size() <= 12;
       allow update, delete: if false;
     }
   }
