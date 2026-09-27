@@ -25,29 +25,29 @@
     border:2px solid #3B2A1C;}
   .ghost:active{transform:translateY(1px);}
 
-  /* 타이틀 */
-  #sTitle{background:#3B2A1C;}
-  #sTitle .hero{position:relative;width:100%;max-width:520px;flex:1 1 auto;min-height:0;overflow:hidden;}
-  #sTitle .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 62%;}
-  #sTitle .hero::after{content:'';position:absolute;inset:auto 0 0 0;height:30%;background:linear-gradient(transparent,#3B2A1C);}
-  #sTitle .top{position:absolute;top:calc(10px + env(safe-area-inset-top));left:10px;z-index:3;}
-  #sTitle .top a{display:inline-block;background:rgba(43,33,24,.85);color:#F6EBD6;font-weight:800;font-size:13px;
-    padding:7px 13px;border-radius:13px;text-decoration:none;}
-  #logo{position:absolute;top:calc(52px + env(safe-area-inset-top));left:0;right:0;text-align:center;z-index:2;}
-  #logo .s{display:inline-block;background:rgba(255,248,236,.9);color:#8A5A22;font-size:11px;font-weight:800;
-    letter-spacing:.2em;padding:4px 10px;border-radius:99px;}
-  #logo .t{font-family:'Black Han Sans',sans-serif;font-size:44px;line-height:1.02;color:#FFF3DC;margin-top:6px;
-    text-shadow:0 3px 0 #6B4424,0 6px 16px rgba(0,0,0,.45);}
-  #logo .t b{color:#FFB74A;font-weight:400;}
-  #titleBar{width:100%;max-width:520px;flex:none;padding:12px 20px calc(18px + env(safe-area-inset-bottom));
-    display:flex;flex-direction:column;gap:10px;background:#3B2A1C;}
-  #dayLine{color:#F6EBD6;font-size:12.5px;text-align:center;opacity:.9;}
-  #dayLine b{color:#FFB74A;}
-  #goRow{display:flex;gap:8px;}
-  #goRow .big{flex:1;}
-  #btnNew{flex:0 0 auto;width:auto;padding:0 14px;background:#FFF8EC;color:#3B2A1C;box-shadow:0 5px 0 #B9A68A;font-size:14px;}
-  #footRow{display:flex;gap:8px;justify-content:center;}
-  #titleHint{color:#CDBBA0;font-size:11.5px;text-align:center;line-height:1.5;}
+  /* 타이틀 — 다른 게임과 같은 공통 히어로 */
+  #sTitle{padding:0;justify-content:flex-start;overflow:hidden;background:linear-gradient(#f3e6c8 0%,#e8c996 60%,#caa26a 100%);}
+  #titleBg{position:absolute;left:0;top:0;width:100%;height:calc(100% - 196px);object-fit:cover;object-position:center 58%;z-index:0;}
+  .homeBtn{position:absolute;top:calc(8px + env(safe-area-inset-top));left:8px;z-index:60;background:rgba(43,38,32,.86);border:none;border-radius:13px;padding:6px 13px;
+    font:700 13px 'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#EFE7D6;text-decoration:none;box-shadow:0 4px 14px -6px rgba(0,0,0,.8);backdrop-filter:blur(3px);}
+  #titleTop{position:relative;z-index:2;margin-top:calc(52px + env(safe-area-inset-top));display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .logoTop{font-size:14px;font-weight:800;color:#fff7e8;letter-spacing:5px;text-shadow:0 2px 0 rgba(96,58,38,.5);}
+  #titleLogo{font-size:46px;line-height:1.1;font-weight:900;color:#fff7e8;letter-spacing:2px;transform:rotate(-2deg);margin:0;
+    text-shadow:0 3px 0 #7c4a2d,0 7px 16px rgba(60,30,20,.4);}
+  #titleSub{margin-top:2px;font-size:12px;font-weight:700;color:#5a4130;background:rgba(255,247,232,.85);border:1.5px solid rgba(124,74,45,.5);border-radius:20px;padding:5px 14px;}
+  #titleBottom{position:absolute;left:0;right:0;bottom:0;z-index:2;height:196px;padding:12px 18px calc(8px + env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:8px;
+    background:linear-gradient(#402419,#2f1a12);border-top:1.5px solid rgba(255,239,216,.16);box-shadow:0 -10px 22px rgba(40,20,10,.28);}
+  #dayLine{color:#CFC5B0;font-size:11.5px;font-weight:700;text-align:center;}
+  #dayLine b{color:#F2C14B;}
+  #goRow{display:flex;gap:8px;justify-content:center;}
+  #goRow .big{font-size:17px;padding:12px 40px;border-radius:16px;background:#ffb35c;border:2px solid #5a2f1c;color:#4a2416;box-shadow:0 4px 0 #5a2f1c;font-weight:800;width:auto;}
+  #goRow .big:active{transform:translateY(4px);box-shadow:none;}
+  #goRow #btnNew{padding:12px 16px;background:rgba(255,255,255,.12);color:#EFE7D6;border-color:rgba(255,239,216,.25);box-shadow:none;}
+  #footRow{display:flex;gap:6px;justify-content:center;}
+  #footRow button{background:rgba(255,255,255,.10);border:none;border-radius:999px;padding:6px 16px;font-size:12.5px;font-weight:800;color:#EFE7D6;}
+  #footRow button:active{background:rgba(255,255,255,.18);}
+  #titleHint{font-size:11.5px;font-weight:700;color:#CFC5B0;text-align:center;line-height:1.5;}
+  .titleTag{font-size:10px;font-weight:700;color:rgba(255,239,216,.55);letter-spacing:1px;margin-top:auto;}
 
   /* 결과 */
   #sResult{background:rgba(59,42,28,.55);justify-content:flex-start;padding:24px 18px calc(24px + env(safe-area-inset-bottom));}
@@ -89,20 +89,23 @@
 <canvas id="cv"></canvas>
 
 <div id="sTitle" class="screen">
-  <div class="hero">
-    <img src="../assets/boxes/title.jpg" alt="">
-    <div class="top"><a href="../">← 마을</a></div>
-    <div id="logo"><span class="s">솜솜시티 · 블록 퍼즐</span><div class="t">당근빌라<br><b>창고 정리</b></div></div>
+  <img id="titleBg" src="../assets/boxes/title.jpg" alt="창고에서 짐 상자를 정리하는 당근빌라 친구들">
+  <a class="homeBtn" href="../" title="솜솜시티 홈">← 홈</a>
+  <div id="titleTop">
+    <div class="logoTop">🥕 솜솜시티</div>
+    <h1 id="titleLogo">창고 정리</h1>
+    <div id="titleSub">상자를 끼워 한 줄을 채우면 정리돼요</div>
   </div>
-  <div id="titleBar">
+  <div id="titleBottom">
     <div id="dayLine"></div>
     <div id="goRow"><button class="big" id="btnGo">정리하러 가기</button><button class="big hidden" id="btnNew">새로</button></div>
     <div id="footRow">
-      <button class="ghost" id="btnMute">🔊</button>
-      <button class="ghost" id="btnHow">방법</button>
-      <button class="ghost" id="btnBoard">오늘 순위</button>
+      <button id="btnMute">🔊</button>
+      <button id="btnHow">방법</button>
+      <button id="btnBoard">오늘 순위</button>
     </div>
     <div id="titleHint"></div>
+    <span class="titleTag">GAME 05 · 창고 정리</span>
   </div>
 </div>
 
@@ -610,6 +613,6 @@ $('btnMute').onclick  = ()=>{ muted = !muted; try{ localStorage.setItem('somsom_
 $('ownerGrid').innerHTML = OW.map(k => '<div><span style="background:'+COL[k]+'"><img src="../assets/boxes/it_'+k+'.png" alt=""></span>'+NAME[k]+'의 '+ITEM[k]+'</div>').join('');
 refreshTitle(); show('sTitle');
 </script>
-<script src="../assets/bgm.js" data-pos="left:90px;top:10px" data-show-if="#sTitle:not(.hidden)"></script>
+<script src="../assets/bgm.js" data-pos="left:70px;top:8px" data-show-if="#sTitle:not(.hidden)"></script>
 </body>
 </html>
