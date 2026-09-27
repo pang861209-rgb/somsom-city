@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>솜솜시티 — 미니게임 마을</title>
-<meta name="description" content="솜솜시티 친구들과 즐기는 미니게임 5종: 낙엽피하기 · 달리기 · 짝맞추기 · 방범대 · 솜솜 합체">
+<meta name="description" content="솜솜시티 친구들과 즐기는 미니게임 6종: 낙엽피하기 · 달리기 · 짝맞추기 · 방범대 · 창고 정리 · 가을 바구니">
 <meta name="theme-color" content="#221E18">
 <!-- 홈 화면 아이콘 — 아이폰 사파리 "홈 화면에 추가" · 안드로이드 크롬 · 브라우저 탭 -->
 <link rel="apple-touch-icon" href="assets/app_icon_180.png">
@@ -206,9 +206,9 @@
       <div class="txt"><div class="no">GAME 04 · NEW</div><div class="nm">방범대</div><div class="ds">꼬릿 구름에서 당근빌라를!</div></div>
       <img class="ch" src="assets/sd_migae_t.png" alt="" style="height:84%;max-height:124px;">
     </a>
-    <a class="blk" href="merge/" style="background:#3F7E86;color:#062024;">
-      <div class="mask"><img src="assets/bg_day_acorn_shop.png" alt="" style="object-position:center 45%;"></div>
-      <div class="txt"><div class="no">GAME 05</div><div class="nm">솜솜 합체</div><div class="ds">미개 둘이 만나면 북거씨가 돼요</div></div>
+    <a class="blk" href="boxes/" style="background:#C9954E;color:#2B1A08;">
+      <div class="mask"><img src="assets/boxes/title.jpg" alt="" style="object-position:center 55%;"></div>
+      <div class="txt"><div class="no">GAME 05 · NEW</div><div class="nm">창고 정리</div><div class="ds">상자를 끼워 한 줄을 채우면 정리!</div></div>
       <img class="ch" src="assets/sd_bookgeo_t.png" alt="" style="height:76%;max-height:102px;right:4px;">
     </a>
     <a class="blk" href="basket/" style="background:#B8652E;color:#2A1204;">
@@ -304,17 +304,12 @@ const ACH = [
   {id:'defense_boss',     g:'방범대', n:'왕꼬릿 퇴치',   d:'왕꼬릿 구름을 돌려보냈어요'},
   {id:'defense_allclear', g:'방범대', n:'골목 어귀 평정', d:'네 스테이지를 모두 클리어'},
   {id:'defense_endless10',g:'방범대', n:'끝없는 방범',   d:'무한 골목 10웨이브 돌파'},
-  {id:'merge_first',  g:'솜솜 합체', n:'처음 만난 둘',   d:'미개 둘을 합쳐 봤어요'},
-  {id:'merge_kkito',  g:'솜솜 합체', n:'끼토까지',       d:'한 판에 끼토를 만들었어요'},
-  {id:'merge_boneul', g:'솜솜 합체', n:'제일 큰 친구',   d:'보늘을 만들었어요'},
-  {id:'merge_chain6', g:'솜솜 합체', n:'여섯 번 연달아', d:'한 번에 6연쇄를 냈어요'},
-  {id:'merge_4000',   g:'솜솜 합체', n:'사천 점',        d:'한 판에 4000점을 넘겼어요'},
-  {id:'merge_chain9', g:'솜솜 합체', n:'아홉 번 연달아', d:'한 번에 9연쇄를 냈어요'},
-  {id:'merge_fever3', g:'솜솜 합체', n:'뜨거운 하루',    d:'한 판에 과열에 세 번 들어갔어요'},
-  {id:'merge_clear',  g:'솜솜 합체', n:'말끔한 통',      d:'통을 깨끗이 비웠어요'},
-  {id:'merge_15000',  g:'솜솜 합체', n:'만오천 점',      d:'한 판에 15000점을 넘겼어요'},
-  {id:'merge_chuseok', g:'솜솜 합체', n:'한가위 보름달',  d:'한가위 컷 세 장을 모두 모았어요'},
-  {id:'merge_skins',   g:'솜솜 합체', n:'상자 수집가',    d:'상자 네 개를 모두 열었어요'},
+  {id:'boxes_first',    g:'창고 정리', n:'첫 정리',        d:'창고 정리를 한 판 끝냈어요'},
+  {id:'boxes_combo8',   g:'창고 정리', n:'손이 멈추지 않아', d:'연속 정리 8번'},
+  {id:'boxes_multi3',   g:'창고 정리', n:'세 줄 한꺼번에',  d:'한 번에 세 줄을 정리했어요'},
+  {id:'boxes_clearall', g:'창고 정리', n:'텅 빈 선반',      d:'선반을 싹 비웠어요'},
+  {id:'boxes_2000',     g:'창고 정리', n:'이천 점',         d:'한 판에 2000점을 넘겼어요'},
+  {id:'boxes_owners',   g:'창고 정리', n:'여섯 집 짐 정리', d:'여섯 친구의 짐 주인 보너스를 모두 받았어요'},
   {id:'basket_first',  g:'가을 바구니', n:'첫 바구니',      d:'가을 바구니를 한 판 채웠어요'},
   {id:'basket_apple',  g:'가을 바구니', n:'사과 한 알',      d:'한 판에 사과를 만들었어요'},
   {id:'basket_pumpkin',g:'가을 바구니', n:'호박이 넝쿨째',   d:'한 판에 호박을 만들었어요'},
@@ -352,13 +347,13 @@ const DEX_ITEMS = [
     {id:'leaf_maple',    f:'assets/dex_leaf_maple.png',    n:'단풍잎'},
     {id:'leaf_chestnut', f:'assets/dex_leaf_chestnut.png', n:'알밤'},
   ]},
-  {g:'솜솜 합체 사다리', items:[
-    {id:'merge_migae',      f:'assets/sd_migae_t.png',      n:'미개'},
-    {id:'merge_bookgeo',    f:'assets/sd_bookgeo_t.png',    n:'북거씨'},
-    {id:'merge_lachilchin', f:'assets/sd_lachilchin_t.png', n:'라칠친 할머니'},
-    {id:'merge_ramda',      f:'assets/sd_ramda_t.png',      n:'람다'},
-    {id:'merge_kkito',      f:'assets/sd_kkito_t.png',      n:'끼토'},
-    {id:'merge_boneul',     f:'assets/sd_boneul_t.png',     n:'보늘'},
+  {g:'창고 정리 짐', items:[
+    {id:'boxes_kkito',      f:'assets/boxes/it_kkito.png',      n:'끼토의 원고'},
+    {id:'boxes_migae',      f:'assets/boxes/it_migae.png',      n:'미개의 과자'},
+    {id:'boxes_lachilchin', f:'assets/boxes/it_lachilchin.png', n:'할머니의 실타래'},
+    {id:'boxes_ramda',      f:'assets/boxes/it_ramda.png',      n:'람다의 단추'},
+    {id:'boxes_boneul',     f:'assets/boxes/it_boneul.png',     n:'보늘의 카메라'},
+    {id:'boxes_bookgeo',    f:'assets/boxes/it_bookgeo.png',    n:'북거씨의 향수'},
   ]},
   {g:'가을 바구니 열매', items:[
     {id:'basket_ginkgo',      f:'assets/basket/f_ginkgo.webp',      n:'은행'},
@@ -400,12 +395,6 @@ function renderDex(){
     }
     list.appendChild(grid);
   }
-  // 솜솜 합체 앨범 — 한 판을 잘 끝낼 때마다 「끼토의 하루」 삽화가 한 장씩 열린다
-  let mc=[]; try{ mc=JSON.parse(localStorage.getItem('somsom_merge_cuts')||'[]'); }catch(e){}
-  const h3=document.createElement('div'); h3.className='achGrp'; h3.textContent='솜솜 합체 앨범'; list.appendChild(h3);
-  const mr=document.createElement('div'); mr.className='cutRow';
-  mr.innerHTML='<span class="nm">골목에서 열린 컷</span><span class="pg">'+mc.length+' / 295</span>';
-  list.appendChild(mr); have+=mc.length; total+=295;
   const h2=document.createElement('div'); h2.className='achGrp'; h2.textContent='짝맞추기 일상 컷'; list.appendChild(h2);
   for(const k in CUT_POOL){
     const n=(cuts[k]||[]).length, p=CUT_POOL[k]; have+=n; total+=p;
@@ -440,12 +429,13 @@ function missionSpec(){
   const missGoal = [0,1,2][(r>>>6)%3];
   const defGoal  = [1,2,3][(r>>>9)%3]; // 방범대 별점 목표 — defense 쪽 hubReport와 동일 수식
   const basketGoal = [5,6,7][(r>>>12)%3]; // 가을 바구니 열매 단계 — basket 쪽 hubMissionGoal과 동일 수식
+  const boxesGoal = [10,15,20][(r>>>15)%3]; // 창고 정리 줄 수 — boxes 쪽 hubMissionGoal과 동일 수식
   return {leaf: {goal:leafGoal, label:'낙엽피하기 '+leafGoal+'점 넘기'},
           run:  {goal:runGoal,  label:'달리기 '+runGoal+'m 달리기'},
           match:{goal:missGoal, label:'짝맞추기 '+(missGoal===0 ? '실수 없이 클리어'
                                                               : '실수 '+missGoal+'회 이하로 클리어')},
           defense:{goal:defGoal, label:'방범대 '+defGoal+'★로 스테이지 클리어'},
-          merge:{goal:1, label:'솜솜 합체에서 람다 이상 만들기'},
+          boxes:{goal:boxesGoal, label:'창고 정리에서 한 판에 '+boxesGoal+'줄 정리'},
           basket:{goal:basketGoal, label:'가을 바구니에서 '+['감','사과','배'][basketGoal-5]+' 만들기'}};
 }
 function titleFor(coins){
@@ -473,7 +463,7 @@ function renderMissions(){
   document.getElementById('missionChar').innerHTML='<span style="font-size:11.5px;font-weight:700;color:#8A6A1A;">오늘의 친구 '+CH_NAME[DAILY_CHAR_ID]+'</span>';
   const list=document.getElementById('missionList'); list.innerHTML='';
   let n=0;
-  for(const g of ['leaf','run','match','defense','merge','basket']){
+  for(const g of ['leaf','run','match','defense','boxes','basket']){
     const ok=!!done[g]; if(ok) n++;
     const r=document.createElement('div'); r.className='mRow'+(ok?' ok':'');
     r.innerHTML='<span class="bx">'+(ok?'✓':'')+'</span><span>'+sp[g].label+'</span>';
@@ -498,7 +488,7 @@ async function renderWeekly(){
   list.innerHTML='<div class="mRow" style="padding:14px;">불러오는 중…</div>';
   const since=Date.now()-7*24*3600*1000;
   const cols=await Promise.all([fetchCol('scores'),fetchCol('runner_scores'),fetchCol('memory_scores'),
-                                fetchCol('defense_scores'),fetchCol('merge_scores'),fetchCol('basket_scores')]);
+                                fetchCol('defense_scores'),fetchCol('boxes_scores'),fetchCol('basket_scores')]);
   const per=cols.map(rows=>{
     const best={}; for(const e of rows){ if(e.t<since) continue; if(!best[e.n]||e.s>best[e.n]) best[e.n]=e.s; }
     const max=Math.max(1,...Object.values(best));
