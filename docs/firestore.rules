@@ -116,5 +116,15 @@ service cloud.firestore {
         && request.resource.data.t is int;
       allow update, delete: if false;
     }
+    // 창고 정리 (GAME 05, 솜솜 합체 자리) — 한 판 점수. d 는 오늘의 판 날짜(YYYYMMDD)
+    match /boxes_scores/{doc} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['n','s','d','t'])
+        && request.resource.data.n is string && request.resource.data.n.size() >= 1 && request.resource.data.n.size() <= 12
+        && request.resource.data.s is int && request.resource.data.s >= 0 && request.resource.data.s < 1000000
+        && request.resource.data.d is int && request.resource.data.d >= 20000101 && request.resource.data.d <= 21001231
+        && request.resource.data.t is int;
+      allow update, delete: if false;
+    }
   }
 }
