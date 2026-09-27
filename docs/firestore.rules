@@ -84,6 +84,17 @@ service cloud.firestore {
         && request.resource.data.t is int;
       allow update, delete: if false;
     }
+    // ── 가을 바구니 (GAME 06) — 점수형, 새 기록 추가만 ─────────────
+    // c 는 함께한 친구(주민 키)
+    match /basket_scores/{doc} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['n','s','t','c'])
+        && request.resource.data.n is string && request.resource.data.n.size() >= 1 && request.resource.data.n.size() <= 12
+        && request.resource.data.s is int && request.resource.data.s >= 0 && request.resource.data.s < 1000000
+        && request.resource.data.t is int
+        && request.resource.data.c is string && request.resource.data.c.size() <= 20;
+      allow update, delete: if false;
+    }
     // 진도형 — 닉네임이 문서 이름. 최고 단계(st 0~5)와 최고 점수(b)를 덮어쓴다.
     match /merge_progress/{nick} {
       allow read: if true;
