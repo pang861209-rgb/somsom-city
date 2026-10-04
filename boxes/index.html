@@ -78,6 +78,10 @@
   .rk .n{width:30px;color:#8A7458;}
   .rk .nm{flex:1;}
   .rk .s{color:#C06A1C;}
+  .tabs{display:flex;gap:6px;background:#EFE3CC;border-radius:12px;padding:4px;}
+  .tabs button{flex:1;background:none;border-radius:9px;padding:8px 0;font-size:13.5px;font-weight:800;color:#8A7458;}
+  .tabs button.on{background:#FFF8EC;color:#3B2A1C;box-shadow:0 1px 3px rgba(0,0,0,.12);}
+  #boardNote{font-size:11.5px;color:#8A7458;text-align:center;}
   .owners{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
   .owners div{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;font-weight:800;color:#5B4A38;}
   .owners span{width:48px;height:48px;border-radius:11px;display:flex;align-items:center;justify-content:center;border:2px solid rgba(0,0,0,.18);}
@@ -102,7 +106,7 @@
     <div id="footRow">
       <button id="btnMute">🔊</button>
       <button id="btnHow">방법</button>
-      <button id="btnBoard">오늘 순위</button>
+      <button id="btnBoard">순위</button>
     </div>
     <div id="titleHint"></div>
     <span class="titleTag">GAME 05 · 창고 정리</span>
@@ -116,7 +120,7 @@
     <p id="resNote"></p>
     <div class="row">
       <button class="big" id="btnRetry">한 판 더</button>
-      <button class="ghost" id="btnBoard2">오늘 순위</button>
+      <button class="ghost" id="btnBoard2">순위</button>
       <button class="ghost" id="btnHome">타이틀</button>
     </div>
   </div>
@@ -134,8 +138,10 @@
 </div></div>
 
 <div id="boardSheet" class="sheetWrap"><div class="sheet">
-  <div class="hd"><span class="t">오늘 순위</span><span class="c" id="boardDay"></span></div>
+  <div class="hd"><span class="t">순위</span><span class="c" id="boardDay"></span></div>
+  <div class="tabs" id="boardTabs"><button data-r="today" class="on">오늘</button><button data-r="week">이번 주</button><button data-r="all">전체</button></div>
   <div id="boardList"></div>
+  <div id="boardNote"></div>
   <button class="big" id="boardClose">닫기</button>
 </div></div>
 
@@ -380,18 +386,22 @@ async function pushRanking(){
         d:{integerValue:String(dayKey())}, t:{integerValue:String(Date.now())} } }) });
   }catch(e){}
 }
-async function fetchToday(){
-  const q = { from:[{collectionId:'boxes_scores'}], limit: 500,
-    where:{ fieldFilter:{ field:{fieldPath:'d'}, op:'EQUAL', value:{integerValue:String(dayKey())} } } };
+// range: today(오늘의 판) · week(최근 7일 — 허브 주간 랭킹과 같은 기준) · all(전체)
+async function fetchScores(range){
+  const q = { from:[{collectionId:'boxes_scores'}], limit: range === 'all' ? 1000 : 500 };
+  if(range === 'today') q.where = { fieldFilter:{ field:{fieldPath:'d'}, op:'EQUAL', value:{integerValue:String(dayKey())} } };
+  if(range === 'week')  q.where = { fieldFilter:{ field:{fieldPath:'t'}, op:'GREATER_THAN_OR_EQUAL', value:{integerValue:String(Date.now() - 7*864e5)} } };
+  if(range === 'all')   q.orderBy = [{ field:{fieldPath:'s'}, direction:'DESCENDING' }];
   const r = await fetch(FB_DOCS + ':runQuery?key=' + FB_KEY, { method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ structuredQuery: q }) });
   const j = await r.json(); if(!Array.isArray(j)) throw new Error('bad');
-  const best = {};
+  const best = {};                                   // 사람마다 가장 좋은 한 판
   for(const e of j){ if(!e.document) continue; const f = e.document.fields || {};
     const n = String((f.n && f.n.stringValue) || '?').slice(0,12), s = +((f.s && f.s.integerValue) || 0);
     if(!(n in best) || s > best[n]) best[n] = s; }
   return best;
 }
+const fetchToday = () => fetchScores('today');
 const esc = t => String(t).replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
 async function showRival(){
   try{
@@ -404,20 +414,29 @@ async function showRival(){
                            : '오늘 ' + (i+1) + '위 · ' + i + '위 <b>' + esc(rows[i-1].n) + '</b>까지 ' + (rows[i-1].s-rows[i].s+1).toLocaleString() + '점';
   }catch(e){}
 }
-async function openBoard(){
-  $('boardDay').textContent = dayLabel() + ' · 모두 같은 판';
+let boardRange = 'today';
+async function openBoard(range){
+  if(typeof range === 'string') boardRange = range;
+  for(const b of $('boardTabs').children) b.classList.toggle('on', b.dataset.r === boardRange);
+  $('boardDay').textContent = boardRange === 'today' ? dayLabel() + ' · 모두 같은 판' : boardRange === 'week' ? '최근 7일' : '지금까지';
+  $('boardNote').textContent = boardRange === 'today' ? '오늘의 판은 모두 같은 판으로 시작해요' : '사람마다 가장 좋은 한 판으로 줄 세워요';
   const list = $('boardList'); list.innerHTML = '<div class="rk">불러오는 중…</div>';
   $('boardSheet').classList.add('on');
-  const me = localStorage.getItem('somsom_name') || '';
+  const me = localStorage.getItem('somsom_name') || '', want = boardRange;
   try{
-    const b = await fetchToday();
-    const rows = Object.entries(b).map(([n,s])=>({n,s})).sort((x,y)=>y.s-x.s).slice(0, 20);
-    if(!rows.length){ list.innerHTML = '<div class="rk">오늘 기록이 아직 없어요. 첫 번째가 되어 보세요.</div>'; return; }
-    list.innerHTML = rows.map((r,i)=>'<div class="rk'+(r.n===me?' me':'')+'"><span class="n">'+(i+1)+'위</span><span class="nm">'+esc(r.n)+'</span><span class="s">'+r.s.toLocaleString()+'</span></div>').join('');
+    const b = await fetchScores(want);
+    if(want !== boardRange) return;                  // 그사이 다른 탭을 눌렀다
+    const all = Object.entries(b).map(([n,s])=>({n,s})).sort((x,y)=>y.s-x.s);
+    const rows = all.slice(0, 20), mi = all.findIndex(r => r.n === me);
+    if(!rows.length){ list.innerHTML = '<div class="rk">' + (want === 'today' ? '오늘' : want === 'week' ? '이번 주' : '아직') + ' 기록이 없어요. 첫 번째가 되어 보세요.</div>'; return; }
+    const row = (r,i) => '<div class="rk'+(r.n===me?' me':'')+'"><span class="n">'+(i+1)+'위</span><span class="nm">'+esc(r.n)+'</span><span class="s">'+r.s.toLocaleString()+'</span></div>';
+    list.innerHTML = rows.map(row).join('') + (mi >= 20 ? '<div class="rk" style="background:none;justify-content:center;color:#8A7458;">…</div>' + row(all[mi], mi) : '');
   }catch(e){
+    if(want !== boardRange) return;
     list.innerHTML = '<div class="rk">순위를 불러오지 못했어요 · 내 최고 ' + SAVE.best.toLocaleString() + '점</div>';
   }
 }
+$('boardTabs').addEventListener('click', e => { const b = e.target.closest('button'); if(b) openBoard(b.dataset.r); });
 
 // ── 그리기 ──────────────────────────────────────────────────
 function rr(x,y,w,h,r){ ctx.beginPath(); ctx.roundRect(x,y,w,h,r); }
@@ -604,7 +623,7 @@ $('btnGo').onclick    = ()=>{ ac(); startGame(false); };
 $('btnNew').onclick   = ()=>{ ac(); startGame(true); };
 $('btnRetry').onclick = ()=>{ ac(); startGame(true); };
 $('btnHome').onclick  = ()=>{ mode = 'TITLE'; g = null; refreshTitle(); show('sTitle'); };
-$('btnBoard').onclick = openBoard; $('btnBoard2').onclick = openBoard;
+$('btnBoard').onclick = ()=> openBoard('today'); $('btnBoard2').onclick = ()=> openBoard('today');
 $('boardClose').onclick = ()=> $('boardSheet').classList.remove('on');
 $('btnHow').onclick   = ()=> $('howSheet').classList.add('on');
 $('howClose').onclick = ()=> $('howSheet').classList.remove('on');
