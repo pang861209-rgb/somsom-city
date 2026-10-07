@@ -256,6 +256,22 @@
   #loadBar{bottom:auto;top:0;left:0;right:0;height:3px;border-radius:0;background:transparent;}
   #loadBar i{background:#F2C14B;}
 
+  /* 순위 */
+  #boardTabs .btn.on{background:#F2C14B;color:#221E18;}
+  #boardList{display:flex;flex-direction:column;gap:5px;max-height:52vh;overflow-y:auto;}
+  .bRow{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.07);border-radius:12px;padding:7px 11px;font-size:14px;font-weight:800;color:#EFE7D6;}
+  .bRow.me{background:rgba(242,193,75,.18);box-shadow:inset 0 0 0 1.5px rgba(242,193,75,.6);}
+  .bRow .rk{width:34px;font-size:12px;color:#A9A08C;flex:none;}
+  .bRow.top .rk{color:#F2C14B;}
+  .bRow img{width:24px;height:28px;object-fit:contain;object-position:top;flex:none;}
+  .bRow .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .bRow .sc{color:#F2C14B;font-variant-numeric:tabular-nums;}
+  .bMsg{text-align:center;font-size:12.5px;color:#A9A08C;padding:14px 4px;line-height:1.6;}
+  .bMsg b{color:#EFE7D6;}
+  #resRival{text-align:center;font-size:13px;font-weight:800;color:#EFE7D6;min-height:0;}
+  #resRival:empty{display:none;}
+  #resRival b{color:#F2C14B;}
+  #result .row .btn{flex:1;}
   /* 메뉴·결과·일시정지 — 허브 톤 */
   .dim{background:rgba(22,15,10,.72);}
   .card{background:#2B2620;border:none;border-radius:22px;color:#EFE7D6;box-shadow:0 6px 0 -1px rgba(228,217,192,.25),0 18px 28px -16px rgba(0,0,0,.7);}
@@ -345,6 +361,7 @@
       <div id="titleBtns">
         <button id="dexBtn">도감</button>
         <button id="recBtn">기록</button>
+        <button id="rankBtn">순위</button>
         <button id="howBtn">방법</button>
       </div>
       <div id="goalMini"></div>
@@ -431,12 +448,24 @@
       <h2 id="resTitle">바구니 완성!</h2>
       <div id="resScore">0</div>
       <div style="display:flex;justify-content:center;align-items:center;gap:8px;"><span id="resBadge" class="hidden">최고 기록!</span><span id="resNear"></span></div>
+      <div id="resRival"></div>
       <div id="resBig"><img id="resBigImg" alt=""><div class="t">이번 판 가장 큰 열매<b id="resBigName"></b></div></div>
       <div id="resStats"></div>
       <div id="resAcorn"></div>
       <div id="resGoals"></div>
       <button class="btn primary" id="againBtn">한 판 더!</button>
-      <div class="row"><button class="btn" id="resFriend">친구 바꾸기</button><button class="btn" id="resHome">처음으로</button></div>
+      <div class="row"><button class="btn" id="resRank">순위</button><button class="btn" id="resFriend">친구 바꾸기</button><button class="btn" id="resHome">처음으로</button></div>
+    </div>
+  </div>
+
+  <!-- 순위 -->
+  <div id="board" class="screen dim hidden">
+    <div class="card">
+      <h2>가을 바구니 순위</h2>
+      <div class="tog" id="boardTabs"><button class="btn" data-r="week">이번 주</button><button class="btn" data-r="all">전체</button></div>
+      <div class="sub" id="boardNote"></div>
+      <div id="boardList"></div>
+      <button class="btn" id="boardClose">닫기</button>
     </div>
   </div>
 
@@ -1115,6 +1144,7 @@ function showResult(){
   $('resGoals').innerHTML=`<div id="goalMini2" style="background:var(--cream);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;">${goalsHTML()}</div>`+
     prog+(can?`<div class="sub" style="margin-top:6px;color:#e07a2a;font-weight:900;">도토리가 모였어요! ${CH[can].n}을(를) 데려올 수 있어요</div>`:'');
   $('result').classList.remove('hidden');
+  $('resRival').innerHTML=''; showRival();
   if(isBest){ SFX.goal(); }
 }
 // ── 솜솜시티 허브 연동: 마을 도토리·대표 주민·도감·업적·오늘의 미션·주간 랭킹 ──
@@ -1155,7 +1185,7 @@ async function pushRanking(){
 }
 
 // ================= 화면 전환 =================
-const SCREENS=['title','friends','how','dex','rec','pause','revive','result'];
+const SCREENS=['title','friends','how','dex','rec','pause','revive','result','board'];
 function show(id){ for(const s of SCREENS)$(s).classList.toggle('hidden',s!==id); }
 function goTitle(){ G.state='title'; $('hud').classList.add('hidden'); hideHint(); bodies=[]; parts=[]; texts=[]; show('title'); renderTitle(); }
 function renderTitle(){
@@ -1224,6 +1254,55 @@ $('againBtn').addEventListener('click',()=>{ SFX.tap(); startGame(); });
 $('resFriend').addEventListener('click',()=>{ SFX.tap(); openFriends('result'); });
 $('resHome').addEventListener('click',()=>{ SFX.tap(); goTitle(); });
 document.addEventListener('visibilitychange',()=>{ if(document.hidden&&G.state==='play'){ $('pauseBtn').click(); } });
+
+
+// ================= 순위 (basket_scores · 사람마다 최고 한 판) =================
+// 정렬·필터는 클라이언트에서 한다 — 서버 정렬을 쓰면 콘솔에서 복합 인덱스를 따로 만들어야 한다
+const FB_RUN='https://firestore.googleapis.com/v1/projects/somsom-city/databases/(default)/documents:runQuery?key=AIzaSyBfld7SRrVTxDG0nE_6Z3Mw5kSRTo5bIGY';
+const myNick=()=>{ try{ return (localStorage.getItem('somsom_name')||'').trim(); }catch(e){ return ''; } };
+const escH=t=>String(t).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+async function fetchBoard(range){
+  const q={from:[{collectionId:'basket_scores'}],limit:1000};
+  if(range==='week')q.where={fieldFilter:{field:{fieldPath:'t'},op:'GREATER_THAN_OR_EQUAL',value:{integerValue:String(Date.now()-7*24*3600e3)}}};
+  const r=await fetch(FB_RUN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({structuredQuery:q})});
+  const j=await r.json(); if(!Array.isArray(j))throw new Error('bad');
+  const best={};
+  for(const e of j){ if(!e.document)continue; const f=e.document.fields||{};
+    const n=String((f.n&&f.n.stringValue)||'?').slice(0,12), sc=+((f.s&&f.s.integerValue)||0), c=(f.c&&f.c.stringValue)||'';
+    if(!best[n]||sc>best[n].s)best[n]={n,s:sc,c}; }
+  return best;
+}
+function withMine(best){ // 방금 끝난 판은 서버 반영 전일 수 있어 바로 얹는다
+  const me=myNick(); if(me&&G.score>0&&(G.state==='result'||G.state==='over')&&(!best[me]||G.score>best[me].s))best[me]={n:me,s:G.score,c:G.ch};
+  return Object.values(best).sort((a,b)=>b.s-a.s);
+}
+let boardRange='week', boardFrom='title';
+async function openBoard(range,from){
+  if(range)boardRange=range; if(from)boardFrom=from;
+  document.querySelectorAll('#boardTabs .btn').forEach(b=>b.classList.toggle('on',b.dataset.r===boardRange));
+  $('boardNote').textContent=boardRange==='week'?'최근 7일 · 사람마다 최고 한 판':'지금까지 · 사람마다 최고 한 판';
+  const list=$('boardList'); list.innerHTML='<div class="bMsg">불러오는 중…</div>'; show('board');
+  const want=boardRange, me=myNick(); let rows;
+  try{ rows=withMine(await fetchBoard(want)); }
+  catch(e){ if(want===boardRange)list.innerHTML='<div class="bMsg">지금은 순위를 못 불러왔어요.<br>잠시 뒤 다시 열어 보세요.</div>'; return; }
+  if(want!==boardRange)return;
+  if(!rows.length){ list.innerHTML=`<div class="bMsg">${want==='week'?'이번 주':'아직'} 기록이 없어요.<br><b>첫 번째가 되어 보세요.</b></div>`; return; }
+  list.innerHTML=rows.slice(0,50).map((r,i)=>`<div class="bRow${r.n===me?' me':''}${i<3?' top':''}"><span class="rk">${i<3?['1위','2위','3위'][i]:(i+1)+'위'}</span>`+
+    (CH[r.c]?`<img src="${csrc(r.c)}" alt="${CH[r.c].n}">`:'<img alt="">')+`<span class="nm">${escH(r.n)}</span><span class="sc">${r.s.toLocaleString()}</span></div>`).join('')+
+    (me?'':'<div class="bMsg">솜솜시티 첫 화면에서 <b>이름을 정하면</b> 내 점수도 순위에 올라가요.</div>');
+}
+async function showRival(){ // 결과 화면: 이번 주 순위와 바로 위 사람까지의 차이
+  const me=myNick(), el=$('resRival'); if(!me){ el.innerHTML='첫 화면에서 이름을 정하면 순위에 올라가요'; return; }
+  try{ const rows=withMine(await fetchBoard('week')), i=rows.findIndex(r=>r.n===me); if(i<0||G.state!=='result')return;
+    el.innerHTML=rows.length<2?'이번 주 <b>1위</b> · 아직 혼자예요':
+      i===0?`이번 주 <b>1위</b> · 2위 ${escH(rows[1].n)}보다 ${(rows[0].s-rows[1].s).toLocaleString()}점 앞`
+           :`이번 주 <b>${i+1}위</b> · ${i}위 ${escH(rows[i-1].n)}까지 ${(rows[i-1].s-rows[i].s+1).toLocaleString()}점`;
+  }catch(e){}
+}
+$('rankBtn').addEventListener('click',()=>{ ac(); SFX.tap(); openBoard(null,'title'); });
+$('resRank').addEventListener('click',()=>{ SFX.tap(); openBoard('week','result'); });
+document.querySelectorAll('#boardTabs .btn').forEach(b=>b.addEventListener('click',()=>{ SFX.tap(); openBoard(b.dataset.r); }));
+$('boardClose').addEventListener('click',()=>{ SFX.tap(); if(boardFrom==='result')show('result'); else { show('title'); renderTitle(); } });
 
 // ================= 루프 =================
 let last=performance.now(), acc=0;
