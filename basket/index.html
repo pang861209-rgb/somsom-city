@@ -389,7 +389,7 @@
       <div class="sub" style="text-align:left;color:#EFE7D6;font-size:13.5px;line-height:1.75;">
         1. 화면을 <b>끌어서</b> 떨어뜨릴 곳을 정하고, <b>손을 떼면</b> 열매가 떨어져요.<br>
         2. <b>같은 열매</b>끼리 닿으면 한 단계 큰 열매로 합쳐져요.<br>
-        3. 합치기가 빠르게 이어지면 <b>연쇄</b>! 점수가 최대 4배가 돼요.<br>
+        3. 합치기가 빠르게 이어지면 <b>연쇄</b>! 2연쇄 ×2, 3연쇄 ×3 … 최대 8배가 돼요.<br>
         4. 열매가 <b style="color:#e0503c">빨간 점선</b> 위에 오래 머물면 바구니가 넘쳐요.<br>
         5. 게이지가 차면 왼쪽 위 친구 얼굴을 눌러 <b>스킬</b>을 써요.<br>
         6. 판이 끝나면 점수만큼 <b>도토리</b>가 쌓여요. 도토리로 새 친구를 데려와요.
@@ -516,7 +516,7 @@ const MAXLV=FR.length-1;
 const PTS=FR.map((_,i)=>(i+1)*(i+2)/2);   // 1,3,6,10,15,21,28,36,45,55,66
 const CAKE_BONUS=500;
 const DROP_W=[34,28,20,12,6];            // 떨어지는 열매 1~5단계 가중치
-const CHAIN_MUL=[1,1,1.5,2,2.5,3,3.5,4];
+const CHAIN_MUL=[1,1,2,3,4,5,6,7,8]; // 2연쇄 ×2 … 8연쇄 이상 ×8
 const DEX_SAY=[
  ['lachilchin','은행은 냄새가 고약해도 구우면 고소하단다~'],
  ['ramda','도토리는 떨어지는 대로 전부 내 거야!'],
@@ -560,7 +560,7 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 const GOAL_POOL={
  make:{vals:[5,6,7,8], txt:v=>`${FR[v].n} 만들기`},
  chain:{vals:[3,4,5],  txt:v=>`${v}연쇄 해 보기`},
- score:{vals:[1000,2000,3000], txt:v=>`한 판 ${v.toLocaleString()}점 넘기`},
+ score:{vals:[1500,2500,4000], txt:v=>`한 판 ${v.toLocaleString()}점 넘기`},
  merge:{vals:[50,100,150], txt:v=>`한 판에 ${v}번 합치기`},
  skill:{vals:[2,3],     txt:v=>`한 판에 스킬 ${v}번 쓰기`},
 };
@@ -618,7 +618,10 @@ const SFX={
  thud(v){ tone(140,70,.08,'sine',Math.min(.18,.04+v*.02)); },
  merge(lv,chain){ const f=330*Math.pow(2,SCALE[Math.min(12,lv+Math.min(6,chain-1))]/12);
    tone(f*.75,f*1.5,.11,'sine',.2); tone(f*1.5,0,.16,'triangle',.08,.05); if(lv>=5)tone(f/2,f/4,.3,'sine',.18); buzz(lv>=5?25:8); },
- chain(n){ const b=523; [0,4,7,12].slice(0,Math.min(4,n)).forEach((s,i)=>tone(b*Math.pow(2,(s+n)/12),0,.12,'triangle',.1,i*.05)); },
+ chain(n){ const b=523*Math.pow(2,Math.min(12,(n-2)*2)/12); [0,4,7,12].slice(0,Math.min(4,n)).forEach((s,i)=>tone(b*Math.pow(2,s/12),0,.14,'triangle',.12,i*.045));
+   if(n>=4)tone(b*2,b*4,.25,'sine',.07,.15); },
+ comboEnd(n){ const b=392; const seq=n>=5?[0,4,7,12,16,19,24]:[0,4,7,12]; seq.forEach((s,i)=>tone(b*Math.pow(2,s/12),0,.22,'triangle',.13,i*.07));
+   tone(b/2,0,.6,'sine',.12,.05); buzz(n>=5?80:35); },
  discover(){ [523,659,784,1047,1319].forEach((f,i)=>tone(f,0,.28,'triangle',.14,i*.09)); tone(262,0,.8,'sine',.12,.1); buzz(40); },
  skill(){ tone(400,1200,.3,'sine',.15); tone(600,1800,.3,'triangle',.06,.08); buzz(20); },
  beat(){ tone(70,50,.14,'sine',.3); tone(70,50,.12,'sine',.22,.18); },
@@ -650,7 +653,7 @@ function newGame(){
   Object.assign(G,{state:'play',ch,score:0,shown:0,cur:0,queue:[],dropX:W/2,targetX:W/2,cool:0,overT:0,grace:0,
     chain:0,lastMerge:-9,maxChain:0,merges:0,maxLv:0,gauge:0,skillUses:0,revived:false,slowT:0,ts:1,shakeT:0,shakeM:0,
     t:0,pressT:0,boneulT:0,goalAcorns:0,discAcorns:0,newBest:false,mood:'',moodT:0,say:'',sayT:0,gold:false,gold2:false,bonusAcorns:0,tip:0,targeting:null,
-    dropCount:0,dropMark:0,jolts:[],joltT:0,magnetT:0,flash:0,dangerT:0,rng:Math.random,sim:false,danger:0});
+    dropCount:0,dropMark:0,chainBonus:0,chainDone:true,comboEnd:null,comboPopT:-9,jolts:[],joltT:0,magnetT:0,flash:0,dangerT:0,rng:Math.random,sim:false,danger:0});
   bodies=[]; parts=[]; texts=[];
   G.queue=[rollDrop(),rollDrop(),rollDrop()]; G.cur=rollDrop(true);
   if(SAVE.games<3){ G.cur=0; G.queue=[0,1,1]; } // 처음 몇 판은 은행·은행·도토리·도토리로 시작 — 첫 합치기를 5초 안에
@@ -742,18 +745,22 @@ function processMerges(){
   bodies=bodies.filter(b=>!b.dead);
 }
 function chainTick(){
-  const win=.75+(G.ch==='migae'?.35:0);
+  const win=chainWin();
   // 연쇄 = 한 번 떨어뜨려 이어지는 합치기 (떨어뜨린 뒤 첫 합치기는 새 연쇄로 시작)
   const gap=G.t-G.lastMerge, cont=gap<win&&(G.lastMerge>=G.dropMark||gap<.3);
-  G.chain=cont?G.chain+1:1; G.lastMerge=G.t;
+  if(!cont&&!G.chainDone)endChain();
+  G.chain=cont?G.chain+1:1; G.lastMerge=G.t; G.chainDone=false;
   if(G.chain>G.maxChain){ G.maxChain=G.chain; goalCheck('chain',G.chain); }
   if(G.chain>=2){ showChain(G.chain); SFX.chain(G.chain); }
+  if(G.chain>=3){ shake(1.5+G.chain*.9,.18); buzz(10+G.chain*6); }
+  if(G.chain>=4)G.flash=Math.max(G.flash,.08+Math.min(.25,G.chain*.03));
   return CHAIN_MUL[Math.min(CHAIN_MUL.length-1,G.chain)];
 }
 function spawnMerged(lv,x,y,a,b,golden){
   const nl=lv+1, mul=chainTick();
-  let pts=PTS[lv]*mul; 
-  addScore(Math.round(pts),x,y-10,nl);
+  const pts=Math.round(PTS[lv]*mul); G.chainBonus+=pts-PTS[lv];
+  addScore(pts,x,y-10,nl,mul);
+  if(G.chain>=3)burst(x,y,COMBO_COL[Math.min(8,G.chain)],6+G.chain*2,FR[nl].r*.8);
   const nb=makeBody(nl,x,y,{grow:.55,a:(a.a+b.a)/2});
   const vx=((a.x-a.px)+(b.x-b.px))/2, vy=((a.y-a.py)+(b.y-b.py))/2; nb.px=x-vx*.5; nb.py=y-vy*.5;
   nb.age=1.2; nb.pop=1;
@@ -771,14 +778,17 @@ function spawnMerged(lv,x,y,a,b,golden){
 }
 function cakeParty(a,b){
   const x=a.x, y=a.y; const mul=chainTick();
-  addScore(Math.round((PTS[MAXLV]+CAKE_BONUS)*mul),x,y-20,MAXLV);
+  const cp=Math.round((PTS[MAXLV]+CAKE_BONUS)*mul); G.chainBonus+=cp-(PTS[MAXLV]+CAKE_BONUS);
+  addScore(cp,x,y-20,MAXLV,mul);
   a.dead=b.dead=true; SAVE.cakes=(SAVE.cakes||0)+1;
   for(let i=0;i<5;i++)setTimeout(()=>burst(x+(Math.random()-.5)*120,y+(Math.random()-.5)*80,['#ffb35c','#f2c14b','#e07a2a','#fff'][i%4],24,60),i*120);
   ring(x,y,200,'#ffb35c'); shake(10,.6); G.flash=.7; SFX.cake(); toast('케이크 파티! +'+CAKE_BONUS); mood('win',2.5);
   speak('케이크 파티다!! 모두 모여~',2);
 }
-function addScore(p,x,y,lv){
-  G.score+=p; texts.push({x,y,txt:'+'+p,life:0,max:.9,size:14+Math.min(16,lv*1.6),col:lv>=6?'#e0503c':'#6b3d22'});
+function addScore(p,x,y,lv,mul){
+  G.score+=p; const m=mul||1;
+  texts.push({x,y,txt:'+'+p+(m>1?` ×${m}`:''),life:0,max:m>1?1.1:.9,size:14+Math.min(16,lv*1.6)+(m>1?Math.min(14,m*2):0),
+    col:m>1?COMBO_COL[Math.min(8,G.chain)]:lv>=6?'#e0503c':'#6b3d22'});
   if(G.score>SAVE.best&&SAVE.best>0&&!G.newBest){ G.newBest=true; toast('최고 기록 경신!'); SFX.goal(); }
   goalCheck('score',G.score);
 }
@@ -855,7 +865,25 @@ let toastQ=[], toastBusy=false;
 function toast(s){ toastQ.push(s); if(!toastBusy)nextToast(); }
 function nextToast(){ const s=toastQ.shift(); if(!s){ toastBusy=false; return; } toastBusy=true;
   const el=$('toastTxt'); el.className=''; void el.offsetWidth; el.textContent=s; el.className='show'; setTimeout(nextToast,1100); }
-function showChain(n){ const el=$('chainTxt'); el.className=''; void el.offsetWidth; el.textContent=`${n}연쇄! ×${CHAIN_MUL[Math.min(CHAIN_MUL.length-1,n)]}`; el.className='show'; }
+function showChain(n){ G.comboPopT=G.t; } // 큰 연쇄 숫자는 캔버스에 그린다 (drawCombo)
+const COMBO_COL=['#ffb35c','#ffb35c','#ffb35c','#ff8a3c','#ff5a3c','#e8407a','#c04ad0','#8a5cf0','#4a8cf0'];
+const comboMul=n=>CHAIN_MUL[Math.min(CHAIN_MUL.length-1,n)];
+function chainWin(){ return .75+(G.ch==='migae'?.35:0); }
+function endChain(){ // 연쇄가 끊긴 순간: 보너스 점수를 크게 보여 준다
+  G.chainDone=true; const n=G.chain, bonus=Math.round(G.chainBonus); G.chainBonus=0;
+  if(n<2||G.sim)return;
+  G.comboEnd={n,bonus,t:G.t};
+  if(n>=3){ SFX.comboEnd(n); const L=COMBO_LINES[G.ch]; if(L)speak(L[Math.min(L.length-1,n-3)],1.6); mood('win',1.2); }
+  if(n>=5){ shake(6,.35); G.flash=Math.max(G.flash,.3); for(let i=0;i<3;i++)burst(W/2+(i-1)*90,340,COMBO_COL[Math.min(8,n)],18,40); }
+}
+const COMBO_LINES={
+ lachilchin:['아이구, 줄줄이 붙네!','어머나, 손이 안 멈춰~','이 할미가 젊을 때도 이렇게는 못 했다!'],
+ kkito:['연, 연쇄다!','계속 붙어! 계속 붙어!','으아아! 대박이야!!'],
+ ramda:['이거 완전 콤보템이야!','줄줄이 희귀템!','오늘 장사 대박!'],
+ migae:['뽈뽈!','뽈뽈뽈!!','뽈—————!!! (더듬이가 하트)'],
+ boneul:['오, 꽤 붙는데?','이 정도면 누워서 하지~','뭐야, 나 천재인가?'],
+ bookgeo:['천천히 했는데 이어지네요.','향기처럼 번지네요.','서두르지 않아도… 엄청나요.'],
+};
 function showHint(h){ $('hintTxt').innerHTML=h; $('hint').classList.remove('hidden'); $('hint').style.opacity=1; }
 function hideHint(){ const e=$('hint'); if(e.classList.contains('hidden'))return; e.style.opacity=0; setTimeout(()=>e.classList.add('hidden'),500); }
 
@@ -952,6 +980,7 @@ function update(dt){
   for(const p of parts){ p.life+=dt; if(p.kind==='dot'||p.kind==='leaf'){ p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=500*dt; p.vx*=.98; p.rot+=p.vr*dt; } }
   parts=parts.filter(p=>p.life<p.max);
   for(const t of texts){ t.life+=dt; t.y-=38*dt; } texts=texts.filter(t=>t.life<t.max);
+  if(!G.chainDone&&G.t-G.lastMerge>chainWin())endChain();
   G.shakeT=Math.max(0,G.shakeT-dt); if(!G.shakeT)G.shakeM=0; G.flash=Math.max(0,G.flash-dt*1.6);
   G.moodT=Math.max(0,G.moodT-dt); if(!G.moodT)G.mood=''; G.sayT=Math.max(0,G.sayT-dt);
   updHud();
@@ -993,6 +1022,7 @@ function draw(){
     ctx.save(); ctx.font='900 44px "Black Han Sans",sans-serif'; ctx.textAlign='center'; ctx.lineWidth=6; ctx.strokeStyle='#fff8ec';
     ctx.fillStyle='#e0503c'; const s=Math.ceil(left*10)/10; ctx.strokeText(s.toFixed(1),W/2,DANGER_Y+62); ctx.fillText(s.toFixed(1),W/2,DANGER_Y+62); ctx.restore(); }
   drawDropper();
+  drawCombo();
   // 점수 텍스트
   for(const t of texts){ const k=t.life/t.max; ctx.save(); ctx.globalAlpha=k<.7?1:1-(k-.7)/.3;
     ctx.font=`900 ${t.size}px "Black Han Sans",sans-serif`; ctx.textAlign='center'; ctx.lineWidth=4; ctx.strokeStyle='#fff8ec';
@@ -1005,6 +1035,31 @@ function draw(){
   if(G.targeting){ ctx.fillStyle='rgba(35,20,12,.35)'; ctx.fillRect(0,0,W,H);
     for(const b of bodies){ if(G.targeting==='bookgeo'&&b.lv>=MAXLV)continue; ctx.save(); ctx.strokeStyle='#ffd27a'; ctx.lineWidth=3;
       ctx.setLineDash([6,5]); ctx.lineDashOffset=-G.t*30; ctx.beginPath(); ctx.arc(b.x,b.y,b.r+4,0,Math.PI*2); ctx.stroke(); ctx.restore(); drawBody(b); } }
+}
+function drawCombo(){ // 바구니 위쪽 가운데: 이어지는 동안 큰 연쇄 숫자, 끊기면 보너스 점수
+  const cx=W/2, cy=420; // 넘침 카운트다운(318)과 겹치지 않게
+  if(!G.chainDone&&G.chain>=2&&G.state==='play'){
+    const n=G.chain, k=Math.min(1,(G.t-G.comboPopT)/.18), pop=1+(1-k)*.45, col=COMBO_COL[Math.min(8,n)];
+    const left=Math.max(0,1-(G.t-G.lastMerge)/chainWin());
+    ctx.save(); ctx.translate(cx,cy); ctx.scale(pop,pop); ctx.rotate(Math.sin(G.t*9)*.03*Math.min(1,n/4));
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.lineJoin='round';
+    const fs=Math.min(76,40+n*5);
+    ctx.font=`900 ${fs}px 'Black Han Sans','Apple SD Gothic Neo',sans-serif`; ctx.lineWidth=9; ctx.strokeStyle='#3a2014';
+    ctx.strokeText(n+'연쇄',0,0); ctx.fillStyle=col; ctx.fillText(n+'연쇄',0,0);
+    ctx.font=`900 ${Math.round(fs*.48)}px 'Black Han Sans','Apple SD Gothic Neo',sans-serif`; ctx.lineWidth=6;
+    ctx.strokeText('점수 ×'+comboMul(n),0,fs*.72); ctx.fillStyle='#fff7e8'; ctx.fillText('점수 ×'+comboMul(n),0,fs*.72);
+    // 다음 합치기까지 남은 시간 막대
+    ctx.fillStyle='rgba(58,32,20,.55)'; ctx.fillRect(-60,fs*1.12,120,7); ctx.fillStyle=col; ctx.fillRect(-60,fs*1.12,120*left,7);
+    ctx.restore();
+  }
+  const e=G.comboEnd; if(e){ const a=(G.t-e.t)/1.6; if(a>1){ G.comboEnd=null; return; }
+    const y=cy-10-a*40, al=a<.75?1:1-(a-.75)/.25, s=a<.12?.6+a/.12*.5:a<.22?1.1-(a-.12):1;
+    ctx.save(); ctx.globalAlpha=al; ctx.translate(cx,y); ctx.scale(s,s); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.lineJoin='round';
+    ctx.font=`900 ${e.n>=5?30:24}px 'Black Han Sans','Apple SD Gothic Neo',sans-serif`; ctx.lineWidth=7; ctx.strokeStyle='#3a2014';
+    const t1=`${e.n}연쇄 보너스`, t2='+'+e.bonus.toLocaleString();
+    ctx.strokeText(t1,0,-18); ctx.fillStyle='#fff7e8'; ctx.fillText(t1,0,-18);
+    ctx.font=`900 ${e.n>=5?52:40}px 'Black Han Sans','Apple SD Gothic Neo',sans-serif`; ctx.lineWidth=9;
+    ctx.strokeText(t2,0,22); ctx.fillStyle='#F2C14B'; ctx.fillText(t2,0,22); ctx.restore(); }
 }
 function landY(x,r){ let y=BOX.B-r;
   for(const b of bodies){ const dx=Math.abs(b.x-x), rr=r+b.r*b.grow; if(dx>=rr)continue; const cy=b.y-Math.sqrt(rr*rr-dx*dx); if(cy<y)y=cy; }
@@ -1112,7 +1167,7 @@ function showResult(){
   G.state='result';
   const prevBest=SAVE.best, isBest=G.score>prevBest;
   if(isBest)SAVE.best=G.score;
-  const base=Math.floor(G.score/40), bonus=G.ch==='ramda'?Math.round(base*.25):0;
+  const base=Math.floor(G.score/53), bonus=G.ch==='ramda'?Math.round(base*.25):0;
   // 출석 보너스: 그날 첫 판에 연속 출석 일수 × 10 (최대 50)
   let streakB=0; const dk=dayKey();
   if(SAVE.lastDay!==dk){ const y=new Date(); y.setDate(y.getDate()-1); const yk=y.getFullYear()*10000+(y.getMonth()+1)*100+y.getDate();
@@ -1154,7 +1209,7 @@ function hubReport(){
   try{
     const st=JSON.parse(localStorage.getItem('somsom_stats')||'{}');
     // 마을 도토리는 다른 게임과 비슷한 한 판 30~40개 수준 (게임 안 도토리와는 별개)
-    const give=Math.max(1,Math.round(G.score/80));
+    const give=Math.max(1,Math.round(G.score/105));
     st.played=st.played||{}; st.played.basket=(st.played.basket||0)+1;
     st.coins=(st.coins||0)+give; st.chars=st.chars||{}; st.chars[G.ch]=(st.chars[G.ch]||0)+1; st.last=G.ch;
     localStorage.setItem('somsom_stats',JSON.stringify(st));
