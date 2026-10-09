@@ -132,7 +132,7 @@
   <div class="how"><i>2</i><span>가로나 세로 한 줄이 꽉 차면 정리돼요. 여러 줄을 한 번에 지우면 점수가 크게 올라요.</span></div>
   <div class="how"><i>3</i><span>계속 지우면 <b>연속</b> 배수가 올라가요. 세 번 연달아 못 지우면 끊겨요.</span></div>
   <div class="how"><i>4</i><span>한 줄에 <b>같은 친구 짐이 6칸 이상</b>이면 그 친구가 기뻐하고 점수가 두 배예요.</span></div>
-  <div class="how"><i>5</i><span>남은 상자가 어디에도 안 들어가면 끝. 오늘의 판은 모두 같은 판으로 시작해요.</span></div>
+  <div class="how"><i>5</i><span>남은 상자가 어디에도 안 들어가면 끝. 판마다 상자 순서가 새로 섞여요.</span></div>
   <div class="owners" id="ownerGrid"></div>
   <button class="big" id="howClose">알았어요</button>
 </div></div>
@@ -229,11 +229,13 @@ function paceLoad(){ const p = load(PACEKEY, null); paceBest = (p && p.s === SAV
 
 function startGame(fresh){
   const run = load(RUNKEY, null);
-  seed = dayKey()*97 + 13;
+  // 판마다 새로 섞는다 (예전엔 하루 동안 같은 순서였음 — 다시 할 때마다 똑같아 지루했다)
+  seed = (run && run.seed) || ((Math.random()*4294967296)>>>0);
   if(!fresh && run && run.day === dayKey() && run.snap){
     g = C.restore(run.snap, seed + (run.placed||0)*31);
     curve = run.curve || [0]; placedBy = run.by || {};
   } else {
+    seed = (Math.random()*4294967296)>>>0;
     g = C.Game(seed); curve = [0]; placedBy = {};
     try{ localStorage.removeItem(RUNKEY); }catch(e){}
   }
@@ -316,7 +318,7 @@ function doPlace(i, r, c){
     setHint('가로나 세로 한 줄을 꽉 채우면 정리돼요', 99);
   }
   curve[g.placed] = g.score;
-  save(RUNKEY, { day: dayKey(), snap: g.snapshot(), placed: g.placed, curve, by: placedBy });
+  save(RUNKEY, { day: dayKey(), seed, snap: g.snapshot(), placed: g.placed, curve, by: placedBy });
   if(res.over){ overT = 0.01; setTimeout(gameOver, 1100); sfx('over'); }
 }
 
@@ -386,7 +388,7 @@ async function pushRanking(){
         d:{integerValue:String(dayKey())}, t:{integerValue:String(Date.now())} } }) });
   }catch(e){}
 }
-// range: today(오늘의 판) · week(최근 7일 — 허브 주간 랭킹과 같은 기준) · all(전체)
+// range: today(오늘 기록) · week(최근 7일 — 허브 주간 랭킹과 같은 기준) · all(전체)
 async function fetchScores(range){
   const q = { from:[{collectionId:'boxes_scores'}], limit: range === 'all' ? 1000 : 500 };
   if(range === 'today') q.where = { fieldFilter:{ field:{fieldPath:'d'}, op:'EQUAL', value:{integerValue:String(dayKey())} } };
@@ -418,8 +420,8 @@ let boardRange = 'today';
 async function openBoard(range){
   if(typeof range === 'string') boardRange = range;
   for(const b of $('boardTabs').children) b.classList.toggle('on', b.dataset.r === boardRange);
-  $('boardDay').textContent = boardRange === 'today' ? dayLabel() + ' · 모두 같은 판' : boardRange === 'week' ? '최근 7일' : '지금까지';
-  $('boardNote').textContent = boardRange === 'today' ? '오늘의 판은 모두 같은 판으로 시작해요' : '사람마다 가장 좋은 한 판으로 줄 세워요';
+  $('boardDay').textContent = boardRange === 'today' ? dayLabel() : boardRange === 'week' ? '최근 7일' : '지금까지';
+  $('boardNote').textContent = boardRange === 'today' ? '사람마다 가장 좋은 한 판으로 줄 세워요' : '사람마다 가장 좋은 한 판으로 줄 세워요';
   const list = $('boardList'); list.innerHTML = '<div class="rk">불러오는 중…</div>';
   $('boardSheet').classList.add('on');
   const me = localStorage.getItem('somsom_name') || '', want = boardRange;
@@ -473,7 +475,7 @@ function drawHud(){
     ctx.fillText('최고보다 ' + (d >= 0 ? '+' : '−') + Math.abs(d).toLocaleString(), 16, HUD/2 + 15);
   } else { ctx.fillStyle = '#8A7458'; ctx.fillText('최고 ' + SAVE.best.toLocaleString(), 16, HUD/2 + 15); }
   ctx.textAlign = 'center'; ctx.fillStyle = '#8A7458'; ctx.font = '800 11px sans-serif';
-  ctx.fillText('오늘의 판 · ' + dayLabel(), W/2 + 10, HUD/2 - 8);
+  ctx.fillText(dayLabel(), W/2 + 10, HUD/2 - 8);
   ctx.fillStyle = '#5B4A38'; ctx.font = '800 12px sans-serif';
   ctx.fillText('상자 ' + k + '개', W/2 + 10, HUD/2 + 10);
   // 일시정지
@@ -614,7 +616,7 @@ function refreshTitle(){
   const run = load(RUNKEY, null), can = run && run.day === dayKey() && run.snap;
   $('btnGo').textContent = can ? '이어하기 · ' + (run.curve ? (run.curve[run.placed]||0).toLocaleString() + '점' : '') : '정리하러 가기';
   $('btnNew').classList.toggle('hidden', !can);
-  $('dayLine').innerHTML = '오늘의 판 · <b>' + dayLabel() + '</b> · 모두 같은 판으로 시작해요';
+  $('dayLine').innerHTML = '<b>' + dayLabel() + '</b> · 판마다 상자 순서가 새로 섞여요';
   $('titleHint').innerHTML = SAVE.plays ? '내 최고 ' + SAVE.best.toLocaleString() + '점 · ' + SAVE.plays + '판' :
     '상자를 끌어 선반에 놓고, 한 줄을 채우면 정리돼요';
   $('btnMute').textContent = muted ? '🔇' : '🔊';
