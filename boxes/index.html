@@ -132,7 +132,8 @@
   <div class="how"><i>2</i><span>가로나 세로 한 줄이 꽉 차면 정리돼요. 여러 줄을 한 번에 지우면 점수가 크게 올라요.</span></div>
   <div class="how"><i>3</i><span>계속 지우면 <b>연속</b> 배수가 올라가요. 세 번 연달아 못 지우면 끊겨요.</span></div>
   <div class="how"><i>4</i><span>한 줄에 <b>같은 친구 짐이 6칸 이상</b>이면 그 친구가 기뻐하고 점수가 두 배예요.</span></div>
-  <div class="how"><i>5</i><span>남은 상자가 어디에도 안 들어가면 끝. 판마다 상자 순서가 새로 섞여요.</span></div>
+  <div class="how"><i>5</i><span><b>친구 카드</b>: 처음에 한 장, 짐 주인 보너스 세 번마다 한 장 더(최대 두 장). 막히면 카드로 살릴 수 있어요.</span></div>
+  <div class="how"><i>6</i><span>카드도 없이 남은 상자가 어디에도 안 들어가면 끝. 판마다 상자 순서가 새로 섞여요.</span></div>
   <div class="owners" id="ownerGrid"></div>
   <button class="big" id="howClose">알았어요</button>
 </div></div>
@@ -201,7 +202,7 @@ function buzz(ms){ if(muted) return; try{ navigator.vibrate && navigator.vibrate
 // ── 화면 배치 ────────────────────────────────────────────────
 const cv = $('cv'); let ctx = cv.getContext('2d');
 const DPR = Math.min(3, window.devicePixelRatio || 1);
-let W = 390, H = 760, HUD = 64, CELL = 40, BX = 0, BY = 0, S = 320, TY = 0, TH = 120, TC = 22;
+let KY = 0, KH = 40, W = 390, H = 760, HUD = 64, CELL = 40, BX = 0, BY = 0, S = 320, TY = 0, TH = 120, TC = 22;
 function layout(){
   W = Math.max(300, innerWidth); H = Math.max(480, innerHeight);
   cv.width = Math.round(W*DPR); cv.height = Math.round(H*DPR);
@@ -209,13 +210,14 @@ function layout(){
   HUD = 64 + (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sat'))||0);
   const side = 14, comboH = 34;
   // 선반 + 아래 조각 칸(선반 칸 3.3개 높이)이 화면에 들어가게
-  CELL = Math.floor(Math.min((Math.min(W, 520) - side*2)/N, (H - HUD - comboH - 24)/(N + 3.6)));
+  CELL = Math.floor(Math.min((Math.min(W, 520) - side*2)/N, (H - HUD - comboH - 24 - 46)/(N + 3.4)));
   S = CELL*N; BX = Math.round((W - S)/2);
-  TH = CELL*3.3;
+  TH = CELL*3.2; KH = 40;                     // KH: 친구 카드 줄 높이
   // 긴 화면에서는 선반과 조각 칸을 가운데 쪽으로 내린다 (엄지가 닿기 쉽게)
-  const extra = Math.max(0, H - (HUD + comboH + S + 16 + TH + 8));
+  const extra = Math.max(0, H - (HUD + comboH + S + 12 + KH + 6 + TH + 8));
   BY = HUD + comboH + Math.round(extra*0.45);
-  TY = BY + S + 16; TH = Math.min(H - TY - 8, CELL*3.3 + extra*0.3);
+  KY = BY + S + 12;
+  TY = KY + KH + 6; TH = Math.min(H - TY - 8, CELL*3.2 + extra*0.3);
   TC = CELL*0.72;
 }
 addEventListener('resize', layout); layout();
@@ -223,6 +225,8 @@ addEventListener('resize', layout); layout();
 // ── 상태 ────────────────────────────────────────────────────
 let mode = 'TITLE', g = null, seed = 0;
 let drag = null;               // {i, x, y, r, c, ok, lines}
+let pickCard = null;           // 상자를 골라야 하는 카드(끼토·람다)를 눌렀을 때 그 카드 키
+let cardPop = {};              // 새로 받은 카드 반짝임
 let pops = [], parts = [], floats = [], faces = [], placed = [], shakeT = 0, flash = 0, overT = 0;
 let dealSeen = 0, dealT = 1, shownScore = 0, curve = [0], paceBest = null, placedBy = {}, trayBad = [0,0,0], hint = null, hintT = 0, overDim = 0;
 function paceLoad(){ const p = load(PACEKEY, null); paceBest = (p && p.s === SAVE.best && Array.isArray(p.c)) ? p.c : null; }
@@ -240,12 +244,13 @@ function startGame(fresh){
     try{ localStorage.removeItem(RUNKEY); }catch(e){}
   }
   pops = []; parts = []; floats = []; faces = []; placed = []; shakeT = 0; flash = 0; overT = 0; overDim = 0;
-  shownScore = g.score; drag = null; trayBad = [0,0,0];
+  shownScore = g.score; drag = null; trayBad = [0,0,0]; pickCard = null; cardPop = {};
   paceLoad();
   mode = 'PLAY'; show(null);
   hint = null; hintT = 0;
   if(SAVE.plays < 1 && g.placed === 0) setHint('아래 상자를 끌어서 선반에 놓아요', 99);
-  if(g.over) setTimeout(gameOver, 400);
+  clearTimeout(overTimer);
+  if(g.over) finishStuck();
 }
 function setHint(t, sec){ hint = t; hintT = sec; }
 function show(id){ for(const s of ['sTitle','sResult']) $(s).classList.toggle('hidden', s !== id); }
@@ -268,6 +273,14 @@ cv.addEventListener('pointerdown', e=>{
   if(mode !== 'PLAY' || overT > 0) return;
   const {x, y} = pos(e);
   if(x > W-52 && y < HUD){ pauseGame(); return; }
+  // 친구 카드
+  const ci = cardHit(x, y);
+  if(ci){ if(ci === 'giveup'){ g.giveUp(); finishStuck(); return; } tapCard(ci); return; }
+  if(pickCard){
+    for(let i=0;i<3;i++){ const s = slotRect(i);
+      if(g.tray[i] && x >= s.x && x < s.x+s.w && y >= s.y - 10 && y < s.y+s.h){ applyCard(pickCard, i); return; } }
+    pickCard = null; hint = null; return;            // 다른 곳을 누르면 취소
+  }
   for(let i=0;i<3;i++){ const s = slotRect(i);
     if(g.tray[i] && x >= s.x && x < s.x+s.w && y >= s.y - 10 && y < s.y+s.h){
       drag = { i, x, y }; updateSnap(); sfx('pick'); ac();
@@ -283,6 +296,73 @@ function endDrag(){
 }
 cv.addEventListener('pointerup', endDrag);
 cv.addEventListener('pointercancel', ()=>{ drag = null; });
+
+// ── 친구 도움 카드 ──────────────────────────────────────────
+function cardSlots(){                 // 카드 줄 칸 위치 (최대 cardMax장)
+  const n = g.o.cardMax, w = Math.min(150, (Math.min(W,520) - 28 - (n-1)*8)/n), x0 = W/2 - (n*w + (n-1)*8)/2;
+  return Array.from({length:n}, (_,i) => ({ x: x0 + i*(w+8), y: KY, w, h: KH }));
+}
+function heldCards(){ const out = []; for(const k of OW) for(let i=0;i<(g.cards[k]||0);i++) out.push(k); return out; }
+function cardHit(x, y){
+  if(g.stuck && !g.over && y >= BY + S*0.56 && y <= BY + S*0.56 + 34 && Math.abs(x - W/2) < 60) return 'giveup';
+  const cs = cardSlots(), held = heldCards();
+  for(let i=0;i<cs.length;i++){ const c = cs[i]; if(held[i] && x >= c.x && x < c.x+c.w && y >= c.y && y < c.y+c.h) return held[i]; }
+  return null;
+}
+function tapCard(k){
+  ac();
+  if(!g.canUse(k)){ sfx('bad'); setHint(k === 'lachilchin' ? '되돌릴 상자가 없어요' : '지금은 쓸 수 없어요', 1.6); return; }
+  if(C.CARD[k].pick){ pickCard = k; setHint(NAME[k] + ': ' + (k === 'kkito' ? '돌릴 상자를 누르세요' : '단추로 바꿀 상자를 누르세요'), 99); return; }
+  applyCard(k);
+}
+function applyCard(k, i){
+  pickCard = null; if(hint && hintT > 50) hint = null;
+  const before = g.board.slice();
+  const res = g.useCard(k, i); if(!res){ sfx('bad'); return; }
+  [659,880,1046].forEach((f,j)=>tone(f,0.12,'triangle',0.05,j*0.06)); buzz(20);
+  faces.push({ k, x: W/2, y: BY + S*0.62, t: 0, card: true });
+  if(res.removed) for(const [rr,cc,w] of res.removed){ pops.push({ r:rr, c:cc, w, t:-cc*0.03 });
+    const p = cellXY(rr,cc); parts.push({ x:p.x+CELL/2, y:p.y+CELL/2, vx:(Math.random()-.5)*200, vy:-120, t:0, col:COL[OW[w]], s:5 }); }
+  if(res.undo){ curve.length = g.placed + 1; placed = []; }
+  saveRun();
+  if(res.over){ finishStuck(); }
+}
+let overTimer = 0;
+// 끝 연출 뒤 결과로. 그사이 새 판을 시작하면 앞 판의 타이머가 새 판을 끝내지 않게 판을 기억해 둔다
+function finishStuck(){ if(overT > 0) return; overT = 0.01; sfx('over');
+  const mine = g; clearTimeout(overTimer); overTimer = setTimeout(()=>{ if(g === mine) gameOver(); }, 1100); }
+function saveRun(){ save(RUNKEY, { day: dayKey(), seed, snap: g.snapshot(), placed: g.placed, curve, by: placedBy }); }
+function drawCards(t){
+  const cs = cardSlots(), held = heldCards();
+  ctx.save(); ctx.textBaseline = 'middle';
+  for(let i=0;i<cs.length;i++){ const c = cs[i], k = held[i];
+    if(!k){ rr(c.x, c.y, c.w, c.h, 12); ctx.setLineDash([4,4]); ctx.strokeStyle = 'rgba(59,42,28,.3)'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(59,42,28,.4)'; ctx.font = '800 11px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('짐 주인 보너스로 카드', c.x + c.w/2, c.y + c.h/2, c.w - 10); continue; }
+    const usable = g.canUse(k), glow = (g.stuck && g.rescues(k)) || pickCard === k;
+    const pop = cardPop[k] > 0 ? 1 + 0.12*Math.sin(cardPop[k]*20) : 1;
+    ctx.save(); ctx.translate(c.x + c.w/2, c.y + c.h/2); ctx.scale(pop, pop); ctx.translate(-(c.x + c.w/2), -(c.y + c.h/2));
+    rr(c.x, c.y, c.w, c.h, 12); ctx.fillStyle = COL[k]; ctx.globalAlpha = usable ? 1 : 0.45; ctx.fill();
+    ctx.lineWidth = glow ? 3 : 2; ctx.strokeStyle = glow ? 'rgba(217,84,47,' + (0.6 + 0.4*Math.sin(t*8)) + ')' : shade(COL[k], 0.65); ctx.stroke();
+    const im = FACE[k]; if(im.complete && im.naturalWidth){ const h = c.h - 6, w = h*im.naturalWidth/im.naturalHeight; ctx.drawImage(im, c.x + 4, c.y + 3, w, h); }
+    ctx.fillStyle = '#2B1A08'; ctx.textAlign = 'left';
+    ctx.font = '900 12.5px sans-serif'; ctx.fillText(C.CARD[k].n, c.x + c.h + 2, c.y + c.h/2 - 7, c.w - c.h - 6);
+    ctx.font = '800 10px sans-serif'; ctx.fillStyle = 'rgba(43,26,8,.7)'; ctx.fillText(NAME[k] + ' 카드', c.x + c.h + 2, c.y + c.h/2 + 8, c.w - c.h - 6);
+    ctx.restore();
+  }
+  if(g.boost){ ctx.font = '900 11px sans-serif'; ctx.textAlign = 'right'; ctx.fillStyle = '#7A4FA0'; ctx.fillText('향수 · 다음 정리 ×2', BX + S, BY - 18); }
+  ctx.restore();
+  // 막혔을 때 — 끝내기 전에 카드를 쓰라고 알린다
+  if(g.stuck && !g.over && overT === 0){
+    ctx.save(); ctx.fillStyle = 'rgba(43,33,24,.82)'; rr(BX + 14, BY + S*0.32, S - 28, S*0.36, 16); ctx.fill();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#FFF3DC';
+    ctx.font = "900 22px 'Black Han Sans',sans-serif"; ctx.fillText('막혔어요!', W/2, BY + S*0.40);
+    ctx.font = '800 13px sans-serif'; ctx.fillText('아래 친구 카드로 살려 보세요', W/2, BY + S*0.48);
+    rr(W/2 - 56, BY + S*0.56, 112, 30, 15); ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fill();
+    ctx.fillStyle = '#EFE7D6'; ctx.font = '800 12.5px sans-serif'; ctx.fillText('여기서 끝내기', W/2, BY + S*0.56 + 15);
+    ctx.restore();
+  }
+}
 
 // ── 놓기와 정리 ──────────────────────────────────────────────
 function cellXY(r, c){ return { x: BX + c*CELL, y: BY + r*CELL }; }
@@ -313,13 +393,18 @@ function doPlace(i, r, c){
     if(seen.size) sfx('owner');
     if(res.clearAll){ flash = 1; sfx('all'); buzz(60);
       floats.push({ x: BX + S/2, y: BY + S*0.6, txt: '싹 비웠다!', t: -0.15, big: true, sub: '선반이 텅 비었어요' }); }
+    if(res.newCards) for(const k of res.newCards){ cardPop[k] = 0.6;
+      floats.push({ x: BX + S/2, y: BY + S*0.78, txt: NAME[k] + ' 카드!', t: -0.25, big: false, sub: C.CARD[k].n });
+      if(!SAVE.cardHint){ SAVE.cardHint = 1; save(KEY, SAVE); setHint('친구 카드를 받았어요 · 막히면 아래 카드를 눌러요', 5); } }
+    if(res.boost) floats.push({ x: BX + S/2, y: BY + S*0.3, txt: '향수 ×2', t: -0.1, big: false });
     if(hint && SAVE.plays < 1) setHint('같은 친구 짐으로 한 줄을 6칸 이상 채우면 두 배!', 4);
   } else if(hint && SAVE.plays < 1 && g.placed === 1){
     setHint('가로나 세로 한 줄을 꽉 채우면 정리돼요', 99);
   }
   curve[g.placed] = g.score;
-  save(RUNKEY, { day: dayKey(), seed, snap: g.snapshot(), placed: g.placed, curve, by: placedBy });
-  if(res.over){ overT = 0.01; setTimeout(gameOver, 1100); sfx('over'); }
+  saveRun();
+  if(res.over) finishStuck();
+  else if(res.stuck === undefined && g.stuck){ sfx('bad'); buzz([40,40,40]); }
 }
 
 // ── 끝 ──────────────────────────────────────────────────────
@@ -339,6 +424,7 @@ function gameOver(){
   parts.push('최고 연속 <b>' + st.maxCombo + '</b> · 한 번에 최대 <b>' + st.maxMulti + '</b>줄');
   if(st.owner) parts.push('짐 주인 보너스 <b>' + st.owner + '번</b>');
   if(st.clearAll) parts.push('<b>싹 비우기 ' + st.clearAll + '번</b>');
+  if(st.cardsUsed) parts.push('친구 카드 <b>' + st.cardsUsed + '장</b>' + (st.saved ? ' · 막힌 판을 <b>' + st.saved + '번</b> 살림' : ''));
   if(isBest) parts.push(prev ? '예전 최고 ' + prev.toLocaleString() + '점을 넘었어요' : '첫 기록이에요');
   else if(prev - score <= prev*0.2) parts.push('<b>최고까지 ' + (prev - score).toLocaleString() + '점</b> 모자랐어요');
   else parts.push('최고 ' + prev.toLocaleString() + '점');
@@ -550,7 +636,7 @@ function drawFx(){
     const sz = CELL*2.6*(k < 0.15 ? 0.6 + 2.6*k : 1), y = f.y - 60*k;
     if(im.complete && im.naturalWidth){ const h = sz, w = sz*im.naturalWidth/im.naturalHeight; ctx.drawImage(im, f.x - w/2, y - h, w, h); }
     ctx.font = '900 14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    const txt = NAME[f.k] + '네 ' + ITEM[f.k] + ' 정리! ×2', tw = ctx.measureText(txt).width;
+    const txt = f.card ? NAME[f.k] + ': ' + C.CARD[f.k].n + '!' : NAME[f.k] + '네 ' + ITEM[f.k] + ' 정리! ×2', tw = ctx.measureText(txt).width;
     rr(f.x - tw/2 - 10, y + 4, tw + 20, 26, 13); ctx.fillStyle = '#2B2118'; ctx.fill();
     ctx.fillStyle = '#FFD68A'; ctx.fillText(txt, f.x, y + 17); ctx.restore(); }
   for(const f of floats){ if(f.t < 0) continue; const k = f.t/1.1;
@@ -586,6 +672,7 @@ function frame(now){
   for(const p of parts){ p.t += dt; p.vy += 700*dt; p.x += p.vx*dt; p.y += p.vy*dt; } parts = parts.filter(p => p.t < 0.8);
   for(const f of floats) f.t += dt; floats = floats.filter(f => f.t < 1.1);
   for(const f of faces) f.t += dt; faces = faces.filter(f => f.t < 1.6);
+  for(const k in cardPop) cardPop[k] = Math.max(0, cardPop[k] - dt);
   for(let i=0;i<3;i++) if(trayBad[i] > 0) trayBad[i] = Math.max(0, trayBad[i] - dt);
   if(flash > 0) flash = Math.max(0, flash - dt*2.2);
   if(shakeT > 0) shakeT = Math.max(0, shakeT - dt);
@@ -596,7 +683,7 @@ function frame(now){
   ctx.save();
   if(shakeT > 0){ const m = shakeT*14; ctx.translate((Math.random()-.5)*m, (Math.random()-.5)*m); }
   drawBg();
-  if(g){ drawBoard(T); drawTray(T); drawCombo(); }
+  if(g){ drawBoard(T); drawCards(T); drawTray(T); drawCombo(); }
   drawFx();
   ctx.restore();
   if(g) drawHud();
@@ -631,7 +718,7 @@ $('btnHow').onclick   = ()=> $('howSheet').classList.add('on');
 $('howClose').onclick = ()=> $('howSheet').classList.remove('on');
 for(const id of ['boardSheet','howSheet']) $(id).addEventListener('click', e => { if(e.target.id === id) e.currentTarget.classList.remove('on'); });
 $('btnMute').onclick  = ()=>{ muted = !muted; try{ localStorage.setItem('somsom_muted', muted ? '1' : '0'); }catch(e){} refreshTitle(); };
-$('ownerGrid').innerHTML = OW.map(k => '<div><span style="background:'+COL[k]+'"><img src="../assets/boxes/it_'+k+'.png" alt=""></span>'+NAME[k]+'의 '+ITEM[k]+'</div>').join('');
+$('ownerGrid').innerHTML = OW.map(k => '<div><span style="background:'+COL[k]+'"><img src="../assets/boxes/it_'+k+'.png" alt=""></span>'+NAME[k]+'의 '+ITEM[k]+'<small style="font-weight:700;color:#8A7458;text-align:center;line-height:1.3;">카드 · '+C.CARD[k].n+'<br>'+C.CARD[k].d+'</small></div>').join('');
 refreshTitle(); show('sTitle');
 </script>
 <script src="../assets/bgm.js" data-pos="left:70px;top:8px" data-show-if="#sTitle:not(.hidden)"></script>
