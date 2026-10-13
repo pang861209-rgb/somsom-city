@@ -178,7 +178,7 @@ const esc = t => String(t).replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&
 const IMG = {};
 function img(src){ const i = new Image(); i.src = src; return i; }
 for(const k of OW){ IMG['ch_'+k] = img('../assets/mat/ch_'+k+'.png'); IMG['hit_'+k] = img('../assets/mat/hit_'+k+'.png');
-  for(let i=0;i<4;i++) IMG['run_'+k+'_'+i] = img('../assets/frame_'+k+'_'+i+'.png');   // 달리기 게임의 옆모습 달리기 4장
+  for(let i=0;i<4;i++) IMG['run_'+k+'_'+i] = img('../assets/mat/run_'+k+'_'+i+'.png');   // 달리기 게임의 옆모습 달리기 4장(assets/frame_*) 축소본
  }
 const ACORN = img('../assets/mat/acorn.png');
 const ok = i => i && i.complete && i.naturalWidth > 0;
