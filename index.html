@@ -171,7 +171,7 @@
   </header>
 
   <div id="missionBox">
-    <div class="mh"><span class="lb">오늘의 미션</span><span id="missionChar"></span><span class="pg" id="missionPg">0/5</span></div>
+    <div class="mh"><span class="lb">오늘의 미션</span><span id="missionChar"></span><span class="pg" id="missionPg">0/6</span></div>
     <div id="missionList"></div>
   </div>
 
@@ -196,9 +196,16 @@
       <div class="txt"><div class="no">GAME 02</div><div class="nm">달리기</div><div class="ds">은행잎 골목 마감 질주</div></div>
       <img class="ch" src="assets/run_ramda_t.png" alt="" style="height:78%;max-height:118px;right:-2px;">
     </a>
+    <!-- 짝맞추기(GAME 03): 2026-10-13 허브에서 숨김. match/ 폴더와 기록은 그대로 두고, 주소로 직접 들어가면 여전히 할 수 있음.
     <a class="blk" href="match/" style="background:#5F8348;color:#0F2007;">
       <div class="mask"><img src="assets/title_bg_match.png" alt=""></div>
       <div class="txt"><div class="no">GAME 03</div><div class="nm">짝맞추기</div><div class="ds">뒤집힌 카드 속 짝꿍</div></div>
+      <img class="ch" src="assets/sd_boneul_t.png" alt="" style="height:86%;max-height:128px;">
+    </a>
+    -->
+    <a class="blk" href="mat/" style="background:#B5473A;color:#2A0D08;">
+      <div class="mask"><img src="assets/mat/title.jpg" alt="" style="object-position:center 45%;"></div>
+      <div class="txt"><div class="no">GAME 03 · NEW</div><div class="nm">자리 맡기</div><div class="ds">솜재페 잔디밭 돗자리 땅따먹기</div></div>
       <img class="ch" src="assets/sd_boneul_t.png" alt="" style="height:86%;max-height:128px;">
     </a>
     <a class="blk" href="https://pang861209-rgb.github.io/somsom-city-game/defense/" style="background:#6A5890;color:#150F26;">
@@ -300,6 +307,12 @@ const ACH = [
   {id:'match_perfect',g:'짝맞추기',n:'한 번도 안 틀림',d:'실수 없이 클리어'},
   {id:'match_hard', g:'짝맞추기',  n:'열두 쌍의 기억',d:'어려움을 클리어'},
   {id:'match_fast', g:'짝맞추기',  n:'번개 기억력',   d:'60초 안에 클리어'},
+  {id:'mat_first',  g:'자리 맡기', n:'첫 돗자리',       d:'자리 맡기를 한 판 끝냈어요'},
+  {id:'mat_win',    g:'자리 맡기', n:'명당 차지',       d:'1등으로 자리를 맡았어요'},
+  {id:'mat_15',     g:'자리 맡기', n:'넓은 돗자리',     d:'한 판에 15% 넘게 차지했어요'},
+  {id:'mat_ko5',    g:'자리 맡기', n:'끈 밟기 선수',    d:'한 판에 다섯 번 꽈당시켰어요'},
+  {id:'mat_clean',  g:'자리 맡기', n:'한 번도 안 넘어짐', d:'꽈당 없이 1등을 했어요'},
+  {id:'mat_big',    g:'자리 맡기', n:'한 바퀴 크게',    d:'한 번에 100칸 넘게 둘렀어요'},
   {id:'defense_first',    g:'방범대', n:'방범대 입단',   d:'스테이지를 처음 지켜냈어요'},
   {id:'defense_boss',     g:'방범대', n:'왕꼬릿 퇴치',   d:'왕꼬릿 구름을 돌려보냈어요'},
   {id:'defense_allclear', g:'방범대', n:'골목 어귀 평정', d:'네 스테이지를 모두 클리어'},
@@ -321,13 +334,16 @@ const ACH = [
   {id:'all_chars',  g:'솜솜시티',  n:'여섯 친구',     d:'여섯 주민 모두와 놀았어요'},
   {id:'coins_500',  g:'솜솜시티',  n:'도토리 창고',   d:'도토리를 500개 모았어요'},
 ];
+const ACH_HIDDEN_G = ['짝맞추기'];
 function achLoad(){ try{ return JSON.parse(localStorage.getItem('somsom_ach')||'{}'); }catch(e){ return {}; } }
 function renderAch(){
   const got = achLoad(), list = document.getElementById('achList');
-  document.getElementById('achCount').textContent = Object.keys(got).length + ' / ' + ACH.length;
+  // 허브에서 숨긴 게임(짝맞추기)의 업적은 이미 받은 것만 보여 줌
+  const shown = ACH.filter(a => !ACH_HIDDEN_G.includes(a.g) || got[a.id]);
+  document.getElementById('achCount').textContent = shown.filter(a => got[a.id]).length + ' / ' + shown.length;
   list.innerHTML = '';
   let cur = '';
-  for(const a of ACH){
+  for(const a of shown){
     if(a.g !== cur){ cur = a.g;
       const h = document.createElement('div'); h.className='achGrp'; h.textContent=cur; list.appendChild(h); }
     const r = document.createElement('div');
@@ -430,10 +446,12 @@ function missionSpec(){
   const defGoal  = [1,2,3][(r>>>9)%3]; // 방범대 별점 목표 — defense 쪽 hubReport와 동일 수식
   const basketGoal = [5,6,7][(r>>>12)%3]; // 가을 바구니 열매 단계 — basket 쪽 hubMissionGoal과 동일 수식
   const boxesGoal = [10,15,20][(r>>>15)%3]; // 창고 정리 줄 수 — boxes 쪽 hubMissionGoal과 동일 수식
+  const matGoal = [6,8,10][(r>>>18)%3]; // 자리 맡기 돗자리 % — mat 쪽 hubMissionGoal과 동일 수식
   return {leaf: {goal:leafGoal, label:'낙엽피하기 '+leafGoal+'점 넘기'},
           run:  {goal:runGoal,  label:'달리기 '+runGoal+'m 달리기'},
           match:{goal:missGoal, label:'짝맞추기 '+(missGoal===0 ? '실수 없이 클리어'
                                                               : '실수 '+missGoal+'회 이하로 클리어')},
+          mat:{goal:matGoal, label:'자리 맡기에서 돗자리 '+matGoal+'% 넘게 펴기'},
           defense:{goal:defGoal, label:'방범대 '+defGoal+'★로 스테이지 클리어'},
           boxes:{goal:boxesGoal, label:'창고 정리에서 한 판에 '+boxesGoal+'줄 정리'},
           basket:{goal:basketGoal, label:'가을 바구니에서 '+['감','사과','배'][basketGoal-5]+' 만들기'}};
@@ -463,7 +481,7 @@ function renderMissions(){
   document.getElementById('missionChar').innerHTML='<span style="font-size:11.5px;font-weight:700;color:#8A6A1A;">오늘의 친구 '+CH_NAME[DAILY_CHAR_ID]+'</span>';
   const list=document.getElementById('missionList'); list.innerHTML='';
   let n=0;
-  for(const g of ['leaf','run','match','defense','boxes','basket']){
+  for(const g of ['leaf','run','mat','defense','boxes','basket']){   // 짝맞추기는 숨김 — 그 자리에 자리 맡기
     const ok=!!done[g]; if(ok) n++;
     const r=document.createElement('div'); r.className='mRow'+(ok?' ok':'');
     r.innerHTML='<span class="bx">'+(ok?'✓':'')+'</span><span>'+sp[g].label+'</span>';
@@ -487,8 +505,8 @@ async function renderWeekly(){
   const list=document.getElementById('wkList');
   list.innerHTML='<div class="mRow" style="padding:14px;">불러오는 중…</div>';
   const since=Date.now()-7*24*3600*1000;
-  const cols=await Promise.all([fetchCol('scores'),fetchCol('runner_scores'),fetchCol('memory_scores'),
-                                fetchCol('defense_scores'),fetchCol('boxes_scores'),fetchCol('basket_scores')]);
+  const cols=await Promise.all([fetchCol('scores'),fetchCol('runner_scores'),   // 짝맞추기(memory_scores)는 숨김 중이라 제외
+                                fetchCol('defense_scores'),fetchCol('boxes_scores'),fetchCol('basket_scores'),fetchCol('mat_scores')]);
   const per=cols.map(rows=>{
     const best={}; for(const e of rows){ if(e.t<since) continue; if(!best[e.n]||e.s>best[e.n]) best[e.n]=e.s; }
     const max=Math.max(1,...Object.values(best));

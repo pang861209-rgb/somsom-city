@@ -1051,7 +1051,8 @@ function achReport(ev){
     }
   }
   const p = st.played||{};
-  if(p.leaf && p.run && p.match) achUnlock('all_three');
+  // 짝맞추기를 허브에서 숨겨서, 특정 게임 대신 '서로 다른 게임 몇 개'로 셈
+  if(Object.values(p).filter(Boolean).length >= 3) achUnlock('all_three');
   if(Object.keys(st.chars||{}).length >= 6) achUnlock('all_chars');
   if((st.coins||0) >= 500) achUnlock('coins_500');
 
