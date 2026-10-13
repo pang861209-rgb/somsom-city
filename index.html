@@ -196,11 +196,13 @@
       <div class="txt"><div class="no">GAME 02</div><div class="nm">달리기</div><div class="ds">은행잎 골목 마감 질주</div></div>
       <img class="ch" src="assets/run_ramda_t.png" alt="" style="height:78%;max-height:118px;right:-2px;">
     </a>
+    <!-- 짝맞추기(GAME 03): 2026-10-13 허브에서 숨김. match/ 폴더와 기록은 그대로 두고, 주소로 직접 들어가면 여전히 할 수 있음.
     <a class="blk" href="match/" style="background:#5F8348;color:#0F2007;">
       <div class="mask"><img src="assets/title_bg_match.png" alt=""></div>
       <div class="txt"><div class="no">GAME 03</div><div class="nm">짝맞추기</div><div class="ds">뒤집힌 카드 속 짝꿍</div></div>
       <img class="ch" src="assets/sd_boneul_t.png" alt="" style="height:86%;max-height:128px;">
     </a>
+    -->
     <a class="blk" href="https://pang861209-rgb.github.io/somsom-city-game/defense/" style="background:#6A5890;color:#150F26;">
       <div class="mask"><img src="assets/bg_alley.png" alt="" style="object-position:center 78%;"></div>
       <div class="txt"><div class="no">GAME 04 · NEW</div><div class="nm">방범대</div><div class="ds">꼬릿 구름에서 당근빌라를!</div></div>
@@ -321,13 +323,16 @@ const ACH = [
   {id:'all_chars',  g:'솜솜시티',  n:'여섯 친구',     d:'여섯 주민 모두와 놀았어요'},
   {id:'coins_500',  g:'솜솜시티',  n:'도토리 창고',   d:'도토리를 500개 모았어요'},
 ];
+const ACH_HIDDEN_G = ['짝맞추기'];
 function achLoad(){ try{ return JSON.parse(localStorage.getItem('somsom_ach')||'{}'); }catch(e){ return {}; } }
 function renderAch(){
   const got = achLoad(), list = document.getElementById('achList');
-  document.getElementById('achCount').textContent = Object.keys(got).length + ' / ' + ACH.length;
+  // 허브에서 숨긴 게임(짝맞추기)의 업적은 이미 받은 것만 보여 줌
+  const shown = ACH.filter(a => !ACH_HIDDEN_G.includes(a.g) || got[a.id]);
+  document.getElementById('achCount').textContent = shown.filter(a => got[a.id]).length + ' / ' + shown.length;
   list.innerHTML = '';
   let cur = '';
-  for(const a of ACH){
+  for(const a of shown){
     if(a.g !== cur){ cur = a.g;
       const h = document.createElement('div'); h.className='achGrp'; h.textContent=cur; list.appendChild(h); }
     const r = document.createElement('div');
@@ -463,13 +468,13 @@ function renderMissions(){
   document.getElementById('missionChar').innerHTML='<span style="font-size:11.5px;font-weight:700;color:#8A6A1A;">오늘의 친구 '+CH_NAME[DAILY_CHAR_ID]+'</span>';
   const list=document.getElementById('missionList'); list.innerHTML='';
   let n=0;
-  for(const g of ['leaf','run','match','defense','boxes','basket']){
+  for(const g of ['leaf','run','defense','boxes','basket']){   // 짝맞추기는 허브에서 숨겨 미션에서도 뺌
     const ok=!!done[g]; if(ok) n++;
     const r=document.createElement('div'); r.className='mRow'+(ok?' ok':'');
     r.innerHTML='<span class="bx">'+(ok?'✓':'')+'</span><span>'+sp[g].label+'</span>';
     list.appendChild(r);
   }
-  document.getElementById('missionPg').textContent=n+'/6';
+  document.getElementById('missionPg').textContent=n+'/5';
 }
 // 주간 통합 랭킹 — 각 게임 점수를 그 게임의 주간 최고 대비 100점으로 환산해 합산
 const FB_KEY='AIzaSyBfld7SRrVTxDG0nE_6Z3Mw5kSRTo5bIGY';
@@ -487,7 +492,7 @@ async function renderWeekly(){
   const list=document.getElementById('wkList');
   list.innerHTML='<div class="mRow" style="padding:14px;">불러오는 중…</div>';
   const since=Date.now()-7*24*3600*1000;
-  const cols=await Promise.all([fetchCol('scores'),fetchCol('runner_scores'),fetchCol('memory_scores'),
+  const cols=await Promise.all([fetchCol('scores'),fetchCol('runner_scores'),   // 짝맞추기(memory_scores)는 숨김 중이라 제외
                                 fetchCol('defense_scores'),fetchCol('boxes_scores'),fetchCol('basket_scores')]);
   const per=cols.map(rows=>{
     const best={}; for(const e of rows){ if(e.t<since) continue; if(!best[e.n]||e.s>best[e.n]) best[e.n]=e.s; }

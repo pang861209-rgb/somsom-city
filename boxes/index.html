@@ -456,7 +456,7 @@ function hubReport(){
     if(gs.clearAll > 0)  un('boxes_clearall');
     if(g.score >= 2000)  un('boxes_2000');
     if(OW.every(k => dx['boxes_' + k])) un('boxes_owners');
-    const pl = st.played; if(pl.leaf&&pl.run&&pl.match) un('all_three'); if(pl.leaf&&pl.run&&pl.match&&pl.defense) un('all_four');
+    const pl = st.played, pn = Object.values(pl).filter(Boolean).length; if(pn>=3) un('all_three'); if(pn>=4) un('all_four');
     if(Object.keys(st.chars).length >= 6) un('all_chars'); if((st.coins||0) >= 500) un('coins_500');
     save('somsom_ach', ach);
     if(gs.lines >= hubMissionGoal()){ const dk = String(dayKey()), ms = load('somsom_missions', {});
