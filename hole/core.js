@@ -56,7 +56,7 @@
       if(x < t.r || y < t.r || x > W - t.r || y > H - t.r) return;
       // 큰 물건끼리는 겹치지 않게
       if(t.r >= 14) for(const o of objs){ if(o.r >= 14 && Math.hypot(o.x - x, o.y - y) < (o.r + t.r)*0.95) return; }
-      objs.push({ id: oid++, t: TI[k], r: t.r, x, y, rot: rot || 0, fall: 0, by: -1 });
+      objs.push({ id: oid++, t: TI[k], r: t.r, x, y, rot: rot || 0, fall: 0, by: -1, v: rnd() < 0.5 ? 0 : 1 });   // v: 같은 크기 안의 그림 종류 (은행잎 노랑/주황 등)
     }
 
     // ── 잔디밭 배치: 위쪽 가운데 무대, 그 앞 의자 줄, 가운데 돗자리, 길가 벤치, 아래 푸드트럭, 가장자리 은행나무 ──
