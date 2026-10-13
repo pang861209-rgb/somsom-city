@@ -49,11 +49,11 @@
   #bestLine b{color:#F2C14B;}
 
   /* 결과 */
-  .wrap{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-start;justify-content:center;background:rgba(30,36,20,.6);padding:16px;overflow-y:auto;}
+  .wrap{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-start;justify-content:center;background:rgba(30,36,20,.6);padding:calc(112px + env(safe-area-inset-top)) 16px 16px;overflow-y:auto;}
   .card{width:100%;max-width:400px;background:#FFF8EC;border:2px solid #3E4A2C;border-radius:20px;padding:16px 16px 18px;margin:auto;
     display:flex;flex-direction:column;align-items:center;gap:9px;box-shadow:0 16px 40px -18px rgba(0,0,0,.6);animation:up .3s ease-out;}
   @keyframes up{from{transform:translateY(30px);opacity:0;}to{transform:none;opacity:1;}}
-  #resHero{height:96px;width:auto;margin-top:-4px;}
+  #resHero{height:84px;width:auto;margin-top:-4px;}
   .t{font-family:'Black Han Sans',sans-serif;font-size:26px;color:#3E4A2C;text-align:center;line-height:1.15;}
   #rank{width:100%;display:flex;flex-direction:column;gap:4px;}
   .rk{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;background:#F4EBDA;font-size:14px;font-weight:800;}
@@ -194,7 +194,8 @@ const buzz = p => { try{ navigator.vibrate && navigator.vibrate(p); }catch(e){} 
 
 // ── 그리기 ── (디자인 점검 반영: docs/MAT_출시점검.md 5장)
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-function clampCam(N){ camX = clamp(camX, -CS*1.2, N*CS - W + CS*1.2); camY = clamp(camY, -CS*6, N*CS - H + CS*2.2); }
+function clampCam(N){ const tp = Math.max(CS*6, 230), bp = Math.max(CS*2.2, 110);   // 위·아래 HUD에 내 주민이 가리지 않게
+  camX = clamp(camX, -CS*1.2, N*CS - W + CS*1.2); camY = clamp(camY, -tp, N*CS - H + bp); }
 // 주민 그림에 흰 스티커 외곽선 — 잔디·돗자리 위에서도 또렷하게 (그림마다 한 번만 만들어 둠)
 const STK = {};
 function sticker(im){
@@ -261,8 +262,8 @@ function drawResident(p, x, y, t){
   const k = OW[p.id], isMe = p.id === meId, h = CS*2.1, fy = y + CS*0.32;
   // 발밑 그림자 — 그 주민 색
   ctx.globalAlpha = 0.45; ctx.fillStyle = EDGE[k]; ctx.beginPath(); ctx.ellipse(x, fy, CS*0.55, CS*0.2, 0, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
-  if(isMe){ const s = 1 + 0.06*(1 + Math.sin(t*Math.PI*2/1.2));
-    ctx.beginPath(); ctx.ellipse(x, fy, CS*0.62*s, CS*0.24*s, 0, 0, 7); ctx.lineWidth = 4; ctx.strokeStyle = '#2B2118'; ctx.stroke(); ctx.lineWidth = 3; ctx.strokeStyle = '#FFF8EC'; ctx.stroke(); }
+  if(isMe){ const down = p.stun || p.rest > 0, s = down ? 1 : 1 + 0.06*(1 + Math.sin(t*Math.PI*2/1.2));
+    ctx.beginPath(); if(down) ctx.ellipse(x + CS*0.45, fy, CS*0.8, CS*0.26, 0, 0, 7); else ctx.ellipse(x, fy, CS*0.62*s, CS*0.24*s, 0, 0, 7); ctx.lineWidth = 4; ctx.strokeStyle = '#2B2118'; ctx.stroke(); ctx.lineWidth = 3; ctx.strokeStyle = '#FFF8EC'; ctx.stroke(); }
   const im = p.stun ? IMG['hit_'+k] : IMG['ch_'+k], st = sticker(im);
   ctx.save(); ctx.translate(x, fy);
   if(p.stun) ctx.rotate(Math.sin(t*18)*0.18 + 0.9);
@@ -282,7 +283,7 @@ function drawResident(p, x, y, t){
     ctx.fillStyle = '#FFF8EC'; ctx.strokeStyle = EDGE[k]; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.roundRect(x - tw/2, by - th, tw, th, th/2); ctx.moveTo(x - CS*0.15, by - 0.5); ctx.lineTo(x, by + CS*0.22); ctx.lineTo(x + CS*0.15, by - 0.5); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#2B2118'; ctx.fillText(b.txt, x, by - th/2 + 1); ctx.textBaseline = 'alphabetic'; ctx.globalAlpha = 1; }
-  else if(isMe && !p.stun){ // "나" 표시
+  else if(isMe && !p.stun && (mode === 'READY' || g.t < 3 || g.t - upT < 2.5)){ // "나" 표시 — 처음과 다시 일어난 직후에만
     const ny = y - h - CS*0.25; ctx.fillStyle = '#FFF8EC'; ctx.strokeStyle = '#2B2118'; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.roundRect(x - 11, ny - 16, 22, 16, 8); ctx.moveTo(x - 4, ny); ctx.lineTo(x, ny + 4); ctx.lineTo(x + 4, ny); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#2B2118'; ctx.font = '700 11px "Gowun Dodum",sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('나', x, ny - 7.5); ctx.textBaseline = 'alphabetic'; }
@@ -303,6 +304,7 @@ function frame(){
   for(const id in bub){ const b = bub[id]; b.t += dt; b.cool -= dt; }
   for(let i=feed.length-1;i>=0;i--){ feed[i].t += dt; if(feed[i].t > 4.5) feed.splice(i,1); }
   if(g && mode === 'PLAY') for(const p of g.players){ const r = p.rest > 0; if(r && !p._r) talk(p.id, 'rest'); p._r = r; }
+  if(g && mode === 'PLAY'){ const st = !!g.players[meId].stun; if(wasStun && !st) upT = g.t; wasStun = st; }
   if(mode === 'PLAY'){
     const left = Math.ceil(g.o.time - g.t);
     if(left <= 5 && left !== lastSec && left > 0){ beep(880, 0.08, 'square', 0.05); }
@@ -388,7 +390,7 @@ function frame(){
   if(mode === 'PLAY' || mode === 'END' || mode === 'READY') drawHud(me, dang, t, dt);
   requestAnimationFrame(frame);
 }
-let vig = 0, leaves = [], rankY = {}, pctPop = 0, lastPct = 0;
+let vig = 0, leaves = [], rankY = {}, pctPop = 0, lastPct = 0, upT = -9, msgY = null, wasStun = false;
 function confetti(){ leaves = []; for(let i=0;i<40;i++) leaves.push({ x: Math.random()*W, y: -20 - Math.random()*H*0.5, vy: 60 + Math.random()*60, a: Math.random()*6, i,
   col: ['#E8C04A','#F2A13B','#C8463B'][i%3] }); }
 const HF = '"Gowun Dodum",sans-serif';
@@ -411,13 +413,21 @@ function drawHud(me, dang, t, dt){
     const R = g.ranking(), bw = 116, rh = 20, bx = W - bw - 8, by = top;
     ctx.fillStyle = 'rgba(30,36,20,.72)'; ctx.beginPath(); ctx.roundRect(bx, by, bw, 8 + R.length*rh, 10); ctx.fill();
     ctx.font = '700 12.5px '+HF;
-    R.forEach((p,i) => { const target = by + 4 + i*rh; rankY[p.id] = rankY[p.id] == null ? target : rankY[p.id] + (target - rankY[p.id])*Math.min(1, dt*10);
-      const y = rankY[p.id], k = OW[p.id], isMe = p.id === meId;
+    ctx.save(); ctx.beginPath(); ctx.roundRect(bx, by, bw, 8 + R.length*rh, 10); ctx.clip();
+    const rows = R.map((p,i) => { const target = by + 4 + i*rh, prev = rankY[p.id] == null ? target : rankY[p.id];
+      const y = prev + (target - prev)*Math.min(1, dt*16); rankY[p.id] = Math.abs(target - y) < 0.3 ? target : y;
+      return { p, i, y: rankY[p.id], mv: target - rankY[p.id] }; });
+    rows.sort((a,b) => (a.mv < -0.5) - (b.mv < -0.5));          // 올라가는 줄을 나중에(위에) 그림
+    rows.forEach(({p, i, y, mv}) => { const k = OW[p.id], isMe = p.id === meId, prog = Math.min(1, Math.abs(mv)/rh);
+      ctx.globalAlpha = fade * (mv > 0.5 ? 1 - 0.7*Math.sin(Math.PI*(1 - prog)) : 1);
+      if(mv < -0.5){ ctx.fillStyle = 'rgba(40,46,28,.95)'; ctx.beginPath(); ctx.roundRect(bx+3, y, bw-6, rh, 6); ctx.fill();
+        ctx.fillStyle = 'rgba(255,248,236,.12)'; ctx.fill(); }
       if(isMe){ ctx.fillStyle = 'rgba(255,224,138,.18)'; ctx.beginPath(); ctx.roundRect(bx+3, y, bw-6, rh, 6); ctx.fill(); }
       if(i === 0){ ctx.fillStyle = '#F2C14B'; ctx.beginPath(); ctx.arc(bx+7, y+rh/2, 2, 0, 7); ctx.fill(); }
       ctx.fillStyle = COL[k]; ctx.beginPath(); ctx.arc(bx+18, y+rh/2, 6, 0, 7); ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = '#FFF8EC'; ctx.stroke();
       ctx.textAlign = 'left'; ctx.fillStyle = isMe ? '#FFE08A' : '#FFF8EC'; ctx.fillText(NAME[k], bx+29, y+14.5);
       ctx.textAlign = 'right'; ctx.fillText(g.pct(p).toFixed(1)+'%', bx+bw-8, y+14.5); });
+    ctx.restore(); ctx.globalAlpha = fade;
     // 내 넓이
     const pct = g.pct(me); if(pct > lastPct + 0.05) pctPop = 0.25; lastPct = pct; pctPop = Math.max(0, pctPop - dt);
     const pw = 172, byy = H - 62;
@@ -434,8 +444,11 @@ function drawHud(me, dang, t, dt){
       ctx.fillStyle = '#C8321F'; ctx.font = '400 13px "Black Han Sans",sans-serif'; ctx.textAlign = 'center'; ctx.fillText('!', W/2-ww/2+18, wy+20);
       ctx.fillStyle = '#FFF8EC'; ctx.font = '700 13px '+HF; ctx.fillText('돗자리로 돌아가요!', W/2 + 10, wy + 20); }
     if(msg){ msg.t += dt; const a = Math.max(0, Math.min(1, 3*(1 - msg.t/(msg.d||2.4))));
-      ctx.globalAlpha = a*fade; ctx.fillStyle = 'rgba(30,36,20,.9)'; const w = Math.min(W-24, 320); ctx.beginPath(); ctx.roundRect(W/2-w/2, top+132, w, 36, 18); ctx.fill();
-      ctx.fillStyle = '#FFF8EC'; ctx.font = '700 14px '+HF; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(msg.txt, W/2, top+150); ctx.textBaseline = 'alphabetic'; ctx.globalAlpha = fade;
+      const sy = (rp[meId].y + 0.5)*CS - camY, hit = sy > top+132 - CS*2.2 && sy < top+168 + CS*0.8;
+      const ty = hit ? H - 66 - 48 - (dang <= 3 && !me.stun ? 40 : 0) : top+132;
+      msgY = msgY == null ? ty : msgY + (ty - msgY)*Math.min(1, dt*8);
+      ctx.globalAlpha = a*fade; ctx.fillStyle = 'rgba(30,36,20,.9)'; const w = Math.min(W-24, 320); ctx.beginPath(); ctx.roundRect(W/2-w/2, msgY, w, 36, 18); ctx.fill();
+      ctx.fillStyle = '#FFF8EC'; ctx.font = '700 14px '+HF; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(msg.txt, W/2, msgY+18); ctx.textBaseline = 'alphabetic'; ctx.globalAlpha = fade;
       if(msg.t > (msg.d||2.4)) msg = null; }
     // 다른 주민 소식 (왼쪽 위, 홈 버튼 아래)
     ctx.textAlign = 'left'; ctx.font = '700 12px '+HF;
@@ -491,7 +504,7 @@ function handleEvents(){
 // ── 판 시작·끝 ──
 function newGame(){
   g = C.Game((Math.random()*2**32)>>>0, meId); rp = {}; fx = []; msg = null; warned = false; lastSec = 99; shake = 0;
-  const me = g.players[meId]; camX = (me.x+0.5)*CS - W/2; camY = (me.y+0.5)*CS - H*0.5; clampCam(g.N); rankY = {}; lastPct = 0;
+  const me = g.players[meId]; camX = (me.x+0.5)*CS - W/2; camY = (me.y+0.5)*CS - H*0.5; clampCam(g.N); rankY = {}; lastPct = 0; upT = -9; msgY = null; wasStun = false;
   $('sTitle').classList.add('hidden'); $('sResult').classList.add('hidden');
   const cx = g.N/2 - me.x, cy = g.N/2 - me.y; me.dir = Math.abs(cx) > Math.abs(cy) ? (cx > 0 ? 0 : 2) : (cy > 0 ? 1 : 3); me.want = me.dir;
   bub = {}; feed = []; readyT = 3; mode = 'READY'; last = performance.now(); beep(523, 0.1, 'triangle', 0.08);
