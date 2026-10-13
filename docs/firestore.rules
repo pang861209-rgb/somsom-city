@@ -113,6 +113,17 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // ── 자리 맡기 (GAME 03) — 한 판에 차지한 넓이 ×10 (12.3% → 123). d 는 판 날짜(YYYYMMDD) ──
+    match /mat_scores/{doc} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['n','s','d','t'])
+        && request.resource.data.n is string && request.resource.data.n.size() >= 1 && request.resource.data.n.size() <= 12
+        && request.resource.data.s is int && request.resource.data.s >= 0 && request.resource.data.s <= 1000
+        && request.resource.data.d is int && request.resource.data.d >= 20000101 && request.resource.data.d <= 21001231
+        && request.resource.data.t is int;
+      allow update, delete: if false;
+    }
+
     // ── 가을 바구니 (GAME 06) — 한 판 점수. c 는 함께한 친구(주민 키) ──
     match /basket_scores/{doc} {
       allow read: if true;
@@ -138,12 +149,12 @@ service cloud.firestore {
     }
 
     // ── 마을 창고 (V3) ──────────────────────────────────────
-    // 여러 게임의 이번 주 도토리. 누구나 읽을 수 있고, 추가만 가능. g 목록에 basket·boxes 추가
+    // 여러 게임의 이번 주 도토리. 누구나 읽을 수 있고, 추가만 가능. g 목록에 basket·boxes·mat 추가
     match /village_week/{doc} {
       allow read: if true;
       allow create: if request.resource.data.keys().hasOnly(['n','g','a','w','t','c'])
         && request.resource.data.n is string && request.resource.data.n.size() <= 12
-        && request.resource.data.g in ['leaf','run','match','merge','expedition','defense','basket','boxes']
+        && request.resource.data.g in ['leaf','run','match','merge','expedition','defense','basket','boxes','mat']
         && request.resource.data.a is int && request.resource.data.a >= 1 && request.resource.data.a <= 300
         && request.resource.data.w is int && request.resource.data.w >= 20260101 && request.resource.data.w <= 21001231
         && request.resource.data.t is int

@@ -52,7 +52,7 @@
       const id = order[k], a = (k/6)*Math.PI*2 + rng()*0.3, R = N*0.32;
       const x = Math.round(N/2 + Math.cos(a)*R), y = Math.round(N/2 + Math.sin(a)*R);
       const p = { id, key: OWNERS[id], bot: id !== me, x, y, px: x, py: y, dir: (rng()*4)|0, want: null,
-        acc: 0, trail: [], stun: 0, area: 0, best: 0, kos: 0, trips: 0, acorns: 0,
+        acc: 0, trail: [], stun: 0, area: 0, best: 0, kos: 0, trips: 0, acorns: 0, maxCap: 0,
         ps: PERSONA[OWNERS[id]], plan: [], mode: 'home', rest: 0 };
       g.players[id] = p;
     }
@@ -77,6 +77,7 @@
       let gained = n;
       for(let c=0;c<N*N;c++) if(!seen[c] && owner[c] !== p.id){ owner[c] = p.id; gained++; if(trail[c] === p.id) trail[c] = -1; }
       countAreas();
+      p.maxCap = Math.max(p.maxCap, gained);
       g.events.push({ t:'capture', id:p.id, n:gained });
       // 땅을 다 빼앗긴 주민은 꽈당 처리 후 새 자리
       for(const q of g.players) if(q !== p && q.area === 0 && !q.stun) trip(q, p);
@@ -203,6 +204,13 @@
         }
       }
       if(g.t >= o.time){ g.t = o.time; g.over = true; }
+    };
+    // 내 끈이 얼마나 위험한가: 가장 가까운 다른 주민 머리에서 내 끈까지 칸 수 (끈이 없으면 Infinity)
+    g.danger = function(p){
+      if(!p.trail.length) return Infinity; let m = Infinity;
+      for(const q of g.players){ if(q === p || q.stun) continue;
+        for(const c of p.trail){ const d = Math.abs(c%N - q.x) + Math.abs(((c/N)|0) - q.y); if(d < m) m = d; } }
+      return m;
     };
     g.ranking = () => g.players.slice().sort((a,b) => b.area - a.area);
     g.pct = p => p.area / (N*N) * 100;

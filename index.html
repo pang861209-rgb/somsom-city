@@ -171,7 +171,7 @@
   </header>
 
   <div id="missionBox">
-    <div class="mh"><span class="lb">오늘의 미션</span><span id="missionChar"></span><span class="pg" id="missionPg">0/5</span></div>
+    <div class="mh"><span class="lb">오늘의 미션</span><span id="missionChar"></span><span class="pg" id="missionPg">0/6</span></div>
     <div id="missionList"></div>
   </div>
 
@@ -203,6 +203,11 @@
       <img class="ch" src="assets/sd_boneul_t.png" alt="" style="height:86%;max-height:128px;">
     </a>
     -->
+    <a class="blk" href="mat/" style="background:#B5473A;color:#2A0D08;">
+      <div class="mask"><img src="assets/mat/title.jpg" alt="" style="object-position:center 45%;"></div>
+      <div class="txt"><div class="no">GAME 03 · NEW</div><div class="nm">자리 맡기</div><div class="ds">솜재페 잔디밭 돗자리 땅따먹기</div></div>
+      <img class="ch" src="assets/sd_boneul_t.png" alt="" style="height:86%;max-height:128px;">
+    </a>
     <a class="blk" href="https://pang861209-rgb.github.io/somsom-city-game/defense/" style="background:#6A5890;color:#150F26;">
       <div class="mask"><img src="assets/bg_alley.png" alt="" style="object-position:center 78%;"></div>
       <div class="txt"><div class="no">GAME 04 · NEW</div><div class="nm">방범대</div><div class="ds">꼬릿 구름에서 당근빌라를!</div></div>
@@ -302,6 +307,12 @@ const ACH = [
   {id:'match_perfect',g:'짝맞추기',n:'한 번도 안 틀림',d:'실수 없이 클리어'},
   {id:'match_hard', g:'짝맞추기',  n:'열두 쌍의 기억',d:'어려움을 클리어'},
   {id:'match_fast', g:'짝맞추기',  n:'번개 기억력',   d:'60초 안에 클리어'},
+  {id:'mat_first',  g:'자리 맡기', n:'첫 돗자리',       d:'자리 맡기를 한 판 끝냈어요'},
+  {id:'mat_win',    g:'자리 맡기', n:'명당 차지',       d:'1등으로 자리를 맡았어요'},
+  {id:'mat_15',     g:'자리 맡기', n:'넓은 돗자리',     d:'한 판에 15% 넘게 차지했어요'},
+  {id:'mat_ko5',    g:'자리 맡기', n:'끈 밟기 선수',    d:'한 판에 다섯 번 꽈당시켰어요'},
+  {id:'mat_clean',  g:'자리 맡기', n:'한 번도 안 넘어짐', d:'꽈당 없이 1등을 했어요'},
+  {id:'mat_big',    g:'자리 맡기', n:'한 바퀴 크게',    d:'한 번에 100칸 넘게 둘렀어요'},
   {id:'defense_first',    g:'방범대', n:'방범대 입단',   d:'스테이지를 처음 지켜냈어요'},
   {id:'defense_boss',     g:'방범대', n:'왕꼬릿 퇴치',   d:'왕꼬릿 구름을 돌려보냈어요'},
   {id:'defense_allclear', g:'방범대', n:'골목 어귀 평정', d:'네 스테이지를 모두 클리어'},
@@ -435,10 +446,12 @@ function missionSpec(){
   const defGoal  = [1,2,3][(r>>>9)%3]; // 방범대 별점 목표 — defense 쪽 hubReport와 동일 수식
   const basketGoal = [5,6,7][(r>>>12)%3]; // 가을 바구니 열매 단계 — basket 쪽 hubMissionGoal과 동일 수식
   const boxesGoal = [10,15,20][(r>>>15)%3]; // 창고 정리 줄 수 — boxes 쪽 hubMissionGoal과 동일 수식
+  const matGoal = [6,8,10][(r>>>18)%3]; // 자리 맡기 돗자리 % — mat 쪽 hubMissionGoal과 동일 수식
   return {leaf: {goal:leafGoal, label:'낙엽피하기 '+leafGoal+'점 넘기'},
           run:  {goal:runGoal,  label:'달리기 '+runGoal+'m 달리기'},
           match:{goal:missGoal, label:'짝맞추기 '+(missGoal===0 ? '실수 없이 클리어'
                                                               : '실수 '+missGoal+'회 이하로 클리어')},
+          mat:{goal:matGoal, label:'자리 맡기에서 돗자리 '+matGoal+'% 넘게 펴기'},
           defense:{goal:defGoal, label:'방범대 '+defGoal+'★로 스테이지 클리어'},
           boxes:{goal:boxesGoal, label:'창고 정리에서 한 판에 '+boxesGoal+'줄 정리'},
           basket:{goal:basketGoal, label:'가을 바구니에서 '+['감','사과','배'][basketGoal-5]+' 만들기'}};
@@ -468,13 +481,13 @@ function renderMissions(){
   document.getElementById('missionChar').innerHTML='<span style="font-size:11.5px;font-weight:700;color:#8A6A1A;">오늘의 친구 '+CH_NAME[DAILY_CHAR_ID]+'</span>';
   const list=document.getElementById('missionList'); list.innerHTML='';
   let n=0;
-  for(const g of ['leaf','run','defense','boxes','basket']){   // 짝맞추기는 허브에서 숨겨 미션에서도 뺌
+  for(const g of ['leaf','run','mat','defense','boxes','basket']){   // 짝맞추기는 숨김 — 그 자리에 자리 맡기
     const ok=!!done[g]; if(ok) n++;
     const r=document.createElement('div'); r.className='mRow'+(ok?' ok':'');
     r.innerHTML='<span class="bx">'+(ok?'✓':'')+'</span><span>'+sp[g].label+'</span>';
     list.appendChild(r);
   }
-  document.getElementById('missionPg').textContent=n+'/5';
+  document.getElementById('missionPg').textContent=n+'/6';
 }
 // 주간 통합 랭킹 — 각 게임 점수를 그 게임의 주간 최고 대비 100점으로 환산해 합산
 const FB_KEY='AIzaSyBfld7SRrVTxDG0nE_6Z3Mw5kSRTo5bIGY';
@@ -493,7 +506,7 @@ async function renderWeekly(){
   list.innerHTML='<div class="mRow" style="padding:14px;">불러오는 중…</div>';
   const since=Date.now()-7*24*3600*1000;
   const cols=await Promise.all([fetchCol('scores'),fetchCol('runner_scores'),   // 짝맞추기(memory_scores)는 숨김 중이라 제외
-                                fetchCol('defense_scores'),fetchCol('boxes_scores'),fetchCol('basket_scores')]);
+                                fetchCol('defense_scores'),fetchCol('boxes_scores'),fetchCol('basket_scores'),fetchCol('mat_scores')]);
   const per=cols.map(rows=>{
     const best={}; for(const e of rows){ if(e.t<since) continue; if(!best[e.n]||e.s>best[e.n]) best[e.n]=e.s; }
     const max=Math.max(1,...Object.values(best));
