@@ -179,6 +179,7 @@ const IMG = {};
 function img(src){ const i = new Image(); i.src = src; return i; }
 for(const k of OW){ IMG['ch_'+k] = img('../assets/mat/ch_'+k+'.png'); IMG['hit_'+k] = img('../assets/mat/hit_'+k+'.png');
   for(let i=0;i<4;i++) IMG['run_'+k+'_'+i] = img('../assets/mat/run_'+k+'_'+i+'.png');   // 달리기 게임의 옆모습 달리기 4장(assets/frame_*) 축소본
+  for(let i=0;i<4;i++){ IMG['front_'+k+'_'+i] = img('../assets/mat/front_'+k+'_'+i+'.png'); IMG['back_'+k+'_'+i] = img('../assets/mat/back_'+k+'_'+i+'.png'); }   // 앞·뒷모습 걷기 4장 (OpenAI 생성)
  }
 const ACORN = img('../assets/mat/acorn.png');
 const ok = i => i && i.complete && i.naturalWidth > 0;
@@ -290,14 +291,15 @@ function drawResident(p, x, y, t){
   if(isMe){ const s = down ? 1 : 1 + 0.06*(1 + Math.sin(t*Math.PI*2/1.2));
     ctx.beginPath(); if(down) ctx.ellipse(x + CS*0.45, fy, CS*0.8, CS*0.26, 0, 0, 7); else ctx.ellipse(x, fy, CS*0.62*s, CS*0.24*s, 0, 0, 7);
     ctx.lineWidth = 4; ctx.strokeStyle = '#2B2118'; ctx.stroke(); ctx.lineWidth = 3; ctx.strokeStyle = '#FFF8EC'; ctx.stroke(); }
-  // 그림 고르기: 넘어짐 → 꽈당 그림, 누움 → 서 있는 그림을 눕힘, 나머지 → 달리기 4장 (옆모습, 마지막 좌우 방향을 봄)
+  // 그림 고르기: 넘어짐 → 꽈당 그림, 누움 → 서 있는 그림을 눕힘, 위아래 → 앞·뒷모습 걷기 4장, 좌우 → 옆모습 달리기 4장
   const an = anim[p.id] || (anim[p.id] = { ph: 0, face: 1, lx: p.x, ly: p.y, n: 0 });
-  let im, run = false;
+  let im, run = false, walk = false;
   if(p.stun) im = IMG['hit_'+k];
   else if(p.rest > 0) im = IMG['ch_'+k];
-  else if(p.dir === 1 && !p.under) im = IMG['ch_'+k];                    // 아래(화면 쪽)로: 정면 그림 뒤뚱 걷기
+  else if((p.dir === 1 || p.dir === 3) && !p.under){                      // 아래로: 앞모습 걷기 · 위로: 뒷모습 걷기
+    im = IMG[(p.dir === 1 ? 'front_' : 'back_')+k+'_'+(Math.floor(an.ph) % 4)]; walk = ok(im); if(!walk) im = IMG['ch_'+k]; }
   else { im = IMG['run_'+k+'_'+(Math.floor(an.ph) % 4)]; run = ok(im); if(!run) im = IMG['ch_'+k]; }
-  const waddle = !run && !p.stun && !(p.rest > 0) && p.dir === 1;
+  const waddle = !run && !walk && !p.stun && !(p.rest > 0) && p.dir === 1;
   const st = sticker(im);
   // 질주 속도선
   if(p.boost > 0){ const [dx,dy] = C.DIRS[p.dir]; ctx.strokeStyle = 'rgba(255,248,236,.85)'; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.beginPath();
@@ -312,6 +314,7 @@ function drawResident(p, x, y, t){
   else if(p.rest > 0) ctx.rotate(-Math.PI/2.3);
   else if(run){ ctx.translate(0, -Math.abs(Math.sin(an.ph*Math.PI/2))*CS*0.08);    // 달리기: 걸음마다 살짝 뜀
     const tw = an.turn > 0 ? 0.35 + 0.65*(1 - an.turn/0.14) : 1; ctx.scale(an.face*tw, 1); }   // 좌우 뒤집기 + 돌아서는 순간 납작
+  else if(walk){ const w = Math.sin(an.ph*Math.PI/2); ctx.translate(0, -Math.abs(w)*CS*0.06); ctx.rotate(w*0.04); }   // 앞·뒤 걷기: 걸음마다 살짝 뜨고 몸이 조금 흔들림
   else if(waddle){ const w = Math.sin(an.ph*Math.PI/2); ctx.rotate(w*0.13); ctx.translate(0, -Math.abs(w)*CS*0.1); ctx.scale(1 + Math.abs(w)*0.04, 1 - Math.abs(w)*0.04); }
   else ctx.rotate(Math.sin(t*14 + p.id)*0.06);
   if(st){ const sc = run ? Math.min(h*0.92 / im.naturalHeight, CS*2.3 / im.naturalWidth) : h / im.naturalHeight, ih = im.naturalHeight*sc;
