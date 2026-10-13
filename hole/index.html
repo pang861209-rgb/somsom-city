@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#3E6B34">
+<title>솜솜시티: 구멍으로 쏙 (시험판)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&display=swap">
+<style>
+:root{--ink:#2B2118;--paper:#FFF8EC;--accent:#E0663F;--grass:#5E9447}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:#2F4F2A;color:var(--ink);font-family:"Gowun Dodum",sans-serif;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+.hidden{display:none!important}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;background:rgba(32,48,28,.72);backdrop-filter:blur(2px);z-index:5;text-align:center}
+.card{background:var(--paper);border:3px solid var(--ink);border-radius:22px;padding:22px 20px;max-width:360px;width:100%;box-shadow:0 6px 0 var(--ink)}
+.tag{display:inline-block;font-size:12px;border:2px solid var(--ink);border-radius:99px;padding:2px 10px;background:#FFE08A}
+h1{font-family:"Black Han Sans",sans-serif;font-weight:400;font-size:44px;margin:10px 0 2px;letter-spacing:-1px;color:var(--ink)}
+h1 .o{color:var(--accent)}
+.sub{font-size:15px;margin:0 0 14px}
+.rules{list-style:none;padding:0;margin:0 0 16px;text-align:left;font-size:14px;line-height:1.55}
+.rules li{padding-left:22px;position:relative;margin:4px 0}
+.rules li b{font-weight:700}
+.rules li::before{content:"";position:absolute;left:2px;top:5px;width:12px;height:12px;border-radius:50%;background:#1d1a17;box-shadow:inset 0 0 0 2px #EE8FAE}
+.ladder{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin:0 0 16px}
+.ladder span{font-size:11px;padding:2px 6px;border:1.5px solid var(--ink);border-radius:8px;background:#fff}
+.btn{font-family:"Black Han Sans",sans-serif;font-size:24px;border:3px solid var(--ink);background:var(--accent);color:#fff;border-radius:16px;padding:12px 0;width:100%;box-shadow:0 4px 0 var(--ink);cursor:pointer}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.best{font-size:13px;margin-top:10px;opacity:.8}
+#hud{position:fixed;left:0;right:0;top:0;pointer-events:none;z-index:3;padding:calc(env(safe-area-inset-top) + 10px) 12px 0}
+#bar{height:10px;border:2.5px solid var(--ink);border-radius:99px;background:var(--paper);overflow:hidden;margin:0 auto 8px;max-width:420px}
+#bar i{display:block;height:100%;background:var(--accent);width:100%}
+#top{display:flex;justify-content:space-between;align-items:flex-start;max-width:420px;margin:0 auto}
+#rank{background:rgba(255,248,236,.92);border:2.5px solid var(--ink);border-radius:14px;padding:5px 9px;font-size:13px;min-width:132px}
+#rank div{display:flex;align-items:center;gap:6px;height:20px}
+#rank .me{font-weight:700}
+#rank .dot{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink);flex:none}
+#rank .s{margin-left:auto;font-family:"Black Han Sans",sans-serif;font-size:14px}
+#time{font-family:"Black Han Sans",sans-serif;font-size:34px;color:var(--paper);-webkit-text-stroke:2px var(--ink);paint-order:stroke;text-align:right;line-height:1}
+#time.hurry{color:#FFD15C;animation:blink .5s steps(2) infinite}
+@keyframes blink{50%{opacity:.55}}
+#bottom{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 14px);z-index:3;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:6px}
+#score{font-family:"Black Han Sans",sans-serif;font-size:40px;color:var(--paper);-webkit-text-stroke:2.5px var(--ink);paint-order:stroke;line-height:1;transition:transform .08s}
+#score.pop{transform:scale(1.18)}
+#next{background:rgba(255,248,236,.92);border:2.5px solid var(--ink);border-radius:99px;padding:4px 12px;font-size:13px;display:flex;align-items:center;gap:8px}
+#next .g{width:110px;height:8px;border:2px solid var(--ink);border-radius:99px;overflow:hidden;background:#fff}
+#next .g i{display:block;height:100%;background:#7BC86C;width:0}
+#res .rk{font-family:"Black Han Sans",sans-serif;font-size:52px;line-height:1;margin:6px 0 2px}
+#res .pts{font-size:16px;margin-bottom:12px}
+#res table{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:12px}
+#res td{padding:3px 4px;border-bottom:1.5px dashed #d8ccb6}
+#res td:last-child{text-align:right;font-family:"Black Han Sans",sans-serif}
+#res tr.me td{font-weight:700;background:#FFF1C9}
+#res .ate{font-size:13px;margin:0 0 14px;line-height:1.6}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<div id="hud" class="hidden">
+  <div id="bar"><i></i></div>
+  <div id="top"><div id="rank"></div><div id="time">60</div></div>
+</div>
+<div id="bottom" class="hidden">
+  <div id="score">0</div>
+  <div id="next"><span id="nextTxt">다음: 접이의자</span><span class="g"><i></i></span></div>
+</div>
+
+<div class="screen" id="sTitle">
+  <div class="card">
+    <span class="tag">시험판 · 색깔 블록</span>
+    <h1>구멍으로 <span class="o">쏙</span></h1>
+    <p class="sub">솜재페가 끝난 잔디밭, 1분 안에 가장 많이 치우기</p>
+    <ul class="rules">
+      <li>화면을 밀면 내 구멍(<b>끼토</b>)이 움직여요</li>
+      <li>나보다 <b>작은 물건</b>은 쏙 빠지고, 구멍이 커져요</li>
+      <li>나보다 <b>작은 구멍</b>도 삼킬 수 있어요. 큰 구멍은 피하세요</li>
+    </ul>
+    <div class="ladder"><span>은행잎</span><span>종이컵</span><span>도시락</span><span>의자</span><span>돗자리</span><span>벤치</span><span>푸드트럭</span><span>은행나무</span><span>무대</span></div>
+    <button class="btn" id="goBtn">시작</button>
+    <div class="best" id="bestTxt"></div>
+  </div>
+</div>
+
+<div class="screen hidden" id="sResult">
+  <div class="card" id="res">
+    <div class="rk" id="rRank">1등</div>
+    <div class="pts" id="rPts"></div>
+    <div class="ate" id="rAte"></div>
+    <table id="rTable"></table>
+    <button class="btn" id="againBtn">한 판 더</button>
+  </div>
+</div>
+
+<script src="core.js"></script>
+<script>
+const C = HoleCore, T = C.TYPES, OW = C.OWNERS;
+const NAME = {kkito:'끼토', migae:'미개', lachilchin:'할머니', ramda:'람다', boneul:'보늘', bookgeo:'북거씨'};
+const COL  = {kkito:'#EE8FAE', migae:'#4A5582', lachilchin:'#A98BD8', ramda:'#D0563B', boneul:'#E9B840', bookgeo:'#3E9C9A'};
+const EDGE = {kkito:'#9B5D71', migae:'#303754', lachilchin:'#6E5A8C', ramda:'#873826', boneul:'#97782A', bookgeo:'#286564'};
+const $ = id => document.getElementById(id);
+const cv = $('cv'), ctx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+function resize(){ DPR = Math.min(2, window.devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W*DPR; cv.height = H*DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
+addEventListener('resize', resize); resize();
+
+const meId = 0;
+let g = null, mode = 'TITLE', last = performance.now(), cam = { x: 700, y: 700, z: 1 }, fx = [], shake = 0, lastScore = 0, unlockFlash = null, lastUnlock = -1;
+const store = { get(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } }, set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} } };
+let best = store.get('somsom_hole_best', 0);
+function showBest(){ $('bestTxt').textContent = best ? '내 최고 ' + best + '점' : ''; }
+showBest();
+
+// ── 소리 ──
+let AC = null;
+function audio(){ if(!AC){ try{ AC = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){} } if(AC && AC.state === 'suspended') AC.resume(); }
+function blip(f, d, type, v){ if(!AC) return; const o = AC.createOscillator(), gn = AC.createGain(), t = AC.currentTime;
+  o.type = type || 'sine'; o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f*0.55, t + d);
+  gn.gain.setValueAtTime(v || 0.06, t); gn.gain.exponentialRampToValueAtTime(0.0001, t + d); o.connect(gn).connect(AC.destination); o.start(t); o.stop(t + d); }
+let blipBudget = 0;
+function eatSound(tIdx, combo){ if(blipBudget > 3) return; blipBudget++;
+  const base = 520 - tIdx*45, up = Math.min(combo, 16)*28; blip(base + up, 0.09 + tIdx*0.025, tIdx > 4 ? 'triangle' : 'sine', 0.05 + tIdx*0.01); }
+const buzz = ms => { try{ navigator.vibrate && navigator.vibrate(ms); }catch(e){} };
+
+// ── 조작: 화면 어디든 누르고 밀기 (손가락 아래 가상 조이스틱) ──
+const joy = { on: false, x0: 0, y0: 0, x: 0, y: 0 }, keys = {};
+cv.addEventListener('pointerdown', e => { audio(); joy.on = true; joy.x0 = joy.x = e.clientX; joy.y0 = joy.y = e.clientY; cv.setPointerCapture(e.pointerId); });
+cv.addEventListener('pointermove', e => { if(!joy.on) return; joy.x = e.clientX; joy.y = e.clientY;
+  const dx = joy.x - joy.x0, dy = joy.y - joy.y0, m = Math.hypot(dx, dy);
+  if(m > 60){ joy.x0 = joy.x - dx/m*60; joy.y0 = joy.y - dy/m*60; } });   // 손가락을 따라오는 받침
+const up = () => { joy.on = false; };
+cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+addEventListener('keydown', e => { keys[e.key] = 1; audio(); }); addEventListener('keyup', e => { keys[e.key] = 0; });
+function input(){
+  let ax = 0, ay = 0;
+  if(joy.on){ const dx = joy.x - joy.x0, dy = joy.y - joy.y0, m = Math.hypot(dx, dy); if(m > 6){ const s = Math.min(1, m/36); ax = dx/m*s; ay = dy/m*s; } }
+  const kx = (keys.ArrowRight || keys.d ? 1 : 0) - (keys.ArrowLeft || keys.a ? 1 : 0), ky = (keys.ArrowDown || keys.s ? 1 : 0) - (keys.ArrowUp || keys.w ? 1 : 0);
+  if(kx || ky){ ax = kx; ay = ky; }
+  return [ax, ay];
+}
+
+// ── 판 ──
+function newGame(){
+  audio();
+  g = C.Game((Math.random()*2**32) >>> 0, meId); fx = []; shake = 0; lastScore = 0; lastUnlock = -1; unlockFlash = null;
+  const me = g.holes[meId]; cam.x = me.x; cam.y = me.y; cam.z = zoomFor(me.r);
+  $('sTitle').classList.add('hidden'); $('sResult').classList.add('hidden'); $('hud').classList.remove('hidden'); $('bottom').classList.remove('hidden');
+  mode = 'PLAY'; last = performance.now(); readyT = 1.2;
+  blip(660, 0.15, 'triangle', 0.08);
+}
+let readyT = 0;
+function zoomFor(r){ const z = Math.min(W, H*0.8) / (r*11 + 180); return g ? Math.max(z, Math.min(W/(g.W + 80), H/(g.H + 80))) : z; }   // 잔디밭 전체보다 더 멀리 빼지는 않음
+
+function finish(){
+  mode = 'END';
+  const rk = g.ranking(), me = g.holes[meId], place = rk.indexOf(me) + 1;
+  const isBest = me.score > best; if(isBest){ best = me.score; store.set('somsom_hole_best', best); }
+  $('rRank').textContent = place + '등';
+  $('rRank').style.color = place === 1 ? '#E0663F' : '#2B2118';
+  $('rPts').textContent = me.score + '점' + (isBest ? ' · 내 최고!' : ' · 최고 ' + best + '점');
+  const parts = []; for(let i = T.length - 1; i >= 0; i--) if(me.ate[i]) parts.push(T[i].n + ' ' + me.ate[i]);
+  if(me.holesEaten) parts.unshift('구멍 ' + me.holesEaten);
+  $('rAte').textContent = parts.length ? '삼킨 것: ' + parts.join(' · ') : '';
+  $('rTable').innerHTML = rk.map((h, i) => `<tr class="${h.id === meId ? 'me' : ''}"><td>${i + 1}</td><td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${COL[h.k]};border:1.5px solid #2B2118;margin-right:6px"></span>${NAME[h.k]}</td><td>${h.score}</td></tr>`).join('');
+  setTimeout(() => { $('sResult').classList.remove('hidden'); $('hud').classList.add('hidden'); $('bottom').classList.add('hidden'); }, 900);
+  blip(392, 0.4, 'triangle', 0.1); setTimeout(() => blip(523, 0.5, 'triangle', 0.1), 160);
+}
+$('goBtn').onclick = newGame; $('againBtn').onclick = newGame;
+
+// ── 연출 ──
+function addFx(f){ fx.push(Object.assign({ t: 0 }, f)); if(fx.length > 120) fx.shift(); }
+function handleEvents(){
+  const me = g.holes[meId];
+  for(const e of g.events){
+    if(e.type === 'eat'){
+      if(e.id === meId){ eatSound(e.t, e.combo); if(e.pts*12 >= me.r) addFx({ k: 'pts', x: e.x, y: e.y, s: '+' + e.pts, big: e.t >= 5 });   // 커지면 자잘한 +1은 생략
+        if(e.t >= 6){ shake = Math.max(shake, 0.25); buzz(25); }
+        if(e.combo >= 5 && e.combo % 5 === 0) addFx({ k: 'combo', n: e.combo }); }
+      else if(Math.hypot(e.x - me.x, e.y - me.y) < 500 && e.t >= 6) blip(200, 0.15, 'sine', 0.03);
+    } else if(e.type === 'gulp'){
+      addFx({ k: 'ring', x: e.x, y: e.y, c: COL[g.holes[e.victim].k] });
+      if(e.id === meId){ addFx({ k: 'pts', x: e.x, y: e.y, s: NAME[g.holes[e.victim].k] + ' 꿀꺽! +' + e.pts, big: true }); shake = 0.4; buzz(60); blip(180, 0.35, 'square', 0.06); }
+      if(e.victim === meId){ addFx({ k: 'banner', s: NAME[g.holes[e.id].k] + '에게 삼켜졌어요!', sub: '조금 작아져서 다시 나와요' }); shake = 0.5; buzz([80, 40, 80]); blip(140, 0.5, 'sawtooth', 0.06); }
+    } else if(e.type === 'respawn' && e.id === meId){ addFx({ k: 'ring', x: me.x, y: me.y, c: '#FFF8EC' }); }
+  }
+  g.events.length = 0;
+}
+
+// ── 그리기 ──
+function shade(hex, k){ const n = parseInt(hex.slice(1), 16); let r = n >> 16, gg = n >> 8 & 255, b = n & 255;
+  r = Math.round(r*k); gg = Math.round(gg*k); b = Math.round(b*k); return `rgb(${Math.min(255,r)},${Math.min(255,gg)},${Math.min(255,b)})`; }
+
+function drawGround(){
+  // 잔디 깎은 줄무늬
+  ctx.fillStyle = '#5E9447'; ctx.fillRect(0, 0, g.W, g.H);
+  ctx.fillStyle = '#679E4F'; for(let x = 0; x < g.W; x += 140) ctx.fillRect(x, 0, 70, g.H);
+  // 산책길
+  ctx.strokeStyle = '#D9C69A'; ctx.lineWidth = 44; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(230, 330); ctx.lineTo(230, g.H - 130); ctx.lineTo(g.W - 230, g.H - 130); ctx.lineTo(g.W - 230, 330); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(g.W/2, 470); ctx.lineTo(g.W/2, g.H - 130); ctx.stroke();
+  // 바깥 울타리
+  ctx.strokeStyle = '#2F4F2A'; ctx.lineWidth = 12; ctx.strokeRect(-6, -6, g.W + 12, g.H + 12);
+}
+
+function shapePath(o, t, s){
+  const r = o.r*s, w = r*t.w, h = r*t.h;
+  ctx.beginPath();
+  if(t.shape === 'circle' || t.shape === 'tree') ctx.arc(0, 0, r, 0, 7);
+  else if(t.shape === 'leaf'){ ctx.moveTo(0, -h); ctx.quadraticCurveTo(w, -h*0.2, 0, h); ctx.quadraticCurveTo(-w, -h*0.2, 0, -h); }
+  else ctx.roundRect(-w*0.72, -h*0.72, w*1.44, h*1.44, Math.min(w, h)*0.25);
+}
+function drawObj(o, depth){
+  const t = T[o.t], s = 1 - depth*0.55;
+  ctx.save(); ctx.translate(o.x, o.y); ctx.rotate(o.rot);
+  if(!depth){ ctx.save(); ctx.translate(o.r*0.12, o.r*0.22); shapePath(o, t, 1); ctx.fillStyle = 'rgba(30,50,20,.28)'; ctx.fill(); ctx.restore(); }
+  shapePath(o, t, s);
+  ctx.fillStyle = depth ? shade(t.c, 1 - depth*0.6) : t.c; ctx.fill();
+  ctx.lineWidth = Math.max(1.2, o.r*0.09); ctx.strokeStyle = depth ? shade(t.e, 1 - depth*0.6) : t.e; ctx.stroke();
+  // 물건마다 한 가지 표시 (색깔 블록 시험판이라 아주 간단히)
+  ctx.lineWidth = Math.max(1, o.r*0.06);
+  if(t.shape === 'mat'){ ctx.strokeStyle = 'rgba(255,255,255,.7)'; const w = o.r*t.w*s, h = o.r*t.h*s; ctx.beginPath();
+    for(let i = -2; i <= 2; i++){ ctx.moveTo(i*w*0.28, -h*0.72); ctx.lineTo(i*w*0.28, h*0.72); ctx.moveTo(-w*0.72, i*h*0.28); ctx.lineTo(w*0.72, i*h*0.28); } ctx.stroke(); }
+  else if(t.shape === 'tree'){ ctx.fillStyle = shade(t.c, 1.12 - depth*0.6); for(let i = 0; i < 5; i++){ const a = i*1.256; ctx.beginPath(); ctx.arc(Math.cos(a)*o.r*0.45*s, Math.sin(a)*o.r*0.45*s, o.r*0.35*s, 0, 7); ctx.fill(); } }
+  else if(t.shape === 'truck'){ ctx.fillStyle = '#E0663F'; const w = o.r*t.w*s, h = o.r*t.h*s; ctx.fillRect(-w*0.72, -h*0.72, w*1.44, h*0.35); ctx.fillStyle = '#9CC9E8'; ctx.fillRect(w*0.35, -h*0.2, w*0.3, h*0.5); }
+  else if(t.shape === 'stage'){ const w = o.r*t.w*s, h = o.r*t.h*s; ctx.fillStyle = '#FFE08A';
+    for(let i = 0; i < 7; i++){ ctx.beginPath(); ctx.arc(-w*0.6 + i*w*0.2, -h*0.5, o.r*0.08*s, 0, 7); ctx.fill(); }
+    if(!depth){ ctx.rotate(-o.rot); ctx.font = `400 ${Math.round(o.r*0.38)}px "Black Han Sans",sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#FFF8EC'; ctx.fillText('솜재페', 0, h*0.15); } }
+  else if(t.k === 'chair' || t.k === 'bench'){ ctx.strokeStyle = 'rgba(255,255,255,.45)'; const w = o.r*t.w*s, h = o.r*t.h*s; ctx.beginPath(); ctx.moveTo(-w*0.6, -h*0.3); ctx.lineTo(w*0.6, -h*0.3); ctx.moveTo(-w*0.6, h*0.2); ctx.lineTo(w*0.6, h*0.2); ctx.stroke(); }
+  ctx.restore();
+}
+
+function drawHole(h, t){
+  const r = h.r;
+  // 구멍 안: 어두운 그라데이션
+  const gr = ctx.createRadialGradient(h.x, h.y + r*0.2, r*0.1, h.x, h.y, r);
+  gr.addColorStop(0, '#060505'); gr.addColorStop(0.75, '#16120F'); gr.addColorStop(1, '#2A221C');
+  ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(h.x, h.y, r, 0, 7); ctx.fill();
+}
+function drawHoleRim(h, t){
+  const r = h.r, me = h.id === meId;
+  const blink = h.shield > 0 && Math.floor(t*10) % 2;
+  ctx.lineWidth = Math.max(3, r*0.12); ctx.strokeStyle = blink ? '#FFF8EC' : COL[h.k];
+  ctx.beginPath(); ctx.arc(h.x, h.y, r, 0, 7); ctx.stroke();
+  ctx.lineWidth = Math.max(1.5, r*0.04); ctx.strokeStyle = EDGE[h.k]; ctx.beginPath(); ctx.arc(h.x, h.y, r + Math.max(3, r*0.12)/2, 0, 7); ctx.stroke();
+  // 이름표
+  const fs = Math.max(13, 14/cam.z);
+  ctx.font = `700 ${fs}px "Gowun Dodum",sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const label = me ? '나 · ' + NAME[h.k] : NAME[h.k], y = h.y - r - fs*0.9;
+  ctx.lineWidth = fs*0.28; ctx.strokeStyle = '#2B2118'; ctx.strokeText(label, h.x, y); ctx.fillStyle = me ? '#FFE08A' : '#FFF8EC'; ctx.fillText(label, h.x, y);
+  // 나보다 큰 구멍은 위험 표시, 작은 구멍은 먹이 표시
+  if(!me){ const m = g.holes[meId];
+    if(!m.dead && h.r > m.r*g.P.holeK){ ctx.fillStyle = '#FF5A4E'; ctx.font = `400 ${fs}px "Black Han Sans",sans-serif`; ctx.fillText('!', h.x + ctx.measureText(label).width/2 + fs*0.5, y); }
+    else if(!m.dead && m.r > h.r*g.P.holeK && h.shield <= 0){ ctx.fillStyle = '#9BE07F'; ctx.beginPath(); ctx.arc(h.x - ctx.measureText(label).width/2 - fs*0.6, y, fs*0.25, 0, 7); ctx.fill(); } }
+}
+
+function frame(now){
+  const dt = Math.min(0.05, (now - last)/1000); last = now; blipBudget = 0;
+  if(!g){ requestAnimationFrame(frame); drawIdle(now/1000); return; }
+  if(mode === 'PLAY'){
+    if(readyT > 0) readyT -= dt;
+    const [ax, ay] = input(); g.setInput(meId, ax, ay);
+    g.update(dt); handleEvents();
+    if(g.over) finish();
+  }
+  const me = g.holes[meId], t = g.t;
+  // 카메라: 나를 따라가고, 커질수록 멀리
+  const k = Math.min(1, dt*6);
+  if(!me.dead){ cam.x += (me.x - cam.x)*k; cam.y += (me.y - cam.y)*k; }
+  cam.z += (zoomFor(me.r) - cam.z)*Math.min(1, dt*2.5);
+  shake = Math.max(0, shake - dt);
+  const sx = shake ? (Math.random() - 0.5)*shake*16 : 0, sy = shake ? (Math.random() - 0.5)*shake*16 : 0;
+
+  ctx.fillStyle = '#2F4F2A'; ctx.fillRect(0, 0, W, H);
+  // 잔디밭 밖이 많이 보이지 않게 카메라 범위 제한 (울타리 40만큼은 보이게)
+  const hw = W/2/cam.z, ht = H*0.52/cam.z, hb = H*0.48/cam.z, M = 40;
+  const cx = g.W + 2*M > 2*hw ? Math.max(hw - M, Math.min(g.W + M - hw, cam.x)) : g.W/2;
+  const cy = g.H + 2*M > ht + hb ? Math.max(ht - M, Math.min(g.H + M - hb, cam.y)) : g.H/2;
+  ctx.save(); ctx.translate(W/2 + sx, H*0.52 + sy); ctx.scale(cam.z, cam.z); ctx.translate(-cx, -cy);
+  drawGround();
+  const vx0 = cx - hw - 100, vx1 = cx + hw + 100, vy0 = cy - ht - 100, vy1 = cy + hb + 100;
+  const vis = o => o.x > vx0 - o.r*2 && o.x < vx1 + o.r*2 && o.y > vy0 - o.r*2 && o.y < vy1 + o.r*2;
+  // 구멍 (작은 것부터)
+  const hs = g.holes.filter(h => !h.dead).sort((a, b) => a.r - b.r);
+  for(const h of hs) if(vis(h)) drawHole(h, t);
+  // 떨어지는 물건: 자기 구멍 안으로 잘라서
+  for(const o of g.objs){ if(!o.fall || !vis(o)) continue; const h = g.holes[o.by];
+    ctx.save(); ctx.beginPath(); ctx.arc(h.x, h.y, h.r, 0, 7); ctx.clip(); drawObj(o, Math.min(1, o.fall)); ctx.restore(); }
+  for(const h of hs) if(vis(h)) drawHoleRim(h, t);
+  // 땅 위 물건 (작은 것부터 그려서 큰 게 위)
+  const ground = g.objs.filter(o => !o.fall && vis(o)).sort((a, b) => a.r - b.r);
+  for(const o of ground){
+    // 구멍 가장자리에 걸린 큰 물건은 흔들림
+    let wob = 0; for(const h of hs){ const d = Math.hypot(o.x - h.x, o.y - h.y); if(d < h.r + o.r*0.5 && o.r > h.r*g.P.eatK){ wob = Math.sin(t*30 + o.id)*0.06; break; } }
+    if(wob){ o.rot += wob; drawObj(o, 0); o.rot -= wob; } else drawObj(o, 0);
+  }
+  // 월드 연출
+  for(const f of fx){ f.t += dt;
+    if(f.k === 'pts'){ const a = 1 - f.t/0.9; if(a <= 0) continue; const fs = (f.big ? 22 : 15)/cam.z;
+      ctx.globalAlpha = a; ctx.font = `400 ${fs}px "Black Han Sans",sans-serif`; ctx.textAlign = 'center'; ctx.lineWidth = fs*0.22; ctx.strokeStyle = '#2B2118';
+      const y = f.y - f.t*40/cam.z; ctx.strokeText(f.s, f.x, y); ctx.fillStyle = f.big ? '#FFD15C' : '#FFF8EC'; ctx.fillText(f.s, f.x, y); ctx.globalAlpha = 1; }
+    else if(f.k === 'ring'){ const a = 1 - f.t/0.6; if(a <= 0) continue; ctx.globalAlpha = a; ctx.strokeStyle = f.c; ctx.lineWidth = 6/cam.z; ctx.beginPath(); ctx.arc(f.x, f.y, 20/cam.z + f.t*160/cam.z, 0, 7); ctx.stroke(); ctx.globalAlpha = 1; }
+  }
+  ctx.restore();
+
+  // 화면 연출 (콤보, 배너, 새로 삼킬 수 있는 물건)
+  for(const f of fx){
+    if(f.k === 'combo'){ const a = 1 - f.t/1; if(a <= 0) continue; const s = 1 + Math.max(0, 0.3 - f.t)*1.5;
+      ctx.save(); ctx.globalAlpha = a; ctx.translate(W/2, H*0.36); ctx.scale(s, s); ctx.rotate(-0.06);
+      ctx.font = '400 34px "Black Han Sans",sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 7; ctx.strokeStyle = '#2B2118'; ctx.strokeText(f.n + '연속 쏙!', 0, 0); ctx.fillStyle = '#FFD15C'; ctx.fillText(f.n + '연속 쏙!', 0, 0); ctx.restore(); }
+    else if(f.k === 'banner'){ const a = Math.min(1, (1.8 - f.t)*3); if(a <= 0) continue;
+      ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.font = '400 26px "Black Han Sans",sans-serif'; ctx.lineWidth = 6; ctx.strokeStyle = '#2B2118';
+      ctx.strokeText(f.s, W/2, H*0.42); ctx.fillStyle = '#FF7A6B'; ctx.fillText(f.s, W/2, H*0.42);
+      ctx.font = '700 15px "Gowun Dodum",sans-serif'; ctx.lineWidth = 4; ctx.strokeText(f.sub, W/2, H*0.42 + 26); ctx.fillStyle = '#FFF8EC'; ctx.fillText(f.sub, W/2, H*0.42 + 26); ctx.globalAlpha = 1; }
+    else if(f.k === 'unlock'){ const a = Math.min(1, (1.6 - f.t)*3); if(a <= 0) continue; const s = 1 + Math.max(0, 0.25 - f.t)*2;
+      ctx.save(); ctx.globalAlpha = a; ctx.translate(W/2, Math.max(150, H*0.2)); ctx.scale(s, s); ctx.textAlign = 'center';
+      ctx.font = '400 30px "Black Han Sans",sans-serif'; ctx.lineWidth = 7; ctx.strokeStyle = '#2B2118'; ctx.strokeText('커졌다!', 0, 0); ctx.fillStyle = '#9BE07F'; ctx.fillText('커졌다!', 0, 0);
+      ctx.font = '700 16px "Gowun Dodum",sans-serif'; ctx.lineWidth = 4; const s2 = '이제 ' + f.n + '도 쏙'; ctx.strokeText(s2, 0, 26); ctx.fillStyle = '#FFF8EC'; ctx.fillText(s2, 0, 26); ctx.restore(); }
+  }
+  fx = fx.filter(f => f.t < (f.k === 'banner' ? 1.8 : f.k === 'unlock' ? 1.6 : 1));
+  // 조이스틱 받침
+  if(joy.on && mode === 'PLAY'){ ctx.globalAlpha = 0.35; ctx.fillStyle = '#FFF8EC'; ctx.beginPath(); ctx.arc(joy.x0, joy.y0, 44, 0, 7); ctx.fill();
+    ctx.globalAlpha = 0.8; ctx.beginPath(); ctx.arc(joy.x, joy.y, 18, 0, 7); ctx.fill(); ctx.globalAlpha = 1; }
+  if(mode === 'PLAY' && readyT > 0 && g.t < 1.5){ ctx.globalAlpha = Math.min(1, readyT*2); ctx.textAlign = 'center'; ctx.font = '700 17px "Gowun Dodum",sans-serif'; ctx.lineWidth = 4; ctx.strokeStyle = '#2B2118';
+    ctx.strokeText('화면을 밀어서 움직여요', W/2, H*0.72); ctx.fillStyle = '#FFF8EC'; ctx.fillText('화면을 밀어서 움직여요', W/2, H*0.72); ctx.globalAlpha = 1; }
+  hud();
+  requestAnimationFrame(frame);
+}
+
+function hud(){
+  if(mode !== 'PLAY') return;
+  const me = g.holes[meId], left = Math.max(0, g.P.time - g.t);
+  $('time').textContent = Math.ceil(left); $('time').classList.toggle('hurry', left <= 10);
+  $('bar').firstElementChild.style.width = (left/g.P.time*100) + '%';
+  const rk = g.ranking();
+  let rows = rk.slice(0, 3); if(!rows.includes(me)) rows.push(me);
+  $('rank').innerHTML = rows.map(h => `<div class="${h.id === meId ? 'me' : ''}"><span>${rk.indexOf(h) + 1}</span><span class="dot" style="background:${COL[h.k]}"></span>${NAME[h.k]}<span class="s">${h.score}</span></div>`).join('');
+  if(me.score !== lastScore){ $('score').textContent = me.score; $('score').classList.add('pop'); setTimeout(() => $('score').classList.remove('pop'), 80); lastScore = me.score; }
+  const nu = g.nextUnlock(meId);
+  if(nu){ $('nextTxt').textContent = '다음: ' + T[nu.t].n; $('next').querySelector('i').style.width = (nu.p*100) + '%';
+    if(lastUnlock >= 0 && nu.t > lastUnlock){ addFx({ k: 'unlock', n: T[nu.t - 1].n }); blip(660, 0.12, 'triangle', 0.08); setTimeout(() => blip(880, 0.2, 'triangle', 0.08), 90); buzz(30); }
+    lastUnlock = nu.t; }
+  else { $('nextTxt').textContent = '무대까지 삼킬 수 있어요!'; $('next').querySelector('i').style.width = '100%';
+    if(lastUnlock !== 99){ if(lastUnlock >= 0) addFx({ k: 'unlock', n: T[T.length - 1].n }); lastUnlock = 99; } }
+}
+
+// 타이틀 뒤 배경: 컴퓨터끼리 노는 판을 천천히
+function drawIdle(t){
+  if(!idle){ idle = C.Game(7, -1); }
+  idle.update(1/60); idle.events.length = 0; if(idle.over) idle = null;
+  if(!idle) return;
+  ctx.fillStyle = '#2F4F2A'; ctx.fillRect(0, 0, W, H);
+  const z = Math.min(W, H)/700;
+  ctx.save(); ctx.translate(W/2, H/2); ctx.scale(z, z); ctx.translate(-700, -700);
+  const gSave = g; g = idle;
+  drawGround(); for(const h of idle.holes) if(!h.dead) drawHole(h, t);
+  for(const o of idle.objs) if(!o.fall) drawObj(o, 0);
+  g = gSave; ctx.restore();
+}
+let idle = null;
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
