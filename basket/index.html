@@ -1221,7 +1221,7 @@ function hubReport(){
     const un=id=>{ if(!ach[id]){ ach[id]=Date.now(); toast('업적 달성!'); } };
     un('basket_first'); if(G.maxLv>=6)un('basket_apple'); if(G.maxLv>=9)un('basket_pumpkin'); if(G.maxLv>=MAXLV)un('basket_cake');
     if(G.maxChain>=5)un('basket_chain5'); if(G.score>=3000)un('basket_3000');
-    const pl=st.played; if(pl.leaf&&pl.run&&pl.match)un('all_three'); if(pl.leaf&&pl.run&&pl.match&&pl.defense)un('all_four');
+    const pl=st.played, pn=Object.values(pl).filter(Boolean).length; if(pn>=3)un('all_three'); if(pn>=4)un('all_four');
     if(Object.keys(st.chars).length>=6)un('all_chars'); if((st.coins||0)>=500)un('coins_500');
     localStorage.setItem('somsom_ach',JSON.stringify(ach));
     if(G.maxLv>=hubMissionGoal()){ const dk=String(dayKey()), ms=JSON.parse(localStorage.getItem('somsom_missions')||'{}');
