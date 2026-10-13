@@ -171,16 +171,18 @@
         const D = homeDist(p); let cx = p.x, cy = p.y, guard = 0, near = 1e9;
         for(const [dx,dy] of DIRS){ const nx = cx+dx, ny = cy+dy; if(inb(nx,ny) && D[idx(nx,ny)] >= 0) near = Math.min(near, D[idx(nx,ny)]); }
         if(near > 24) return false;
+        const path = [idx(cx,cy)];
         while(owner[idx(cx,cy)] !== p.id && guard++ < 60){
           let best = null, bv = 1e9;
           for(const [dx,dy] of DIRS){ const nx = cx+dx, ny = cy+dy; if(!inb(nx,ny)) continue; const v = D[idx(nx,ny)]; if(v >= 0 && v < bv){ bv = v; best = [nx,ny]; } }
-          if(!best) break; cx = best[0]; cy = best[1]; const c = idx(cx,cy);
+          if(!best) break; cx = best[0]; cy = best[1]; const c = idx(cx,cy); path.push(c);
           if(owner[c] !== p.id){ if(trail[c] >= 0 && trail[c] !== p.id){ const q = g.players[trail[c]]; if(!q.stun && !q.shell) trip(q, p); } trail[c] = p.id; p.trail.push(c); }
         }
+        p.yarn = path;
         capture(p);
       }
       p.cool = SKILL[k].cd; p.skills++;
-      g.events.push({ t:'skill', id:p.id, k, x:p.x, y:p.y });
+      g.events.push({ t:'skill', id:p.id, k, x:p.x, y:p.y, path: k === 'lachilchin' ? p.yarn : null });
       return true;
     };
 
