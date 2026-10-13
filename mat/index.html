@@ -41,6 +41,7 @@
   #pick img{height:62px;width:auto;}
   #pick .nm{font-size:13px;font-weight:800;color:#FFF7E8;}
   #pick .ds{font-size:10.5px;color:#BFB29A;line-height:1.3;text-align:center;}
+  #pick .rec{font-size:10.5px;font-weight:800;color:#F2C14B;}
   #titleFoot{display:flex;gap:6px;justify-content:center;}
   #titleFoot button{background:rgba(255,255,255,.1);border-radius:999px;padding:7px 16px;font-size:12.5px;font-weight:800;color:#EFE7D6;}
   #bestLine{text-align:center;font-size:12px;color:#BFB29A;}
@@ -149,7 +150,23 @@ const ok = i => i && i.complete && i.naturalWidth > 0;
 const cv = $('cv'), ctx = cv.getContext('2d');
 let W = 0, H = 0, DPR = 1, CS = 20;
 let g = null, meId = 0, rp = {}, fx = [], msg = null, last = performance.now(), mode = 'TITLE', camX = 0, camY = 0, shake = 0;
-let warned = false, lastSec = 99, endT = 0, tut = 0;
+let warned = false, lastSec = 99, endT = 0, tut = 0, readyT = 0, bub = {}, feed = [];
+// 주민 말풍선 — 설정에 맞는 짧은 말. 미개는 말이 없는 설정이라 기호로만
+const LINES = {
+  kkito:      { ko:'잡았다!',      hit:'으아아',     big:'여기 내 자리!' },
+  migae:      { ko:'…!',          hit:'…!!',       big:'…♪' },
+  lachilchin: { ko:'그래~',        hit:'아이구야',   big:'그래~ 넓구나', acorn:'도토리 하나 주웠네' },
+  ramda:      { ko:'내 거야!',     hit:'에이, 손해다!', big:'다 내 자리야!' },
+  boneul:     { ko:'어… 밟았네',   hit:'아야…',      big:'좋다…', rest:'조금만 쉬자…' },
+  bookgeo:    { ko:'허허, 실례',   hit:'허허…',      big:'천천히, 천천히' },
+};
+// 받침 따라 이/가
+const iga = n => { const c = n.charCodeAt(n.length-1); return (c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28) ? n+'이' : n+'가'; };
+function talk(id, key){ const k = OW[id], line = LINES[k] && LINES[k][key]; if(!line) return;
+  const b = bub[id]; if(b && b.cool > 0 && key !== 'hit') return;
+  bub[id] = { txt: line, t: 0, d: 1.8, cool: 3.5 }; }
+function news(txt){ feed.push({ txt, t: 0 }); if(feed.length > 3) feed.shift(); }
+const SAVE_BY = () => (SAVE.by = SAVE.by || {});
 const SAVE = load('somsom_mat', { best: 0, plays: 0, wins: 0 });
 { const k = localStorage.getItem('somsom_mat_pick'); if(k && OW.includes(k)) meId = OW.indexOf(k); }
 
@@ -197,6 +214,13 @@ function drawResident(p, x, y, t){
   if(p.stun){ for(let i=0;i<3;i++){ const a = t*5 + i*2.1; ctx.fillStyle = '#FFE08A'; ctx.font = Math.round(CS*0.5)+'px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('★', x + Math.cos(a)*CS*0.7, y - h*0.75 + Math.sin(a)*CS*0.25); } }
   else if(p.rest > 0){ ctx.font = '700 '+Math.round(CS*0.5)+'px sans-serif'; ctx.fillStyle = '#FFF8EC'; ctx.textAlign = 'center'; ctx.fillText('zZ', x + CS*0.7, y - CS*0.9); }
+  const b = bub[p.id];
+  if(b && b.t < b.d){ const a = Math.min(1, b.t*8, (b.d - b.t)*5), by = y - h - CS*0.35 - Math.min(1, b.t*8)*CS*0.15;
+    ctx.globalAlpha = a; ctx.font = '800 '+Math.round(CS*0.55)+'px "Gowun Dodum","Apple SD Gothic Neo",sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const tw = ctx.measureText(b.txt).width + CS*0.6, th = CS*0.85;
+    ctx.fillStyle = '#FFF8EC'; ctx.strokeStyle = EDGE[k]; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.roundRect(x - tw/2, by - th, tw, th, th/2); ctx.moveTo(x - CS*0.15, by - 0.5); ctx.lineTo(x, by + CS*0.22); ctx.lineTo(x + CS*0.15, by - 0.5); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#2B2118'; ctx.fillText(b.txt, x, by - th/2 + 1); ctx.textBaseline = 'alphabetic'; ctx.globalAlpha = 1; }
   if(isMe && !p.stun){
     const [dx,dy] = C.DIRS[p.dir], ax = x + dx*CS*1.05, ay = y + dy*CS*1.05 - (dy < 0 ? CS*1.1 : 0);
     ctx.fillStyle = 'rgba(255,248,236,.95)'; ctx.beginPath();
@@ -208,6 +232,12 @@ function frame(){
   const now = performance.now(), dt = Math.min(0.05, (now - last)/1000); last = now;
   if(g && (mode === 'PLAY' || mode === 'TITLE') && !document.hidden){ g.update(dt); if(mode === 'PLAY') handleEvents(); else g.events.length = 0; }
   if(mode === 'TITLE' && g && g.over) demo();
+  if(mode === 'READY'){ const before = Math.ceil(readyT); readyT -= dt; const after = Math.ceil(readyT);
+    if(after !== before && after > 0) beep(523, 0.1, 'triangle', 0.08);
+    if(readyT <= 0){ mode = 'PLAY'; beep(784, 0.18); buzz(30); say(tut ? '화면을 밀어서 돗자리 밖으로 나가 보세요' : '크게 둘러 와요!', 3); } }
+  for(const id in bub){ const b = bub[id]; b.t += dt; b.cool -= dt; }
+  for(let i=feed.length-1;i>=0;i--){ feed[i].t += dt; if(feed[i].t > 4.5) feed.splice(i,1); }
+  if(g && mode === 'PLAY') for(const p of g.players){ const r = p.rest > 0; if(r && !p._r) talk(p.id, 'rest'); p._r = r; }
   if(mode === 'PLAY'){
     const left = Math.ceil(g.o.time - g.t);
     if(left <= 5 && left !== lastSec && left > 0){ beep(880, 0.08, 'square', 0.05); }
@@ -265,7 +295,7 @@ function frame(){
     ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(30,36,20,.85)'; ctx.strokeText(f.txt, f.x, f.y - u*40); ctx.fillStyle = f.col; ctx.fillText(f.txt, f.x, f.y - u*40);
     ctx.globalAlpha = 1; if(u >= 1) fx.splice(i,1); }
   ctx.restore();
-  if(mode === 'PLAY' || mode === 'END') drawHud(me, dang, t, dt);
+  if(mode === 'PLAY' || mode === 'END' || mode === 'READY') drawHud(me, dang, t, dt);
   requestAnimationFrame(frame);
 }
 
@@ -297,6 +327,17 @@ function drawHud(me, dang, t, dt){
     ctx.globalAlpha = a; ctx.fillStyle = 'rgba(30,36,20,.9)'; const w = Math.min(W-24, 320); ctx.beginPath(); ctx.roundRect(W/2-w/2, top+132, w, 36, 18); ctx.fill();
     ctx.fillStyle = '#FFF8EC'; ctx.font = '800 14px sans-serif'; ctx.textBaseline = 'middle'; ctx.fillText(msg.txt, W/2, top+150); ctx.textBaseline = 'alphabetic'; ctx.globalAlpha = 1;
     if(msg.t > (msg.d||2.4)) msg = null; }
+  // 다른 주민 소식 (왼쪽 위, 홈 버튼 아래)
+  ctx.textAlign = 'left'; ctx.font = '700 12px "Apple SD Gothic Neo","Noto Sans KR",sans-serif';
+  feed.forEach((f,i) => { const a = Math.min(1, f.t*6, (4.5 - f.t)*2), y = top + 48 + i*22, w = ctx.measureText(f.txt).width + 18;
+    ctx.globalAlpha = a; ctx.fillStyle = 'rgba(30,36,20,.72)'; ctx.beginPath(); ctx.roundRect(8, y, w, 19, 9.5); ctx.fill();
+    ctx.fillStyle = '#FFF8EC'; ctx.fillText(f.txt, 17, y + 14); ctx.globalAlpha = 1; });
+  ctx.textAlign = 'center';
+  if(mode === 'READY'){ const n = Math.ceil(readyT), u = 1 - (readyT - Math.floor(readyT));
+    ctx.fillStyle = 'rgba(30,20,10,.25)'; ctx.fillRect(0,0,W,H);
+    ctx.save(); ctx.translate(W/2, H*0.36); const sc = 1.4 - 0.4*Math.min(1, u*3); ctx.scale(sc, sc);
+    ctx.font = '400 64px "Black Han Sans",sans-serif'; ctx.lineWidth = 8; ctx.strokeStyle = '#7C2E22'; ctx.strokeText(String(n), 0, 0); ctx.fillStyle = '#FFE08A'; ctx.fillText(String(n), 0, 0); ctx.restore();
+    ctx.fillStyle = '#FFF8EC'; ctx.font = '800 15px sans-serif'; ctx.fillText('가고 싶은 쪽으로 화면을 밀어 두세요', W/2, H*0.36 + 44); }
   if(mode === 'END'){ endT += dt; const a = Math.min(1, endT*3);
     ctx.fillStyle = 'rgba(30,20,10,' + (0.35*a) + ')'; ctx.fillRect(0,0,W,H);
     ctx.save(); ctx.translate(W/2, H*0.42); ctx.scale(0.6 + 0.4*a, 0.6 + 0.4*a); ctx.globalAlpha = a;
@@ -308,6 +349,9 @@ function say(txt, d){ msg = { txt, t: 0, d: d || 2.4 }; }
 function handleEvents(){
   const me = g.players[meId];
   for(const e of g.events){
+    if(e.t === 'capture' && e.id !== meId && e.n >= 40){ talk(e.id, 'big'); if(e.n >= 90) news(iga(NAME[OW[e.id]]) + ' 크게 둘렀어요 +' + e.n + '칸'); }
+    if(e.t === 'capture' && e.id === meId && e.n >= 60) talk(e.id, 'big');
+    if(e.t === 'acorn') talk(e.id, 'acorn');
     if(e.t === 'capture' && e.id === meId){ const r = rp[meId], x = (r.x+0.5)*CS, y = (r.y+0.5)*CS;
       fx.push({ x, y: y - CS*1.6, txt:'+'+e.n+'칸', sz: e.n >= 60 ? 28 : 20, col:'#FFE08A', t:0 });
       beep(e.n >= 60 ? 784 : 587, 0.12); if(e.n >= 60){ setTimeout(() => beep(988, 0.16), 90); buzz(30); }
@@ -316,7 +360,9 @@ function handleEvents(){
     if(e.t === 'trip'){
       const x = (e.x+0.5)*CS, y = (e.y+0.5)*CS;
       for(let i=0;i<10;i++) fx.push({ kind:'bit', x, y, vx:(Math.random()-.5)*260, vy:-80-Math.random()*200, t:0, col: COL[OW[e.id]] });
-      if(e.id === meId){ say(e.by >= 0 ? NAME[OW[e.by]] + '이(가) 내 끈을 밟았어요. 꽈당!' : '내 끈에 걸려 꽈당!'); beep(196, 0.32, 'sawtooth', 0.08); shake = 10; buzz([60,40,60]); warned = false; }
+      talk(e.id, 'hit'); if(e.by >= 0) talk(e.by, 'ko');
+      if(e.id !== meId && e.by !== meId) news(e.by >= 0 ? iga(NAME[OW[e.by]]) + ' ' + NAME[OW[e.id]] + ' 끈을 밟았어요' : iga(NAME[OW[e.id]]) + ' 자기 끈에 걸렸어요');
+      if(e.id === meId){ say(e.by >= 0 ? iga(NAME[OW[e.by]]) + ' 내 끈을 밟았어요. 꽈당!' : '내 끈에 걸려 꽈당!'); beep(196, 0.32, 'sawtooth', 0.08); shake = 10; buzz([60,40,60]); warned = false; }
       else if(e.by === meId){ fx.push({ x, y: y - CS*1.8, txt: NAME[OW[e.id]] + ' 꽈당!', sz: 22, col:'#FFF8EC', t:0 }); beep(660, 0.1); setTimeout(() => beep(880, 0.12), 80); buzz(25); }
     }
     if(e.t === 'acorn' && e.id === meId){ beep(1046, 0.08, 'sine'); fx.push({ x:(e.x+0.5)*CS, y:(e.y+0.5)*CS - CS, txt:'도토리 +1', sz:16, col:'#FFE08A', t:0 }); }
@@ -331,13 +377,14 @@ function newGame(){
   g = C.Game((Math.random()*2**32)>>>0, meId); rp = {}; fx = []; msg = null; warned = false; lastSec = 99; shake = 0;
   const me = g.players[meId]; camX = (me.x+0.5)*CS - W/2; camY = (me.y+0.5)*CS - H*0.5;
   $('sTitle').classList.add('hidden'); $('sResult').classList.add('hidden');
-  mode = 'PLAY'; last = performance.now();
+  const cx = g.N/2 - me.x, cy = g.N/2 - me.y; me.dir = Math.abs(cx) > Math.abs(cy) ? (cx > 0 ? 0 : 2) : (cy > 0 ? 1 : 3); me.want = me.dir;
+  bub = {}; feed = []; readyT = 3; mode = 'READY'; last = performance.now(); beep(523, 0.1, 'triangle', 0.08);
   tut = SAVE.plays < 2 ? 1 : 0;
-  say(tut ? '화면을 밀어서 돗자리 밖으로 나가 보세요' : '밀어서 출발! 크게 둘러 와요', 3);
 }
 function finish(){
   const R = g.ranking(), me = g.players[meId], place = R.indexOf(me) + 1, pct = g.pct(me), prev = SAVE.best, isBest = pct > prev;
-  SAVE.plays++; if(place === 1) SAVE.wins = (SAVE.wins||0) + 1; if(isBest) SAVE.best = pct; save('somsom_mat', SAVE);
+  SAVE.plays++; if(place === 1) SAVE.wins = (SAVE.wins||0) + 1; if(isBest) SAVE.best = pct;
+  { const by = SAVE_BY(), k = OW[meId]; if(pct > (by[k]||0)) by[k] = pct; } save('somsom_mat', SAVE);
   hubReport(place, pct);
   setTimeout(() => {
     $('resHero').src = '../assets/mat/' + (place <= 2 ? 'win_' : 'hit_') + OW[me.id] + '.png';
@@ -432,23 +479,24 @@ async function openBoard(range){
   }catch(e){ list.innerHTML = '<div class="rk">순위를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</div>'; }
 }
 
-// ── 입력: 화면을 민 방향으로 ──
+// ── 입력: 화면을 민 방향으로 (준비 중에 밀면 출발 방향이 바로 바뀜) ──
+function steer(d){ g.setDir(d); if(mode === 'READY'){ const me = g.players[meId]; me.dir = d; } }
 let anchor = null;
 cv.addEventListener('pointerdown', e => { anchor = { x:e.clientX, y:e.clientY }; try{ cv.setPointerCapture(e.pointerId); }catch(_){} });
 cv.addEventListener('pointermove', e => {
-  if(!anchor || !g || mode !== 'PLAY') return;
+  if(!anchor || !g || (mode !== 'PLAY' && mode !== 'READY')) return;
   const dx = e.clientX - anchor.x, dy = e.clientY - anchor.y;
   if(Math.max(Math.abs(dx), Math.abs(dy)) < 14) return;
-  g.setDir(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 0 : 2) : (dy > 0 ? 1 : 3));
+  steer(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 0 : 2) : (dy > 0 ? 1 : 3));
   anchor = { x:e.clientX, y:e.clientY };
 });
 addEventListener('pointerup', () => { anchor = null; });
-addEventListener('keydown', e => { if(!g || mode !== 'PLAY') return;
-  const m = { ArrowRight:0, d:0, ArrowDown:1, s:1, ArrowLeft:2, a:2, ArrowUp:3, w:3 }[e.key]; if(m != null){ g.setDir(m); e.preventDefault(); } });
+addEventListener('keydown', e => { if(!g || (mode !== 'PLAY' && mode !== 'READY')) return;
+  const m = { ArrowRight:0, d:0, ArrowDown:1, s:1, ArrowLeft:2, a:2, ArrowUp:3, w:3 }[e.key]; if(m != null){ steer(m); e.preventDefault(); } });
 
 // ── 타이틀 ──
 function renderTitle(){
-  $('pick').innerHTML = OW.map((k,i) => '<button data-i="'+i+'" class="'+(i===meId?'on':'')+'"><img src="../assets/mat/ch_'+k+'.png" alt=""><span class="nm">'+NAME[k]+'</span><span class="ds">'+DESC[k]+'</span></button>').join('');
+  $('pick').innerHTML = OW.map((k,i) => '<button data-i="'+i+'" class="'+(i===meId?'on':'')+'"><img src="../assets/mat/ch_'+k+'.png" alt=""><span class="nm">'+NAME[k]+'</span><span class="ds">'+DESC[k]+'</span>'+(SAVE_BY()[k] ? '<span class="rec">최고 '+SAVE_BY()[k].toFixed(1)+'%</span>' : '')+'</button>').join('');
   $('pick').querySelectorAll('button').forEach(b => b.onclick = () => { meId = +b.dataset.i; try{ localStorage.setItem('somsom_mat_pick', OW[meId]); }catch(e){} renderTitle(); });
   $('bestLine').innerHTML = SAVE.plays ? '최고 <b>' + SAVE.best.toFixed(1) + '%</b> · ' + SAVE.plays + '판 중 1등 ' + (SAVE.wins||0) + '번' : '첫 판은 놀이 방법을 화면에서 알려 드려요';
 }
