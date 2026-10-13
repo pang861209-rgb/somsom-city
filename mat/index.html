@@ -43,6 +43,20 @@
   #pick .ds{font-size:10.5px;color:#BFB29A;line-height:1.3;text-align:center;min-height:2.6em;}
   #pick .sw{width:28px;height:8px;border-radius:4px;margin:1px 0 2px;background:linear-gradient(90deg,transparent 35%,var(--c) 35% 65%,transparent 65%) 0 0/7px 100%,linear-gradient(0deg,var(--f) 35%,var(--c) 35% 65%,var(--f) 65%) 0 0/100% 8px;}
   #pick .rec{font-size:10.5px;font-weight:800;color:#F2C14B;}
+  #pick .sk{font-size:10.5px;font-weight:800;color:#FFE08A;line-height:1.3;}
+  /* 기술 버튼 — 오른쪽 아래. 화면 밀기와 겹치지 않게 버튼 위에서는 방향을 안 받음 */
+  #skillBtn{position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:8;width:76px;height:76px;border-radius:50%;
+    background:#FFF8EC;border:3px solid #2B2118;box-shadow:0 5px 0 #2B2118;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    overflow:hidden;touch-action:none;padding:0;}
+  #skillBtn.hidden{display:none;}
+  #skillBtn img{height:40px;width:auto;margin-top:2px;pointer-events:none;}
+  #skillBtn b{font-family:'Black Han Sans',sans-serif;font-weight:400;font-size:14px;color:#2B2118;line-height:1;margin-top:1px;pointer-events:none;}
+  #skillBtn i{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(rgba(43,33,24,.62) var(--cd,0deg), transparent 0);}
+  #skillBtn span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Black Han Sans',sans-serif;font-size:24px;color:#FFF8EC;pointer-events:none;text-shadow:0 2px 0 #2B2118;}
+  #skillBtn.ready{animation:skr 1.2s ease-in-out infinite;}
+  #skillBtn:active{transform:translateY(3px);box-shadow:0 2px 0 #2B2118;}
+  @keyframes skr{0%,100%{box-shadow:0 5px 0 #2B2118,0 0 0 0 rgba(242,193,75,.0);}50%{box-shadow:0 5px 0 #2B2118,0 0 0 8px rgba(242,193,75,.55);}}
+  @media (prefers-reduced-motion: reduce){ #skillBtn.ready{animation:none;} }
   #titleFoot{display:flex;gap:6px;justify-content:center;}
   #titleFoot button{background:rgba(255,255,255,.1);border-radius:999px;padding:7px 16px;font-size:12.5px;font-weight:800;color:#EFE7D6;}
   #bestLine{text-align:center;font-size:12px;color:#BFB29A;}
@@ -99,6 +113,8 @@
   </div>
 </div>
 
+<button id="skillBtn" class="hidden" aria-label="기술 쓰기"><img alt=""><b></b><i></i><span></span></button>
+
 <div class="wrap hidden" id="sResult">
   <div class="card">
     <img id="resHero" alt="">
@@ -119,7 +135,8 @@
     3. 돗자리로 돌아오면 끈으로 두른 안쪽이 전부 내 돗자리! 남의 돗자리도 둘러서 가져올 수 있어요.<br>
     4. 밖에 있을 때 누가 내 끈을 밟으면 <b style="color:#B06A1C">꽈당</b>. 끈을 잃고 잠깐 넘어졌다가 내 돗자리에서 다시 일어나요. 내 끈을 내가 밟아도 꽈당.<br>
     5. 다른 주민의 끈을 밟으면 그 주민이 꽈당!<br>
-    6. 2분 뒤 공연이 시작되면 가장 넓은 사람이 1등. 잔디밭의 도토리는 마을 창고로 가요.
+    6. 오른쪽 아래 버튼은 주민마다 다른 <b style="color:#B06A1C">기술</b>. 쓰고 나면 잠시 기다려야 다시 쓸 수 있어요.<br>
+    7. 2분 뒤 공연이 시작되면 가장 넓은 사람이 1등. 잔디밭의 도토리는 마을 창고로 가요.
   </div>
   <button class="big" id="howClose">알겠어요</button>
 </div></div>
@@ -265,6 +282,13 @@ function drawResident(p, x, y, t){
   if(isMe){ const down = p.stun || p.rest > 0, s = down ? 1 : 1 + 0.06*(1 + Math.sin(t*Math.PI*2/1.2));
     ctx.beginPath(); if(down) ctx.ellipse(x + CS*0.45, fy, CS*0.8, CS*0.26, 0, 0, 7); else ctx.ellipse(x, fy, CS*0.62*s, CS*0.24*s, 0, 0, 7); ctx.lineWidth = 4; ctx.strokeStyle = '#2B2118'; ctx.stroke(); ctx.lineWidth = 3; ctx.strokeStyle = '#FFF8EC'; ctx.stroke(); }
   const im = p.stun ? IMG['hit_'+k] : IMG['ch_'+k], st = sticker(im);
+  // 기술 효과 (아래쪽)
+  if(p.boost > 0){ const [dx,dy] = C.DIRS[p.dir]; ctx.strokeStyle = 'rgba(255,248,236,.85)'; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.beginPath();
+    for(let i=-1;i<=1;i++){ const ox = -dy*i*CS*0.35, oy = dx*i*CS*0.35 - CS*0.6, l = CS*(0.7 + 0.3*Math.sin(t*30 + i)); ctx.moveTo(x - dx*CS*0.6 + ox, y - dy*CS*0.6 + oy); ctx.lineTo(x - dx*(CS*0.6 + l) + ox, y - dy*(CS*0.6 + l) + oy); } ctx.stroke(); }
+  if(p.under > 0){ // 개미굴: 흙 둔덕만 보이고 몸은 흐리게
+    ctx.fillStyle = '#7A5A3A'; ctx.beginPath(); ctx.ellipse(x, fy, CS*0.6, CS*0.28, 0, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = '#5B4128'; for(let i=0;i<3;i++){ ctx.beginPath(); ctx.arc(x + (i-1)*CS*0.3, fy - CS*0.08 - Math.abs(Math.sin(t*12 + i))*CS*0.15, CS*0.07, 0, 7); ctx.fill(); }
+    ctx.globalAlpha = 0.28; }
   ctx.save(); ctx.translate(x, fy);
   if(p.stun) ctx.rotate(Math.sin(t*18)*0.18 + 0.9);
   else if(p.rest > 0) ctx.rotate(-Math.PI/2.3);
@@ -272,6 +296,12 @@ function drawResident(p, x, y, t){
   if(st){ const sc = h / im.naturalHeight, w = st.c.width*sc, hh = st.c.height*sc; ctx.drawImage(st.c, -w/2, -h - st.pad*sc, w, hh); }
   else { ctx.beginPath(); ctx.arc(0, -h/2, CS*0.5, 0, 7); ctx.fillStyle = COL[k]; ctx.fill(); }
   ctx.restore();
+  ctx.globalAlpha = 1;
+  if(p.shell > 0){ // 등딱지: 몸을 감싸는 청록 방패
+    ctx.strokeStyle = 'rgba(62,156,154,' + (0.55 + 0.25*Math.sin(t*8)) + ')'; ctx.lineWidth = 3; ctx.fillStyle = 'rgba(91,171,169,.18)';
+    ctx.beginPath(); ctx.ellipse(x, y - h*0.38, CS*0.95, h*0.62, 0, 0, 7); ctx.fill(); ctx.stroke(); }
+  if(p.slow > 0){ ctx.font = '400 '+Math.round(CS*0.55)+'px "Black Han Sans",sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = '#2B2118';
+    ctx.strokeText('?!', x + CS*0.75, y - h*0.85); ctx.fillStyle = '#9FD3FF'; ctx.fillText('?!', x + CS*0.75, y - h*0.85); }
   if(p.stun){ for(let i=0;i<3;i++){ const a = t*5 + i*2.1; ctx.font = Math.round(CS*0.4)+'px sans-serif'; ctx.textAlign = 'center';
       const sx = x + Math.cos(a)*CS*0.75, sy = y - h*0.75 + Math.sin(a)*CS*0.25;
       ctx.lineWidth = 1.5; ctx.strokeStyle = '#7C2E22'; ctx.strokeText('★', sx, sy); ctx.fillStyle = '#FFE08A'; ctx.fillText('★', sx, sy); } }
@@ -358,6 +388,7 @@ function frame(){
     if(!p.stun){ const r = rp[p.id]; ctx.lineTo((r.x+0.5)*CS, (r.y+0.5)*CS); }
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     if(p.id === meId && dang <= 4){ ctx.strokeStyle = 'rgba(230,60,40,' + (0.35 + 0.3*Math.sin(t*16)) + ')'; ctx.lineWidth = CS*0.55; ctx.stroke(); }
+    if(p.shell > 0){ ctx.strokeStyle = 'rgba(91,171,169,.7)'; ctx.lineWidth = CS*0.5; ctx.stroke(); }
     ctx.strokeStyle = EDGE[k]; ctx.lineWidth = CS*0.30; ctx.stroke();
     ctx.strokeStyle = COL[k]; ctx.lineWidth = CS*0.20; ctx.stroke();
     ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = CS*0.07; ctx.setLineDash([CS*0.10, CS*0.16]); ctx.lineDashOffset = -t*CS*0.6; ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0;
@@ -375,6 +406,8 @@ function frame(){
       ctx.strokeStyle = f.col; ctx.lineWidth = CS*0.12; ctx.lineCap = 'round'; ctx.beginPath();
       ctx.moveTo(f.x - Math.cos(f.a)*CS*0.175, f.y - Math.sin(f.a)*CS*0.175); ctx.lineTo(f.x + Math.cos(f.a)*CS*0.175, f.y + Math.sin(f.a)*CS*0.175); ctx.stroke();
       ctx.globalAlpha = 1; if(f.t > 0.9) fx.splice(i,1); continue; }
+    if(f.kind === 'wave'){ const u = f.t/0.6; ctx.globalAlpha = Math.max(0, 1-u); ctx.strokeStyle = '#9FD3FF'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(f.x, f.y, CS*9*Math.min(1,u), 0, 7); ctx.stroke(); ctx.globalAlpha = 1; if(u >= 1) fx.splice(i,1); continue; }
     if(f.kind === 'ring'){ const u = f.t/0.35; ctx.globalAlpha = Math.max(0, 1-u); ctx.strokeStyle = 'rgba(255,248,236,.8)'; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(f.x, f.y, CS*(0.3 + 1.1*Math.min(1,u)), 0, 7); ctx.stroke(); ctx.globalAlpha = 1; if(u >= 1) fx.splice(i,1); continue; }
     if(f.kind === 'pop'){ const s = f.t < 0.15 ? 0.4 + (f.t/0.15)*0.75 : f.t < 0.25 ? 1.15 - (f.t-0.15)/0.1*0.15 : 1, a = f.t < 0.95 ? 1 : Math.max(0, 1 - (f.t-0.95)/0.3);
@@ -388,6 +421,7 @@ function frame(){
   if(vig > 0){ vig -= dt; const a = Math.max(0, vig/0.4); const gr = ctx.createRadialGradient(W/2, H/2, Math.min(W,H)*0.3, W/2, H/2, Math.max(W,H)*0.75);
     gr.addColorStop(0, 'rgba(200,50,35,0)'); gr.addColorStop(1, 'rgba(200,50,35,'+(0.25*a)+')'); ctx.fillStyle = gr; ctx.fillRect(0,0,W,H); }
   if(mode === 'PLAY' || mode === 'END' || mode === 'READY') drawHud(me, dang, t, dt);
+  skillUi(me);
   requestAnimationFrame(frame);
 }
 let vig = 0, leaves = [], rankY = {}, pctPop = 0, lastPct = 0, upT = -9, msgY = null, wasStun = false;
@@ -473,6 +507,22 @@ function drawHud(me, dang, t, dt){
     ctx.restore(); ctx.globalAlpha = 1; }
 }
 
+const SB = $('skillBtn');
+function skillUi(me){
+  const show = mode === 'PLAY' || mode === 'READY';
+  SB.classList.toggle('hidden', !show); if(!show) return;
+  const k = OW[meId], sk = C.SKILL[k], cd = Math.max(0, me.cool), ready = cd <= 0 && !me.stun && mode === 'PLAY';
+  if(SB.dataset.k !== k){ SB.dataset.k = k; SB.querySelector('img').src = '../assets/mat/ch_'+k+'.png'; SB.querySelector('b').textContent = sk.n; }
+  SB.style.setProperty('--cd', (ready ? 0 : 360*Math.min(1, cd/sk.cd || 1)) + 'deg');
+  SB.querySelector('span').textContent = ready ? '' : (cd > 0 ? Math.ceil(cd) : '');
+  SB.classList.toggle('ready', ready);
+}
+SB.addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault();
+  if(mode !== 'PLAY' || !g) return; const me = g.players[meId];
+  if(me.cool > 0 || me.stun){ beep(220, 0.06, 'square', 0.04); return; }
+  if(!g.useSkill(meId)){ say(OW[meId] === 'lachilchin' ? '돗자리 밖에서 끈이 있을 때 쓸 수 있어요' : '지금은 쓸 수 없어요', 2); beep(220, 0.06, 'square', 0.04); return; }
+  if(tut >= 3 && !SAVE.skillTold){ SAVE.skillTold = 1; }
+});
 function say(txt, d){ msg = { txt, t: 0, d: d || 2.4 }; }
 function handleEvents(){
   const me = g.players[meId];
@@ -480,11 +530,17 @@ function handleEvents(){
     if(e.t === 'capture' && e.id !== meId && e.n >= 40){ talk(e.id, 'big'); if(e.n >= 90) news(iga(NAME[OW[e.id]]) + ' 크게 둘렀어요 +' + e.n + '칸'); }
     if(e.t === 'capture' && e.id === meId && e.n >= 60) talk(e.id, 'big');
     if(e.t === 'acorn') talk(e.id, 'acorn');
+    if(e.t === 'skill'){ const nm = C.SKILL[e.k].n; bub[e.id] = { txt: nm + '!', t: 0, d: 1.4, cool: 2 };
+      const r = rp[e.id], x = (r.x+0.5)*CS, y = (r.y+0.5)*CS;
+      fx.push({ kind:'ring', x, y, t:0 }); if(e.k === 'kkito'){ fx.push({ kind:'wave', x, y, t:0 }); }
+      if(e.id === meId){ beep(698, 0.1); setTimeout(() => beep(1046, 0.14), 70); buzz(25); }
+      else if(e.k === 'kkito' && Math.abs(g.players[meId].x - e.x) + Math.abs(g.players[meId].y - e.y) <= 9) say('끼토의 쫑긋! 깜짝 놀라 느려졌어요', 2); }
     if(e.t === 'capture' && e.id === meId){ const r = rp[meId], x = (r.x+0.5)*CS, y = (r.y+0.5)*CS;
       fx.push({ x, y: y - CS*1.6, txt:'+'+e.n+'칸', sz: e.n >= 60 ? 28 : 20, col:'#FFE08A', t:0 });
       beep(e.n >= 60 ? 784 : 587, 0.12); if(e.n >= 60){ setTimeout(() => beep(988, 0.16), 90); buzz(30); }
       warned = false;
-      if(tut === 2){ tut = 3; say('넓어졌어요! 크게 돌수록 많이 얻지만, 끈을 밟히면 꽈당', 4); } }
+      if(tut === 2){ tut = 3; say('넓어졌어요! 크게 돌수록 많이 얻지만, 끈을 밟히면 꽈당', 4);
+        setTimeout(() => { if(mode === 'PLAY') say('오른쪽 아래 버튼: ' + NAME[OW[meId]] + '의 기술 「' + C.SKILL[OW[meId]].n + '」', 4); }, 4200); } }
     if(e.t === 'trip'){
       const x = (e.x+0.5)*CS, y = (e.y+0.5)*CS;
       for(let i=0;i<8;i++) fx.push({ kind:'rope', x, y, vx:(Math.random()-.5)*260, vy:-80-Math.random()*200, a:Math.random()*6, va:(Math.random()-.5)*16, t:0, col: COL[OW[e.id]] });
@@ -627,7 +683,7 @@ addEventListener('keydown', e => { if(!g || (mode !== 'PLAY' && mode !== 'READY'
 
 // ── 타이틀 ──
 function renderTitle(){
-  $('pick').innerHTML = OW.map((k,i) => '<button data-i="'+i+'" class="'+(i===meId?'on':'')+'"><img src="../assets/mat/ch_'+k+'.png" alt=""><span class="nm">'+NAME[k]+'</span><span class="sw" style="--c:'+COL[k]+';--f:'+FILL[k]+'"></span><span class="ds">'+DESC[k]+'</span>'+(SAVE_BY()[k] ? '<span class="rec">최고 '+SAVE_BY()[k].toFixed(1)+'%</span>' : '')+'</button>').join('');
+  $('pick').innerHTML = OW.map((k,i) => '<button data-i="'+i+'" class="'+(i===meId?'on':'')+'"><img src="../assets/mat/ch_'+k+'.png" alt=""><span class="nm">'+NAME[k]+'</span><span class="sw" style="--c:'+COL[k]+';--f:'+FILL[k]+'"></span><span class="sk">기술 · '+C.SKILL[k].n+'</span><span class="ds">'+C.SKILL[k].d+'</span>'+(SAVE_BY()[k] ? '<span class="rec">최고 '+SAVE_BY()[k].toFixed(1)+'%</span>' : '')+'</button>').join('');
   $('pick').querySelectorAll('button').forEach(b => b.onclick = () => { meId = +b.dataset.i; try{ localStorage.setItem('somsom_mat_pick', OW[meId]); }catch(e){} renderTitle(); });
   $('bestLine').innerHTML = SAVE.plays ? '최고 <b>' + SAVE.best.toFixed(1) + '%</b> · ' + SAVE.plays + '판 중 1등 ' + (SAVE.wins||0) + '번' : '첫 판은 놀이 방법을 화면에서 알려 드려요';
 }
