@@ -295,7 +295,9 @@ function drawResident(p, x, y, t){
   let im, run = false;
   if(p.stun) im = IMG['hit_'+k];
   else if(p.rest > 0) im = IMG['ch_'+k];
+  else if(p.dir === 1 && !p.under) im = IMG['ch_'+k];                    // 아래(화면 쪽)로: 정면 그림 뒤뚱 걷기
   else { im = IMG['run_'+k+'_'+(Math.floor(an.ph) % 4)]; run = ok(im); if(!run) im = IMG['ch_'+k]; }
+  const waddle = !run && !p.stun && !(p.rest > 0) && p.dir === 1;
   const st = sticker(im);
   // 질주 속도선
   if(p.boost > 0){ const [dx,dy] = C.DIRS[p.dir]; ctx.strokeStyle = 'rgba(255,248,236,.85)'; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.beginPath();
@@ -308,9 +310,12 @@ function drawResident(p, x, y, t){
     ctx.beginPath(); ctx.rect(-CS*2, -h*2, CS*4, h*2 - CS*0.35); ctx.clip(); ctx.translate(0, h*0.5); }   // 그림을 반쯤 내리고 둔덕 윗선 위만 보이게
   if(p.stun) ctx.rotate(Math.sin(t*18)*0.18 + 0.9);
   else if(p.rest > 0) ctx.rotate(-Math.PI/2.3);
-  else if(run){ ctx.translate(0, -Math.abs(Math.sin(an.ph*Math.PI/2))*CS*0.08); ctx.scale(an.face, 1); }   // 달리기: 걸음마다 살짝 뜀, 좌우 뒤집기
+  else if(run){ ctx.translate(0, -Math.abs(Math.sin(an.ph*Math.PI/2))*CS*0.08);    // 달리기: 걸음마다 살짝 뜀
+    const tw = an.turn > 0 ? 0.35 + 0.65*(1 - an.turn/0.14) : 1; ctx.scale(an.face*tw, 1); }   // 좌우 뒤집기 + 돌아서는 순간 납작
+  else if(waddle){ const w = Math.sin(an.ph*Math.PI/2); ctx.rotate(w*0.13); ctx.translate(0, -Math.abs(w)*CS*0.1); ctx.scale(1 + Math.abs(w)*0.04, 1 - Math.abs(w)*0.04); }
   else ctx.rotate(Math.sin(t*14 + p.id)*0.06);
-  if(st){ const sc = h / im.naturalHeight, w = st.c.width*sc, hh = st.c.height*sc; ctx.drawImage(st.c, -w/2, -h - st.pad*sc, w, hh); }
+  if(st){ const sc = run ? Math.min(h*0.92 / im.naturalHeight, CS*2.3 / im.naturalWidth) : h / im.naturalHeight, ih = im.naturalHeight*sc;
+    const w = st.c.width*sc, hh = st.c.height*sc; ctx.drawImage(st.c, -w/2, -ih - st.pad*sc, w, hh); }
   else { ctx.beginPath(); ctx.arc(0, -h/2, CS*0.5, 0, 7); ctx.fillStyle = COL[k]; ctx.fill(); }
   ctx.restore();
   if(p.under > 0){ // 둔덕 (앞)
@@ -369,9 +374,11 @@ function frame(){
   ctx.fillStyle = '#7E9150'; ctx.fillRect(0,0,W,H);
   if(!g){ requestAnimationFrame(frame); return; }
   const N = g.N, me = g.players[meId], t = now/1000;
+  // 그리는 위치 = 직전 칸에서 지금 칸으로 걸음 진행도만큼 (일정한 속도로 미끄러짐 없이)
   for(const p of g.players){ const r = rp[p.id] || (rp[p.id] = { x:p.x, y:p.y });
-    if(Math.abs(r.x-p.x) + Math.abs(r.y-p.y) > 3){ r.x = p.x; r.y = p.y; }
-    const k = Math.min(1, dt*16); r.x += (p.x - r.x)*k; r.y += (p.y - r.y)*k; }
+    const jump = Math.abs(p.x - p.px) + Math.abs(p.y - p.py) > 1, f = (jump || p.stun || p.rest > 0) ? 1 : Math.min(1, p.acc);
+    const tx = p.px + (p.x - p.px)*f, ty = p.py + (p.y - p.py)*f;
+    if(Math.abs(r.x - tx) + Math.abs(r.y - ty) > 2){ r.x = tx; r.y = ty; } else { const k = Math.min(1, dt*30); r.x += (tx - r.x)*k; r.y += (ty - r.y)*k; } }
   const mr = rp[meId];
   camX += ((mr.x+0.5)*CS - W/2 - camX)*Math.min(1, dt*7); camY += ((mr.y+0.5)*CS - H*0.5 - camY)*Math.min(1, dt*7);
   clampCam(N);
@@ -563,8 +570,10 @@ function drawHud(me, dang, t, dt){
 function motionTick(dt, t){
   for(const p of g.players){
     const an = anim[p.id] || (anim[p.id] = { ph: 0, face: 1, lx: p.x, ly: p.y, n: 0 });
-    if(p.dir === 0) an.face = 1; else if(p.dir === 2) an.face = -1;
-    if(!p.stun && !(p.rest > 0)) an.ph += dt * g.o.speed * 1.25 * (p.boost ? 1.6 : 1) * (p.slow ? 0.5 : 1);
+    const nf = p.dir === 0 ? 1 : p.dir === 2 ? -1 : an.face;
+    if(nf !== an.face){ an.face = nf; an.turn = 0.14; }
+    an.turn = Math.max(0, (an.turn || 0) - dt);
+    if(!p.stun && !(p.rest > 0)) an.ph = (an.n + Math.min(1, p.acc)) * 2;   // 한 칸에 두 장
     if(an.lx !== p.x || an.ly !== p.y){
       if(Math.abs(an.lx - p.x) + Math.abs(an.ly - p.y) === 1){ an.n++;
         const x = (an.lx + 0.5)*CS, y = (an.ly + 0.5)*CS + CS*0.32;

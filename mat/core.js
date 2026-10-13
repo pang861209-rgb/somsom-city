@@ -123,7 +123,7 @@
     // 한 칸 이동
     function step(p){
       const [dx,dy] = DIRS[p.dir], nx = p.x + dx, ny = p.y + dy;
-      if(!inb(nx,ny)){ p.acc = 0; return; }
+      if(!inb(nx,ny)){ p.acc = 0; p.px = p.x; p.py = p.y; return; }   // 벽: 제자리에 서 있게
       const c = idx(nx,ny);
       if(trail[c] === p.id && !p.under){ trip(p, null); return; }          // 내 끈을 밟음
       p.px = p.x; p.py = p.y; p.x = nx; p.y = ny;
