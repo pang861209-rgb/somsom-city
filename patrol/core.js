@@ -115,7 +115,7 @@
       const s = SKILLS[o.id];
       p.skills[o.id] = o.to; p.t[o.id] = 0;
       if(s.kind === 'evo'){ delete p.skills[s.from[0]]; }
-      if(o.id === 'lunch'){ p.maxhp += 20; p.hp = Math.min(p.maxhp, p.hp + 20 + p.maxhp*0.25); }
+      if(o.id === 'lunch'){ p.maxhp += 20; p.hp = Math.min(p.maxhp, p.hp + 20 + p.maxhp*0.25); g.events.push({ type:'heal' }); }
       if(o.id === 'shoes') p.spd *= 1.10;
       if(o.id === 'lens') p.area += 0.12;
       if(o.id === 'clock') p.cdm *= 0.92;
@@ -171,11 +171,11 @@
     }
 
     // ── 피해 ──
-    function hurt(e, dmg, kx, ky, kb){
+    function hurt(e, dmg, kx, ky, kb, src){
       if(e.dead) return;
       e.hp -= dmg; e.flash = 0.12;
       if(kb && e.type !== 'boss'){ const m = Math.hypot(kx, ky) || 1; e.vx += kx/m*kb; e.vy += ky/m*kb; }
-      g.events.push({ type:'hit', x:e.x, y:e.y - e.r, dmg:Math.round(dmg) });
+      g.events.push({ type:'hit', x:e.x, y:e.y - e.r, dmg:Math.round(dmg), src, lv: src ? (p.skills[src] || 1) : 1 });
       if(e.hp <= 0){ e.dead = true; g.kills++;
         const f = FOES[e.type];
         g.gems.push({ x:e.x, y:e.y, v:f.xp*(e.elite ? 4 : 1), big:e.type === 'boss' || e.type === 'pile' || e.elite });
@@ -199,47 +199,47 @@
       if(L('acorn') && cd('acorn', L('acorn') >= 4 ? 0.62 : 0.85)){
         const n = L('acorn') >= 5 ? 3 : L('acorn') >= 3 ? 2 : 1;
         const ts = nearest(n, 420);
-        ts.forEach(e => { const a = Math.atan2(e.y - p.y, e.x - p.x); g.shots.push({ k:'acorn', x:p.x, y:p.y, vx:Math.cos(a)*420, vy:Math.sin(a)*420, r:6, dmg:(4 + L('acorn')*1.6), pierce:L('acorn') >= 5 ? 2 : 0, life:1.2, hit:{} }); });
+        ts.forEach(e => { const a = Math.atan2(e.y - p.y, e.x - p.x); g.shots.push({ k:'acorn', lv:L('acorn'), x:p.x, y:p.y, vx:Math.cos(a)*420, vy:Math.sin(a)*420, r:6 + L('acorn')*0.5, dmg:(4 + L('acorn')*1.6), pierce:L('acorn') >= 5 ? 2 : 0, life:1.2, hit:{} }); });
         if(ts.length) g.events.push({ type:'throw' });
       }
       if(L('storm')){
         g.orbit += dt*4.2;
-        if(cd('stormTick', 0.18)){ const R = 70*p.area; for(let i = 0; i < 5; i++){ const a = g.orbit + i*Math.PI*2/5; inCircle(p.x + Math.cos(a)*R, p.y + Math.sin(a)*R, 14, e => hurt(e, 9, e.x - p.x, e.y - p.y, 80)); } }
-        if(cd('acorn', 0.45)){ nearest(3, 420).forEach(e => { const a = Math.atan2(e.y - p.y, e.x - p.x); g.shots.push({ k:'acorn', x:p.x, y:p.y, vx:Math.cos(a)*460, vy:Math.sin(a)*460, r:7, dmg:14, pierce:3, life:1.2, hit:{} }); }); }
+        if(cd('stormTick', 0.18)){ const R = 70*p.area; for(let i = 0; i < 5; i++){ const a = g.orbit + i*Math.PI*2/5; inCircle(p.x + Math.cos(a)*R, p.y + Math.sin(a)*R, 14, e => hurt(e, 9, e.x - p.x, e.y - p.y, 80, 'storm')); } }
+        if(cd('acorn', 0.45)){ nearest(3, 420).forEach(e => { const a = Math.atan2(e.y - p.y, e.x - p.x); g.shots.push({ k:'acorn', lv:6, x:p.x, y:p.y, vx:Math.cos(a)*460, vy:Math.sin(a)*460, r:8, dmg:14, pierce:3, life:1.2, hit:{} }); }); }
       }
       if(L('tail') && cd('tail', L('tail') >= 4 ? 1.5 : 2.1)){
         const R = (52 + L('tail')*8 + (L('tail') >= 5 ? 20 : 0))*p.area;
-        inCircle(p.x, p.y, R, e => hurt(e, 6 + L('tail')*2.5, e.x - p.x, e.y - p.y, 160));
-        g.events.push({ type:'tail', r:R });
+        inCircle(p.x, p.y, R, e => hurt(e, 6 + L('tail')*2.5, e.x - p.x, e.y - p.y, 160, 'tail'));
+        g.events.push({ type:'tail', r:R, lv:L('tail') });
       }
       if(L('button') && cd('button', L('button') >= 5 ? 1.7 : 2.4)){
         const n = L('button') >= 3 ? 2 : 1;
         const tg = nearest(1, 380)[0], a0 = tg ? Math.atan2(tg.y - p.y, tg.x - p.x) : Math.atan2(p.fy, p.fx);
         for(let i = 0; i < n; i++){ const a = a0 + (i ? Math.PI : 0); const sp = 320;
-          g.shots.push({ k:'button', x:p.x, y:p.y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, r:11, dmg:8 + L('button')*3, pierce:999, life:L('button') >= 4 ? 1.9 : 1.5, boomer:true, t:0, hit:{} }); }
+          g.shots.push({ k:'button', lv:L('button'), x:p.x, y:p.y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, r:11, dmg:8 + L('button')*3, pierce:999, life:L('button') >= 4 ? 1.9 : 1.5, boomer:true, t:0, hit:{} }); }
       }
       // 북거씨
       if(L('spray') && cd('spray', L('spray') >= 4 ? 0.8 : 1.1)){
         const len = (95 + (L('spray') >= 5 ? 50 : 0))*p.area*(L('spray') >= 3 ? 1.15 : 1), half = 0.5, tg = nearest(1, len + 60)[0], fa = tg ? Math.atan2(tg.y - p.y, tg.x - p.x) : Math.atan2(p.fy, p.fx);
         for(const e of g.foes){ if(e.dead) continue; const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy); if(d > len + e.r) continue;
-          let da = Math.abs(((Math.atan2(dy, dx) - fa + Math.PI*3) % (Math.PI*2)) - Math.PI); if(da < half + e.r/Math.max(d, 1)){ hurt(e, 5 + L('spray')*2, dx, dy, 40); if(L('spray') >= 3) e.slow = Math.max(e.slow, 1.2); } }
-        g.events.push({ type:'spray', len, a:fa });
+          let da = Math.abs(((Math.atan2(dy, dx) - fa + Math.PI*3) % (Math.PI*2)) - Math.PI); if(da < half + e.r/Math.max(d, 1)){ hurt(e, 5 + L('spray')*2, dx, dy, 40, 'spray'); if(L('spray') >= 3) e.slow = Math.max(e.slow, 1.2); } }
+        g.events.push({ type:'spray', len, a:fa, lv:L('spray') });
       }
       if(L('tide')){
         if(cd('spray', 0.55)){ const len = 150*p.area, tg = nearest(1, len + 60)[0], fa = tg ? Math.atan2(tg.y - p.y, tg.x - p.x) : Math.atan2(p.fy, p.fx);
           for(const e of g.foes){ if(e.dead) continue; const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy); if(d > len + e.r) continue;
-            let da = Math.abs(((Math.atan2(dy, dx) - fa + Math.PI*3) % (Math.PI*2)) - Math.PI); if(da < 0.6) { hurt(e, 14, dx, dy, 60); e.slow = 1.2; } }
-          g.events.push({ type:'spray', len, a:fa }); }
+            let da = Math.abs(((Math.atan2(dy, dx) - fa + Math.PI*3) % (Math.PI*2)) - Math.PI); if(da < 0.6) { hurt(e, 14, dx, dy, 60, 'tide'); e.slow = 1.2; } }
+          g.events.push({ type:'spray', len, a:fa, lv:5, tide:true }); }
         if(cd('tideWave', 2.0)){ g.areas.push({ k:'wave', x:p.x, y:p.y, r:10, R:240*p.area, life:0.7, t:0, dmg:24, kb:280, hit:{}, big:true }); g.events.push({ type:'wave', big:true }); }
       }
       if(L('wave') && cd('wave', L('wave') >= 4 ? 2.3 : 3.1)){
         g.areas.push({ k:'wave', x:p.x, y:p.y, r:10, R:(115 + L('wave')*14 + (L('wave') >= 5 ? 40 : 0))*p.area, life:0.55, t:0, dmg:6 + L('wave')*2.5, kb:150, hit:{} });
-        g.events.push({ type:'wave' });
+        g.events.push({ type:'wave', lv:L('wave') });
       }
       if(L('euca') && cd('euca', 3.2)){
         const n = L('euca') >= 3 ? 2 : 1, ts = nearest(6, 360);
         for(let i = 0; i < n && ts.length; i++){ const e = ts[Math.floor(rnd()*ts.length)];
-          g.areas.push({ k:'euca', x:e.x, y:e.y, r:(40 + (L('euca') >= 4 ? 16 : 0))*p.area, life:L('euca') >= 5 ? 5 : 3.5, t:0, dmg:1.5 + L('euca')*0.8, tick:0 }); }
+          g.events.push({ type:'euca', x:e.x, y:e.y }); g.areas.push({ k:'euca', lv:L('euca'), x:e.x, y:e.y, r:(40 + (L('euca') >= 4 ? 16 : 0))*p.area, life:L('euca') >= 5 ? 5 : 3.5, t:0, dmg:1.5 + L('euca')*0.8, tick:0 }); }
       }
     }
 
@@ -262,7 +262,7 @@
         e.x += (dx/d*sp + e.vx)*dt; e.y += (dy/d*sp + e.vy)*dt;
         e.vx *= Math.max(0, 1 - dt*8); e.vy *= Math.max(0, 1 - dt*8);
         if(e.flash > 0) e.flash -= dt; if(e.slow > 0) e.slow -= dt;
-        if(d < e.r + p.r){ touching += Math.max(1, e.dmg*Math.min(1, 0.6 + g.t/300) - p.armor); if(p.thorns && !(e.thornT > 0)){ e.thornT = 0.5; hurt(e, p.thorns, -dx, -dy, 120); } }
+        if(d < e.r + p.r){ touching += Math.max(1, e.dmg*Math.min(1, 0.6 + g.t/300) - p.armor); if(p.thorns && !(e.thornT > 0)){ e.thornT = 0.5; hurt(e, p.thorns, -dx, -dy, 120, 'shell'); g.events.push({ type:'thorn', x:e.x, y:e.y }); } }
         if(e.thornT > 0) e.thornT -= dt;
         if(e.type === 'boss'){ e.summonT = (e.summonT || 6) - dt; if(e.summonT <= 0){ e.summonT = 6; for(let i = 0; i < 6; i++) { const s = spawn('dust'); s.x = e.x + Math.cos(i)*50; s.y = e.y + Math.sin(i)*50; } g.events.push({ type:'summon' }); } }
       }
@@ -272,7 +272,7 @@
         for(let j = i + 1; j < Math.min(fs.length, i + 12); j++){ const b = fs[j]; if(b.dead) continue;
           const dx = b.x - a.x, dy = b.y - a.y, rr = a.r + b.r, d2 = dx*dx + dy*dy;
           if(d2 < rr*rr && d2 > 0.01){ const d = Math.sqrt(d2), o = (rr - d)/2; a.x -= dx/d*o; a.y -= dy/d*o; b.x += dx/d*o; b.y += dy/d*o; } } }
-      if(touching){ p.hp -= touching*dt; if(p.hurt <= 0){ p.hurt = 0.35; g.events.push({ type:'hurt' }); } }
+      if(touching){ p.hp -= touching*dt; if(p.hurt <= 0){ p.hurt = 0.35; g.events.push({ type:'hurt', shell: lvOf('shell') }); } }
       if(p.hp <= 0){ p.hp = 0; g.over = true; g.win = false; g.events.push({ type:'end', win:false }); return; }
       // 날아가는 것
       for(const s of g.shots){
@@ -282,14 +282,14 @@
         for(const e of g.foes){ if(e.dead || s.life <= 0) continue;
           if((e.x - s.x)**2 + (e.y - s.y)**2 < (e.r + s.r)**2){
             const last = s.hit[e.id] || -9; if(g.t - last < 0.4) continue; s.hit[e.id] = g.t;
-            hurt(e, s.dmg, s.vx, s.vy, 70); if(!s.boomer){ if(s.pierce-- <= 0) s.life = 0; } } }
+            hurt(e, s.dmg, s.vx, s.vy, 70, s.k); if(!s.boomer){ if(s.pierce-- <= 0) s.life = 0; } } }
       }
       g.shots = g.shots.filter(s => s.life > 0);
       // 퍼지는 것·깔린 것
       for(const a of g.areas){
         a.t += dt; a.life -= dt;
-        if(a.k === 'wave'){ a.r = a.R*Math.min(1, a.t/ (a.life + a.t)); a.x = a.x; inCircle(a.x, a.y, a.r, e => { if(a.hit[e.id]) return; const d = Math.hypot(e.x - a.x, e.y - a.y); if(d > a.r - 26 - e.r){ a.hit[e.id] = 1; hurt(e, a.dmg, e.x - a.x, e.y - a.y, a.kb); } }); }
-        if(a.k === 'euca'){ a.tick -= dt; inCircle(a.x, a.y, a.r, e => { e.slow = Math.max(e.slow, 0.15); }); if(a.tick <= 0){ a.tick = 0.5; inCircle(a.x, a.y, a.r, e => hurt(e, a.dmg, 0, 0, 0)); } }
+        if(a.k === 'wave'){ a.r = a.R*Math.min(1, a.t/ (a.life + a.t)); a.x = a.x; inCircle(a.x, a.y, a.r, e => { if(a.hit[e.id]) return; const d = Math.hypot(e.x - a.x, e.y - a.y); if(d > a.r - 26 - e.r){ a.hit[e.id] = 1; hurt(e, a.dmg, e.x - a.x, e.y - a.y, a.kb, a.big ? 'tide' : 'wave'); } }); }
+        if(a.k === 'euca'){ a.tick -= dt; inCircle(a.x, a.y, a.r, e => { e.slow = Math.max(e.slow, 0.15); }); if(a.tick <= 0){ a.tick = 0.5; inCircle(a.x, a.y, a.r, e => hurt(e, a.dmg, 0, 0, 0, 'euca')); } }
       }
       g.areas = g.areas.filter(a => a.life > 0);
       g.foes = g.foes.filter(e => !e.dead);
