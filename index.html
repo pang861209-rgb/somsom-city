@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>솜솜시티 — 미니게임 마을</title>
-<meta name="description" content="솜솜시티 친구들과 즐기는 미니게임 6종: 낙엽피하기 · 달리기 · 짝맞추기 · 방범대 · 창고 정리 · 가을 바구니">
+<meta name="description" content="솜솜시티 친구들과 즐기는 미니게임 6종: 낙엽피하기 · 달리기 · 주민 원정 · 방범대 · 창고 정리 · 가을 바구니">
 <meta name="theme-color" content="#221E18">
 <!-- 아이콘 — 끼토 얼굴(코 없음, 캐릭터 보드 기준). 원본 벡터는 assets/favicon.svg -->
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
@@ -283,10 +283,10 @@
       <span class="tx"><span class="nm">달리기</span><span class="ds">은행잎 골목 마감 질주</span></span>
       <span class="go"><svg viewBox="0 0 12 12" fill="currentColor"><path d="M2 1.2v9.6c0 .6.6.9 1.1.6l7.6-4.8c.5-.3.5-.9 0-1.2L3.1.6C2.6.3 2 .6 2 1.2z"/></svg></span>
     </a>
-    <a class="gc" href="match/" style="--c:#56783F;--i:2;--p:center 62%">
-      <img class="art" src="assets/hub/card_match.webp" alt="" loading="lazy">
-      <span class="no">GAME 03</span>
-      <span class="tx"><span class="nm">짝맞추기</span><span class="ds">뒤집힌 카드 속 짝꿍</span></span>
+    <a class="gc" href="patrol/" style="--c:#B5762A;--i:2;--p:center 70%">
+      <img class="art" src="assets/hub/card_patrol.webp" alt="" loading="lazy">
+      <span class="no">GAME 03</span><span class="new">NEW</span>
+      <span class="tx"><span class="nm">주민 원정</span><span class="ds">기술 모아 3분 버티기</span></span>
       <span class="go"><svg viewBox="0 0 12 12" fill="currentColor"><path d="M2 1.2v9.6c0 .6.6.9 1.1.6l7.6-4.8c.5-.3.5-.9 0-1.2L3.1.6C2.6.3 2 .6 2 1.2z"/></svg></span>
     </a>
     <a class="gc" href="https://pang861209-rgb.github.io/somsom-city-game/defense/" style="--c:#5E4E86;--i:3;--p:center 40%">
@@ -398,10 +398,16 @@ const ACH = [
   {id:'run_near10', g:'달리기',    n:'아슬아슬',      d:'한 판에 아슬아슬 회피 10회'},
   {id:'run_tight3', g:'달리기',    n:'종이 한 장 차', d:'한 판에 완벽 회피 3회'},
   {id:'run_combo5', g:'달리기',    n:'도토리 행진',   d:'달리기에서 5콤보'},
-  {id:'match_first',g:'짝맞추기',  n:'짝꿍 상봉',     d:'짝맞추기를 처음 끝냈어요'},
-  {id:'match_perfect',g:'짝맞추기',n:'한 번도 안 틀림',d:'실수 없이 클리어'},
-  {id:'match_hard', g:'짝맞추기',  n:'열두 쌍의 기억',d:'어려움을 클리어'},
-  {id:'match_fast', g:'짝맞추기',  n:'번개 기억력',   d:'60초 안에 클리어'},
+  {id:'match_first',old:1,g:'짝맞추기',  n:'짝꿍 상봉',     d:'짝맞추기를 처음 끝냈어요'},
+  {id:'match_perfect',old:1,g:'짝맞추기',n:'한 번도 안 틀림',d:'실수 없이 클리어'},
+  {id:'match_hard', old:1,g:'짝맞추기',  n:'열두 쌍의 기억',d:'어려움을 클리어'},
+  {id:'match_fast', old:1,g:'짝맞추기',  n:'번개 기억력',   d:'60초 안에 클리어'},
+  {id:'patrol_first', g:'주민 원정', n:'첫 원정',          d:'주민 원정을 한 판 다녀왔어요'},
+  {id:'patrol_clear', g:'주민 원정', n:'3분 버티기',       d:'골목에서 3분을 버텼어요'},
+  {id:'patrol_boss',  g:'주민 원정', n:'골목 대장 퇴치',   d:'골목 대장을 물리쳤어요'},
+  {id:'patrol_evo',   g:'주민 원정', n:'첫 진화',          d:'기술 두 개를 합쳐 진화시켰어요'},
+  {id:'patrol_lv5',   g:'주민 원정', n:'단골 원정대',      d:'주민 한 명을 레벨 5까지 키웠어요'},
+  {id:'patrol_all6',  g:'주민 원정', n:'여섯 주민 출동',   d:'여섯 주민 모두 원정을 다녀왔어요'},
   {id:'defense_first',    g:'방범대', n:'방범대 입단',   d:'스테이지를 처음 지켜냈어요'},
   {id:'defense_boss',     g:'방범대', n:'왕꼬릿 퇴치',   d:'왕꼬릿 구름을 돌려보냈어요'},
   {id:'defense_allclear', g:'방범대', n:'골목 어귀 평정', d:'네 스테이지를 모두 클리어'},
@@ -426,10 +432,11 @@ const ACH = [
 function achLoad(){ try{ return JSON.parse(localStorage.getItem('somsom_ach')||'{}'); }catch(e){ return {}; } }
 function renderAch(){
   const got = achLoad(), list = document.getElementById('achList');
-  document.getElementById('achCount').textContent = Object.keys(got).length + ' / ' + ACH.length;
+  const shown = ACH.filter(a => !a.old || got[a.id]);   // 내려간 게임(짝맞추기) 업적은 받은 것만
+  document.getElementById('achCount').textContent = shown.filter(a => got[a.id]).length + ' / ' + shown.length;
   list.innerHTML = '';
   let cur = '';
-  for(const a of ACH){
+  for(const a of shown){
     if(a.g !== cur){ cur = a.g;
       const h = document.createElement('div'); h.className='achGrp'; h.textContent=cur; list.appendChild(h); }
     const r = document.createElement('div');
@@ -497,8 +504,9 @@ function renderDex(){
     }
     list.appendChild(grid);
   }
-  const h2=document.createElement('div'); h2.className='achGrp'; h2.textContent='짝맞추기 일상 컷'; list.appendChild(h2);
-  for(const k in CUT_POOL){
+  const anyCut=Object.keys(CUT_POOL).some(k=>(cuts[k]||[]).length);   // 짝맞추기는 내려갔으니 모은 컷이 있을 때만
+  if(anyCut){ const h2=document.createElement('div'); h2.className='achGrp'; h2.textContent='짝맞추기 일상 컷'; list.appendChild(h2); }
+  if(anyCut) for(const k in CUT_POOL){
     const n=(cuts[k]||[]).length, p=CUT_POOL[k]; have+=n; total+=p;
     const r=document.createElement('div'); r.className='cutRow';
     r.innerHTML='<span class="nm">'+CUT_NAME[k]+'</span><span class="pg">'+n+' / '+p+'</span>';
@@ -553,7 +561,7 @@ async function renderWeekly(){
   const list=document.getElementById('wkList');
   list.innerHTML='<div class="emptyRow">불러오는 중…</div>';
   const since=Date.now()-7*24*3600*1000;
-  const cols=await Promise.all([fetchCol('scores'),fetchCol('runner_scores'),fetchCol('memory_scores'),
+  const cols=await Promise.all([fetchCol('scores'),fetchCol('runner_scores'),fetchCol('patrol_scores'),
                                 fetchCol('defense_scores'),fetchCol('boxes_scores'),fetchCol('basket_scores')]);
   const per=cols.map(rows=>{
     const best={}; for(const e of rows){ if(e.t<since) continue; if(!best[e.n]||e.s>best[e.n]) best[e.n]=e.s; }
