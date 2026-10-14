@@ -35,6 +35,30 @@
     euca:   { n:'유칼립투스 장판', who:'bookgeo', kind:'atk', d:['골칫거리 발밑에 잎을 깔아 느리게','더 아프게','2장','더 넓게','더 오래'] },
     shell:  { n:'단단한 등딱지', who:'bookgeo', kind:'pas', d:['덜 아프고, 부딪히면 되갚아요','더 단단히','더 아프게 되갚기','더 단단히','가시 등딱지'] },
     tide:   { n:'밀물',          who:'bookgeo', kind:'evo', from:['spray','wave'], d:['큰 파도가 골목을 휩쓸어요'] },
+    // 끼토
+    ear:    { n:'쫑긋 소리',    who:'kkito',   kind:'atk', d:['귀를 쫑긋! 소리 고리가 둘레를 밀어내요','더 넓게','맞으면 느려져요','더 자주','아주 넓게'] },
+    brush:  { n:'물감 붓질',    who:'kkito',   kind:'atk', d:['가까운 골칫거리 쪽으로 붓을 쭉','더 길게','2번 칠해요','더 아프게','3번 칠해요'] },
+    pearl:  { n:'진주 구슬',    who:'kkito',   kind:'atk', d:['진주 2알이 둘레를 돌아요','더 아프게','3알','더 빨리 돌아요','4알'] },
+    scare:  { n:'깜짝 순발력',  who:'kkito',   kind:'pas', d:['부딪히면 깜짝! 잠깐 빨라지고 안 다쳐요','이동 속도 +6%','더 오래','이동 속도 +6%','더 오래'] },
+    rainbow:{ n:'무지개 붓질',  who:'kkito',   kind:'evo', from:['brush','ear'], d:['여섯 방향으로 무지개를 칠해요'] },
+    // 미개
+    ants:   { n:'개미 친구',    who:'migae',   kind:'atk', d:['친구 개미가 쫓아가 깨물어요','더 아프게','친구가 더 많이','더 자주 불러요','친구가 더 많이'] },
+    zap:    { n:'더듬이 찌릿',  who:'migae',   kind:'atk', d:['더듬이 찌릿! 여러 골칫거리에 번져요','한 번 더 번져요','더 아프게','더 자주','두 번 더 번져요'] },
+    burrow: { n:'개미굴',       who:'migae',   kind:'atk', d:['발밑에서 흙이 펑! 솟아요','더 넓게','2곳','더 아프게','3곳'] },
+    ribbon: { n:'분홍 리본',    who:'migae',   kind:'pas', d:['경험치 +12%, 도토리를 더 멀리서','+12%','+12%','+12%','+12%'] },
+    march:  { n:'개미 행진',    who:'migae',   kind:'evo', from:['ants','zap'], d:['개미 친구들이 줄지어 쉬지 않고 나와요'] },
+    // 할머니
+    yarn:   { n:'실타래 굴리기', who:'lachilchin', kind:'atk', d:['실타래가 굴러가며 휘감아 느리게','더 아프게','2개','더 크게','3개'] },
+    tongs:  { n:'은행 집게',    who:'lachilchin', kind:'atk', d:['제일 튼튼한 골칫거리를 콕 집어요','더 아프게','더 자주','더 아프게','2마리'] },
+    tea:    { n:'따뜻한 차',    who:'lachilchin', kind:'pas', d:['체력이 조금씩 차올라요','더 빨리','더 빨리','더 빨리','더 빨리'] },
+    net:    { n:'뜨개 그물',    who:'lachilchin', kind:'atk', d:['그물로 덮어 꼼짝 못 하게','더 넓게','더 오래','2곳','아주 넓게'] },
+    scarf:  { n:'할머니 목도리', who:'lachilchin', kind:'evo', from:['yarn','net'], d:['기다란 목도리가 빙글빙글 휘감아요'] },
+    // 보늘
+    roll:   { n:'데굴데굴',     who:'boneul',  kind:'atk', d:['가는 쪽으로 데굴데굴 굴러 들이받아요','더 멀리','더 아프게','더 자주','아주 멀리'] },
+    flop:   { n:'털썩',         who:'boneul',  kind:'atk', d:['털썩 주저앉아 둘레를 쾅','더 넓게','더 아프게','더 자주','아주 넓게'] },
+    snack:  { n:'과자 봉지',    who:'boneul',  kind:'pas', d:['골칫거리를 물리칠 때마다 냠, 체력 회복','더 많이','더 많이','더 많이','더 많이'] },
+    yawn:   { n:'하품',         who:'boneul',  kind:'atk', d:['하암~ 둘레의 골칫거리가 졸려서 느려져요','더 넓게','졸면서 다쳐요','더 넓게','아주 졸려요'] },
+    bigroll:{ n:'대왕 데굴',    who:'boneul',  kind:'evo', from:['roll','flop'], d:['크게 굴러가서 털썩까지 한 번에'] },
     // 공용
     shoes:  { n:'새 운동화',     who:'*', kind:'pas', d:['이동 속도 +10%','+10%','+10%','+10%','+10%'] },
     lunch:  { n:'할머니 도시락', who:'*', kind:'pas', d:['최대 체력 +20, 체력 회복','+20','+20','+20','+20'] },
@@ -61,6 +85,40 @@
         { lv:5, hpK:1.15, outfit:1,   txt:'새 옷 「바다색 터틀넥」 · 체력 +15%' },
       ] },
   };
+  Object.assign(HEROES, {
+    kkito: { n:'끼토', hp:80, spd:165, armor:0, start:'ear', r:13,
+      unlock: [
+        { lv:1, add:['ear','brush'],    txt:'쫑긋 소리 · 물감 붓질' },
+        { lv:2, add:['pearl'],          txt:'새 기술: 진주 구슬' },
+        { lv:3, add:['scare','rainbow'], txt:'새 기술: 깜짝 순발력 · 진화 「무지개 붓질」' },
+        { lv:4, startLv:2,              txt:'쫑긋 소리 2단계로 시작' },
+        { lv:5, hpK:1.15, outfit:1,     txt:'새 옷 「노을빛 조끼」 · 체력 +15%' },
+      ] },
+    migae: { n:'미개', hp:90, spd:150, armor:0, start:'ants', r:11,
+      unlock: [
+        { lv:1, add:['ants','zap'],     txt:'개미 친구 · 더듬이 찌릿' },
+        { lv:2, add:['burrow'],         txt:'새 기술: 개미굴' },
+        { lv:3, add:['ribbon','march'], txt:'새 기술: 분홍 리본 · 진화 「개미 행진」' },
+        { lv:4, startLv:2,              txt:'개미 친구 2단계로 시작' },
+        { lv:5, hpK:1.15, outfit:1,     txt:'새 옷 「산책 부츠」 · 체력 +15%' },
+      ] },
+    lachilchin: { n:'할머니', hp:135, spd:126, armor:0, start:'yarn', r:14,
+      unlock: [
+        { lv:1, add:['yarn','tongs'],   txt:'실타래 굴리기 · 은행 집게' },
+        { lv:2, add:['net'],            txt:'새 기술: 뜨개 그물' },
+        { lv:3, add:['tea','scarf'],    txt:'새 기술: 따뜻한 차 · 진화 「할머니 목도리」' },
+        { lv:4, startLv:2,              txt:'실타래 굴리기 2단계로 시작' },
+        { lv:5, hpK:1.15, outfit:1,     txt:'새 옷 「꽃무늬 앞치마」 · 체력 +15%' },
+      ] },
+    boneul: { n:'보늘', hp:160, spd:100, armor:1, start:'roll', r:17,
+      unlock: [
+        { lv:1, add:['roll','flop'],    txt:'데굴데굴 · 털썩' },
+        { lv:2, add:['yawn'],           txt:'새 기술: 하품' },
+        { lv:3, add:['snack','bigroll'], txt:'새 기술: 과자 봉지 · 진화 「대왕 데굴」' },
+        { lv:4, startLv:2,              txt:'데굴데굴 2단계로 시작' },
+        { lv:5, hpK:1.15, outfit:1,     txt:'새 옷 「늘보의 식탁 티셔츠」 · 체력 +15%' },
+      ] },
+  });
   const COMMON = ['shoes','lunch','lens','clock'];
   const HERO_XP = [0, 0, 200, 600, 1200, 2000];     // 주민 레벨 n이 되는 누적 경험치 (최대 5)
   const MAXLV = 5;
@@ -78,7 +136,7 @@
     const pool = new Set(COMMON); let startLv = 1, hpK = 1, outfit = 0;
     for(const u of H.unlock){ if(heroLv < u.lv) continue; (u.add || []).forEach(s => pool.add(s)); if(u.startLv) startLv = u.startLv; if(u.hpK) hpK = u.hpK; if(u.outfit) outfit = u.outfit; }
 
-    const p = { x:0, y:0, r:14, hp:H.hp*hpK, maxhp:H.hp*hpK, spd:H.spd, armor:H.armor, magnet:80, xpK:1, area:1, cdm:1, thorns:0,
+    const p = { x:0, y:0, r:H.r || 14, boost:0, invuln:0, roll:0, rdx:1, rdy:0, rollHit:{}, hp:H.hp*hpK, maxhp:H.hp*hpK, spd:H.spd, armor:H.armor, magnet:80, xpK:1, area:1, cdm:1, thorns:0,
       lv:1, xp:0, next:8, fx:1, fy:0, ix:0, iy:0, hurt:0, outfit, skills:{}, t:{} };
     p.skills[H.start] = startLv;
 
@@ -121,6 +179,8 @@
       if(o.id === 'clock') p.cdm *= 0.92;
       if(o.id === 'pocket'){ p.magnet *= 1.3; p.xpK += o.to % 2 === 0 ? 0.10 : 0; }
       if(o.id === 'shell'){ p.armor += 1; p.thorns += 2; }
+      if(o.id === 'ribbon'){ p.xpK += 0.12; p.magnet *= 1.2; }
+      if(o.id === 'scare' && (o.to === 2 || o.to === 4)) p.spd *= 1.06;
       g.events.push({ type:'pick', id:o.id, lv:o.to });
     }
     g.choose = function(i){
@@ -176,7 +236,7 @@
       e.hp -= dmg; e.flash = 0.12;
       if(kb && e.type !== 'boss'){ const m = Math.hypot(kx, ky) || 1; e.vx += kx/m*kb; e.vy += ky/m*kb; }
       g.events.push({ type:'hit', x:e.x, y:e.y - e.r, dmg:Math.round(dmg), src, lv: src ? (p.skills[src] || 1) : 1 });
-      if(e.hp <= 0){ e.dead = true; g.kills++;
+      if(e.hp <= 0){ e.dead = true; g.kills++; if(lvOf('snack')){ p.hp = Math.min(p.maxhp, p.hp + 0.3 + lvOf('snack')*0.25); }
         const f = FOES[e.type];
         g.gems.push({ x:e.x, y:e.y, v:f.xp*(e.elite ? 4 : 1), big:e.type === 'boss' || e.type === 'pile' || e.elite });
         if(e.elite || e.type === 'boss') g.chests.push({ x:e.x + 18, y:e.y });
@@ -189,6 +249,9 @@
       for(const e of g.foes){ if(e.dead) continue; const d = (e.x - p.x)**2 + (e.y - p.y)**2; if(d < maxd*maxd) arr.push([d, e]); }
       arr.sort((a, b) => a[0] - b[0]); return arr.slice(0, n).map(a => a[1]);
     };
+    const nearestTo = (x, y, maxd, not) => { let b = null, bd = maxd*maxd; for(const e of g.foes){ if(e.dead || e === not) continue; const d = (e.x - x)**2 + (e.y - y)**2; if(d < bd){ bd = d; b = e; } } return b; };
+    const onLine = (x1, y1, x2, y2, w, fn) => { const dx = x2 - x1, dy = y2 - y1, L2 = dx*dx + dy*dy || 1;
+      for(const e of g.foes){ if(e.dead) continue; let q = ((e.x - x1)*dx + (e.y - y1)*dy)/L2; q = Math.max(0, Math.min(1, q)); const px = x1 + dx*q, py = y1 + dy*q; if((e.x - px)**2 + (e.y - py)**2 < (w + e.r)**2) fn(e); } };
     const inCircle = (x, y, r, fn) => { for(const e of g.foes){ if(e.dead) continue; if((e.x - x)**2 + (e.y - y)**2 < (r + e.r)**2) fn(e); } };
 
     // ── 기술 동작 ──
@@ -243,22 +306,70 @@
       }
     }
 
+    function skills2(dt){
+      const L = lvOf;
+      // 끼토
+      if(L('ear') && cd('ear', L('ear') >= 4 ? 1.6 : 2.2)){
+        g.areas.push({ k:'wave', src:'ear', col:'238,143,174', x:p.x, y:p.y, r:6, R:(70 + L('ear')*10 + (L('ear') >= 5 ? 30 : 0))*p.area, life:0.4, t:0, dmg:4 + L('ear')*2, kb:70, slowT: L('ear') >= 3 ? 1.2 : 0, hit:{} });
+        g.events.push({ type:'ear', lv:L('ear') }); }
+      const strokes = (n, len, w, dmg, src, spread, base) => { for(let i = 0; i < n; i++){ const a = base + (i - (n - 1)/2)*spread, x2 = p.x + Math.cos(a)*len, y2 = p.y + Math.sin(a)*len;
+          onLine(p.x, p.y, x2, y2, w, e => hurt(e, dmg, Math.cos(a), Math.sin(a), 60, src)); g.events.push({ type:'brush', x1:p.x, y1:p.y, x2, y2, w, i, rainbow: src === 'rainbow' }); } };
+      if(L('brush') && cd('brush', 1.6)){ const tg = nearest(1, 260)[0], a = tg ? Math.atan2(tg.y - p.y, tg.x - p.x) : Math.atan2(p.fy, p.fx);
+        strokes(L('brush') >= 5 ? 3 : L('brush') >= 3 ? 2 : 1, (160 + L('brush')*18)*p.area, 12, 7 + L('brush')*2.5 + (L('brush') >= 4 ? 4 : 0), 'brush', 0.45, a); }
+      if(L('rainbow') && cd('rainbow', 1.0)){ strokes(6, 230*p.area, 16, 20, 'rainbow', Math.PI/3, g.t*1.3); }
+      if(L('pearl')){ g.pearlA = (g.pearlA || 0) + dt*(L('pearl') >= 4 ? 4.5 : 3); const n = L('pearl') >= 5 ? 4 : L('pearl') >= 3 ? 3 : 2, R = 52*p.area;
+        if(cd('pearlTick', 0.2)) for(let i = 0; i < n; i++){ const a = g.pearlA + i*Math.PI*2/n; inCircle(p.x + Math.cos(a)*R, p.y + Math.sin(a)*R, 10, e => hurt(e, 4 + L('pearl')*1.6, e.x - p.x, e.y - p.y, 60, 'pearl')); } }
+      // 미개
+      const ant = (dmg, src) => g.shots.push({ k:'ant', src, x:p.x, y:p.y, vx:(rnd() - 0.5)*200, vy:(rnd() - 0.5)*200, r:7, dmg, pierce:3, life:3.2, home:true, hit:{} });
+      if(L('ants')){ const cap = 5 + (L('ants') >= 3 ? 2 : 0) + (L('ants') >= 5 ? 2 : 0), have = g.shots.filter(s => s.k === 'ant').length;
+        if(cd('ants', L('ants') >= 4 ? 0.7 : 1.0) && have < cap) ant(8 + L('ants')*3, 'ants'); }
+      if(L('march') && cd('march', 0.28) && g.shots.filter(s => s.k === 'ant').length < 14) ant(12, 'march');
+      if(L('zap') && cd('zap', L('zap') >= 4 ? 1.1 : 1.5)){ let cur = nearest(1, 260)[0]; const pts = [[p.x, p.y - 10]], n = 3 + (L('zap') >= 2 ? 1 : 0) + (L('zap') >= 5 ? 2 : 0), seen = new Set();
+        for(let i = 0; i < n && cur; i++){ seen.add(cur); pts.push([cur.x, cur.y]); hurt(cur, 10 + L('zap')*3 + (L('zap') >= 3 ? 5 : 0), cur.x - p.x, cur.y - p.y, 30, 'zap');
+          let nx = null, nd = 110*110; for(const e of g.foes){ if(e.dead || seen.has(e)) continue; const d = (e.x - cur.x)**2 + (e.y - cur.y)**2; if(d < nd){ nd = d; nx = e; } } cur = nx; }
+        if(pts.length > 1) g.events.push({ type:'zap', pts }); }
+      if(L('burrow') && cd('burrow', 2.8)){ const n = L('burrow') >= 5 ? 3 : L('burrow') >= 3 ? 2 : 1, ts = nearest(8, 300);
+        for(let i = 0; i < n && ts.length; i++){ const e = ts[Math.floor(rnd()*ts.length)]; g.areas.push({ k:'burrow', x:e.x, y:e.y, r:(40 + (L('burrow') >= 2 ? 10 : 0))*p.area, life:0.75, t:0, dmg:12 + L('burrow')*3 + (L('burrow') >= 4 ? 8 : 0), popped:false }); } }
+      // 할머니
+      if(L('yarn') && cd('yarn', 1.15)){ const n = L('yarn') >= 5 ? 3 : L('yarn') >= 3 ? 2 : 1, tg = nearest(1, 360)[0], a0 = tg ? Math.atan2(tg.y - p.y, tg.x - p.x) : Math.atan2(p.fy, p.fx);
+        for(let i = 0; i < n; i++){ const a = a0 + (i - (n - 1)/2)*0.5; g.shots.push({ k:'yarn', x:p.x, y:p.y, vx:Math.cos(a)*240, vy:Math.sin(a)*240, r:(L('yarn') >= 4 ? 17 : 13), dmg:10 + L('yarn')*3.5, pierce:999, life:2.0, slowT:1.2, hit:{} }); } }
+      if(L('tongs') && cd('tongs', L('tongs') >= 3 ? 1.2 : 1.7)){ const c = g.foes.filter(e => !e.dead && (e.x - p.x)**2 + (e.y - p.y)**2 < 240*240).sort((a, b) => b.hp - a.hp).slice(0, L('tongs') >= 5 ? 2 : 1);
+        c.forEach(e => { hurt(e, 18 + L('tongs')*7 + (L('tongs') >= 4 ? 10 : 0), e.x - p.x, e.y - p.y, 100, 'tongs'); g.events.push({ type:'tongs', x:e.x, y:e.y }); }); }
+      if(L('tea')){ p.hp = Math.min(p.maxhp, p.hp + (0.8 + L('tea')*0.7)*dt); if(cd('teaFx', 1.6)) g.events.push({ type:'tea' }); }
+      if(L('net') && cd('net', 2.6)){ const n = L('net') >= 4 ? 2 : 1, ts = nearest(8, 300);
+        for(let i = 0; i < n && ts.length; i++){ const e = ts[Math.floor(rnd()*ts.length)]; g.areas.push({ k:'net', x:e.x, y:e.y, r:(55 + (L('net') >= 2 ? 12 : 0) + (L('net') >= 5 ? 25 : 0))*p.area, life:L('net') >= 3 ? 3.4 : 2.5, t:0, tick:0, dmg:6 + L('net')*2.5 }); } }
+      if(L('scarf')){ g.scarfA = (g.scarfA || 0) + dt*3.2; if(cd('scarfTick', 0.22)){ const R = (90 + Math.sin(g.t*1.6)*50)*p.area; for(let i = 0; i < 8; i++){ const a = g.scarfA + i*0.28; inCircle(p.x + Math.cos(a)*R, p.y + Math.sin(a)*R, 13, e => { hurt(e, 11, e.x - p.x, e.y - p.y, 60, 'scarf'); e.slow = Math.max(e.slow, 0.6); }); } } }
+      // 보늘
+      const startRoll = (dist, rad, dmg, src, flop) => { const tg = nearest(1, dist + 80)[0]; let rx = tg ? tg.x - p.x : p.fx, ry = tg ? tg.y - p.y : p.fy; const m = Math.hypot(rx, ry) || 1; p.rdx = rx/m; p.rdy = ry/m; p.roll = 0.32; p.rollSpd = dist/0.32; p.rollR = rad; p.rollDmg = dmg; p.rollSrc = src; p.rollFlop = flop; p.rollHit = {}; g.events.push({ type:'roll', big: src === 'bigroll' }); };
+      if(L('roll') && cd('roll', L('roll') >= 4 ? 1.3 : 1.8)) startRoll((140 + L('roll')*18 + (L('roll') >= 5 ? 50 : 0))*p.area, 28, 14 + L('roll')*4 + (L('roll') >= 3 ? 8 : 0), 'roll', false);
+      if(L('bigroll') && cd('roll', 1.5)) startRoll(260*p.area, 40, 22, 'bigroll', true);
+      const flop = (R, dmg, src) => { inCircle(p.x, p.y, R, e => hurt(e, dmg*(e.type === 'boss' ? 2 : 1), e.x - p.x, e.y - p.y, 220, src)); g.events.push({ type:'flop', r:R, big: src === 'bigroll' }); };
+      if(L('flop') && cd('flop', L('flop') >= 4 ? 2.8 : 3.6)) flop((80 + L('flop')*12 + (L('flop') >= 5 ? 30 : 0))*p.area, 18 + L('flop')*6 + (L('flop') >= 3 ? 8 : 0), 'flop');
+      if(L('yawn')){ const R = (70 + L('yawn')*10 + (L('yawn') >= 4 ? 15 : 0))*p.area; g.yawnR = R; inCircle(p.x, p.y, R, e => { e.slow = Math.max(e.slow, L('yawn') >= 5 ? 0.6 : 0.25); });
+        if(L('yawn') >= 3 && cd('yawnTick', 0.5)) inCircle(p.x, p.y, R, e => hurt(e, 2 + L('yawn'), 0, 0, 0, 'yawn')); } else g.yawnR = 0;
+      g._flop = flop;
+    }
+
     g.update = function(dt){
       if(g.over || g.choices || g.chest) return;
       g.dt = dt; g.t += dt;
       if(g.t >= P.time){ g.over = true; g.win = true; g.events.push({ type:'end', win:true }); return; }
       // 주민 이동
-      p.x += p.ix*p.spd*dt; p.y += p.iy*p.spd*dt;
+      if(p.roll > 0){ p.roll -= dt; p.x += p.rdx*p.rollSpd*dt; p.y += p.rdy*p.rollSpd*dt;
+        inCircle(p.x, p.y, p.rollR, e => { if(p.rollHit[e.id]) return; p.rollHit[e.id] = 1; hurt(e, p.rollDmg*(e.type === 'boss' ? 2.5 : 1), e.x - p.x, e.y - p.y, 260, p.rollSrc); });
+        if(p.roll <= 0 && p.rollFlop) g._flop(110*p.area, 30, 'bigroll'); }
+      else { const k = p.boost > 0 ? 1.4 : 1; p.x += p.ix*p.spd*k*dt; p.y += p.iy*p.spd*k*dt; }
+      if(p.boost > 0) p.boost -= dt; if(p.invuln > 0) p.invuln -= dt;
       if(p.hurt > 0) p.hurt -= dt;
       spawner(dt);
-      skills(dt);
+      skills(dt); skills2(dt);
       // 골칫거리
       let touching = 0;
       for(const e of g.foes){
         if(e.dead) continue;
         const dx = p.x - e.x, dy = p.y - e.y, d = Math.hypot(dx, dy) || 1;
         if(d > P.despawnR && e.type !== 'boss'){ e.dead = true; continue; }
-        const sp = e.spd*(e.slow > 0 ? 0.55 : 1);
+        const sp = e.spd*(e.root > 0 ? 0.08 : e.slow > 0 ? 0.55 : 1); if(e.root > 0) e.root -= dt;
         e.x += (dx/d*sp + e.vx)*dt; e.y += (dy/d*sp + e.vy)*dt;
         e.vx *= Math.max(0, 1 - dt*8); e.vy *= Math.max(0, 1 - dt*8);
         if(e.flash > 0) e.flash -= dt; if(e.slow > 0) e.slow -= dt;
@@ -272,23 +383,30 @@
         for(let j = i + 1; j < Math.min(fs.length, i + 12); j++){ const b = fs[j]; if(b.dead) continue;
           const dx = b.x - a.x, dy = b.y - a.y, rr = a.r + b.r, d2 = dx*dx + dy*dy;
           if(d2 < rr*rr && d2 > 0.01){ const d = Math.sqrt(d2), o = (rr - d)/2; a.x -= dx/d*o; a.y -= dy/d*o; b.x += dx/d*o; b.y += dy/d*o; } } }
-      if(touching){ p.hp -= touching*dt; if(p.hurt <= 0){ p.hurt = 0.35; g.events.push({ type:'hurt', shell: lvOf('shell') }); } }
+      if(touching && (p.roll > 0 || p.invuln > 0)) touching = 0;   // 구르는 중·깜짝 무적
+      if(touching){ p.hp -= touching*dt; if(p.hurt <= 0){ p.hurt = 0.35; g.events.push({ type:'hurt', shell: lvOf('shell') });
+        if(lvOf('scare')){ p.boost = 1.2 + (lvOf('scare') >= 3 ? 0.5 : 0) + (lvOf('scare') >= 5 ? 0.5 : 0); p.invuln = 0.6; g.events.push({ type:'scare' }); } } }
       if(p.hp <= 0){ p.hp = 0; g.over = true; g.win = false; g.events.push({ type:'end', win:false }); return; }
       // 날아가는 것
       for(const s of g.shots){
         s.life -= dt;
+        if(s.home){ s.tt = (s.tt || 0) - dt; if(s.tt <= 0 || !s.tg || s.tg.dead){ s.tt = 0.2; s.tg = nearestTo(s.x, s.y, 320); }
+          if(s.tg){ const dx = s.tg.x - s.x, dy = s.tg.y - s.y, d = Math.hypot(dx, dy) || 1; s.vx += (dx/d*320 - s.vx)*Math.min(1, dt*7); s.vy += (dy/d*320 - s.vy)*Math.min(1, dt*7); }
+          else { const dx = p.x - s.x, dy = p.y - s.y, d = Math.hypot(dx, dy) || 1; if(d > 40){ s.vx += (dx/d*200 - s.vx)*dt*4; s.vy += (dy/d*200 - s.vy)*dt*4; } } }
         if(s.boomer){ s.t += dt; const back = s.t > 0.55; if(back){ const dx = p.x - s.x, dy = p.y - s.y, d = Math.hypot(dx, dy) || 1; s.vx += dx/d*1400*dt; s.vy += dy/d*1400*dt; const m = Math.hypot(s.vx, s.vy); if(m > 420){ s.vx *= 420/m; s.vy *= 420/m; } if(d < 18 && s.t > 0.8) s.life = 0; } else { s.vx *= 1 - dt*1.2; s.vy *= 1 - dt*1.2; } }
         s.x += s.vx*dt; s.y += s.vy*dt;
         for(const e of g.foes){ if(e.dead || s.life <= 0) continue;
           if((e.x - s.x)**2 + (e.y - s.y)**2 < (e.r + s.r)**2){
             const last = s.hit[e.id] || -9; if(g.t - last < 0.4) continue; s.hit[e.id] = g.t;
-            hurt(e, s.dmg, s.vx, s.vy, 70, s.k); if(!s.boomer){ if(s.pierce-- <= 0) s.life = 0; } } }
+            hurt(e, s.dmg, s.vx, s.vy, s.k === 'ant' ? 20 : 70, s.src || s.k); if(s.slowT) e.slow = Math.max(e.slow, s.slowT); if(!s.boomer){ if(s.pierce-- <= 0) s.life = 0; } } }
       }
       g.shots = g.shots.filter(s => s.life > 0);
       // 퍼지는 것·깔린 것
       for(const a of g.areas){
         a.t += dt; a.life -= dt;
-        if(a.k === 'wave'){ a.r = a.R*Math.min(1, a.t/ (a.life + a.t)); a.x = a.x; inCircle(a.x, a.y, a.r, e => { if(a.hit[e.id]) return; const d = Math.hypot(e.x - a.x, e.y - a.y); if(d > a.r - 26 - e.r){ a.hit[e.id] = 1; hurt(e, a.dmg, e.x - a.x, e.y - a.y, a.kb, a.big ? 'tide' : 'wave'); } }); }
+        if(a.k === 'wave'){ a.r = a.R*Math.min(1, a.t/ (a.life + a.t)); a.x = a.x; inCircle(a.x, a.y, a.r, e => { if(a.hit[e.id]) return; const d = Math.hypot(e.x - a.x, e.y - a.y); if(d > a.r - 26 - e.r){ a.hit[e.id] = 1; hurt(e, a.dmg, e.x - a.x, e.y - a.y, a.kb, a.src || (a.big ? 'tide' : 'wave')); if(a.slowT) e.slow = Math.max(e.slow, a.slowT); } }); }
+        if(a.k === 'burrow' && !a.popped && a.t >= 0.4){ a.popped = true; inCircle(a.x, a.y, a.r, e => hurt(e, a.dmg, e.x - a.x, e.y - a.y, 160, 'burrow')); g.events.push({ type:'burrowPop', x:a.x, y:a.y, r:a.r }); }
+        if(a.k === 'net'){ inCircle(a.x, a.y, a.r, e => { if(e.type !== 'boss') e.root = Math.max(e.root || 0, 0.2); }); a.tick -= dt; if(a.tick <= 0){ a.tick = 0.5; inCircle(a.x, a.y, a.r, e => hurt(e, a.dmg, 0, 0, 0, 'net')); } }
         if(a.k === 'euca'){ a.tick -= dt; inCircle(a.x, a.y, a.r, e => { e.slow = Math.max(e.slow, 0.15); }); if(a.tick <= 0){ a.tick = 0.5; inCircle(a.x, a.y, a.r, e => hurt(e, a.dmg, 0, 0, 0, 'euca')); } }
       }
       g.areas = g.areas.filter(a => a.life > 0);
