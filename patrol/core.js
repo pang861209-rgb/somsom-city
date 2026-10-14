@@ -109,7 +109,6 @@
         else { let s = 0; c.forEach(o => s += o.w); let r = rnd()*s; i = 0; for(; i < c.length - 1; i++){ r -= c[i].w; if(r <= 0) break; } }
         out.push(c[i].id); c.splice(i, 1);
       }
-      if(!out.length) out.push('lunch');
       return out.map(id => ({ id, from:lvOf(id), to:lvOf(id) + 1 }));
     }
     function apply(o){
@@ -129,7 +128,7 @@
       const o = g.choices[i]; if(!o) return;
       apply(o);
       g.choices = null; g.pendingUp--;
-      if(g.pendingUp > 0) g.choices = offers();
+      if(g.pendingUp > 0){ const o2 = offers(); if(o2.length) g.choices = o2; else g.pendingUp = 0; }
     };
 
     for(let i = 0; i < 6; i++){ const e = spawn('dust', i/6*Math.PI*2); e.x = Math.cos(i)*200; e.y = Math.sin(i)*200; }
@@ -140,6 +139,7 @@
       g.chest = false;
       const r = rnd(), n = r < 0.6 ? 1 : r < 0.9 ? 2 : 3, got = [];
       for(let i = 0; i < n; i++){ const o = offers()[0]; if(!o) break; apply(o); got.push(o); }
+      if(!got.length) p.hp = Math.min(p.maxhp, p.hp + p.maxhp*0.5);
       return got;
     };
 
@@ -304,7 +304,9 @@
       for(const c of g.chests){ if(Math.hypot(p.x - c.x, p.y - c.y) < p.r + 18){ c.got = true; g.chest = true; g.events.push({ type:'chest' }); } }
       g.chests = g.chests.filter(c => !c.got);
       if(g.gems.length > 400) g.gems.splice(0, g.gems.length - 400);
-      if(g.pendingUp > 0 && !g.choices){ g.choices = offers(); g.events.push({ type:'levelup', lv:p.lv }); }
+      if(g.pendingUp > 0 && !g.choices){ const o = offers();
+        if(o.length){ g.choices = o; g.events.push({ type:'levelup', lv:p.lv }); }
+        else { g.pendingUp = 0; p.hp = Math.min(p.maxhp, p.hp + p.maxhp*0.3); g.events.push({ type:'allmax' }); } }   // 모든 기술이 최고 단계면 카드 대신 체력 회복
     };
 
     g.result = () => ({ t:Math.floor(g.t), kills:g.kills, win:g.win, boss:g.bossDown, lv:p.lv });

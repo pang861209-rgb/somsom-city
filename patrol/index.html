@@ -228,9 +228,10 @@ function heroInfo(k){ const xp = SAVE.xp[k] || 0, lv = C.heroLevel(xp), X = C.HE
 function renderTitle(){
   $('heroes').innerHTML = Object.keys(C.HEROES).map(k => { const H = C.HEROES[k], hi = heroInfo(k);
     return `<div class="hero ${SAVE.pick === k ? 'sel' : ''}" data-k="${k}"><img src="../assets/basket/ch_${k}.webp" alt="">
-      <div style="flex:1"><div class="nm">${H.n}<span class="lv">주민 Lv ${hi.lv}</span></div>
+      <div style="flex:1"><div class="nm">${H.n}<span class="lv">주민 Lv ${hi.lv}${hi.nxt == null ? ' · 최고' : ''}</span></div>
       <div class="bar"><i style="width:${Math.round(hi.p*100)}%"></i></div>
       <ul>${H.unlock.map(u => `<li class="${hi.lv >= u.lv ? '' : 'off'}">${hi.lv >= u.lv ? '✓' : '잠김'} <b>Lv${u.lv}</b> ${u.txt}</li>`).join('')}</ul></div></div>`; }).join('');
+  $('dbgUp').classList.toggle('hidden', heroInfo(SAVE.pick).nxt == null);
   document.querySelectorAll('.hero').forEach(el => el.onclick = () => { SAVE.pick = el.dataset.k; save(); renderTitle(); });
 }
 renderTitle();
@@ -266,7 +267,7 @@ $('goBtn').onclick = start; $('againBtn').onclick = start;
 $('titleBtn').onclick = () => { $('sRes').classList.add('hidden'); renderTitle(); $('sTitle').classList.remove('hidden'); mode = 'TITLE'; };
 
 function renderSkills(){
-  $('skills').innerHTML = Object.entries(g.p.skills).map(([id, lv]) => `<span class="${C.SKILLS[id].kind === 'evo' ? 'evo' : ''}">${C.SKILLS[id].n} ${C.SKILLS[id].kind === 'evo' ? '★' : lv}</span>`).join('');
+  $('skills').innerHTML = Object.entries(g.p.skills).map(([id, lv]) => `<span class="${C.SKILLS[id].kind === 'evo' ? 'evo' : ''}">${C.SKILLS[id].n} ${C.SKILLS[id].kind === 'evo' ? '★' : lv >= C.MAXLV ? '최고' : lv}</span>`).join('');
 }
 function showChoices(){
   mode = 'UP';
@@ -275,7 +276,7 @@ function showChoices(){
   cards.innerHTML = g.choices.map((o, i) => { const s = C.SKILLS[o.id], evo = s.kind === 'evo', isNew = !o.from && !evo, pas = s.kind === 'pas';
     const desc = evo ? s.d[0] : s.d[Math.min(s.d.length - 1, o.to - 1)];
     return `<div class="opt ${evo ? 'evo' : isNew ? 'new' : ''} ${pas ? 'pas' : ''}" data-i="${i}"><div class="ic"><img src="${icon(o.id)}" alt=""></div><div class="body">
-      <div class="t">${s.n}<span class="chip ${evo ? 'evo' : isNew ? 'new' : 'up'}">${evo ? '진화' : isNew ? '새 기술' : 'Lv ' + o.to}</span>
+      <div class="t">${s.n}<span class="chip ${evo ? 'evo' : isNew ? 'new' : 'up'}">${evo ? '진화' : isNew ? '새 기술' : o.to >= C.MAXLV ? '최고 단계!' : 'Lv ' + o.to}</span>
       ${evo ? '' : `<span class="pips">${[1,2,3,4,5].map(n => `<i class="${n <= o.to ? 'on' : ''}"></i>`).join('')}</span>`}</div>
       <div class="d">${desc}</div></div></div>`; }).join('');
   // 한 장씩 뒤집힐 때 소리, 다 나온 뒤에 누를 수 있게 (실수로 바로 눌리지 않게)
@@ -365,6 +366,7 @@ function events(){
       case 'hurt': shake = Math.max(shake, 0.15); buzz(25); sfx(140, 0.12, 'sawtooth', 0.04); break;
       case 'boss': bossBanner = 2.4; shake = 0.4; blip(110, 0.8, 'sawtooth', 0.06, 70); buzz([100, 50, 100]); break;
       case 'bossDown': addFx({ k:'banner', s:'왕꼬릿 구름을 물리쳤다!', life:2 }); break;
+      case 'allmax': addFx({ k:'pickTxt', s:'모든 기술 최고! 체력 회복', evo:true, life:1.4 }); addFx({ k:'pickRing', c:'#7BC86C', life:0.7 }); blip(880, 0.15, 'triangle', 0.06); break;
       case 'elite': addFx({ k:'banner', s:'반짝이는 골칫거리! 보물 상자를 갖고 있어요', life:1.8, small:true }); break;
       case 'chest': blip(880, 0.1, 'triangle', 0.07); break;
       case 'ring': addFx({ k:'banner', s:'골칫거리가 몰려와요!', life:1.4, small:true }); break;
