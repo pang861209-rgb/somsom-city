@@ -178,6 +178,86 @@ h1{font-family:"Black Han Sans",sans-serif;font-weight:400;font-size:40px;margin
 #sTitle .note{color:#7E7768;opacity:1;margin-top:8px}
 #dbgRow .btn{font-size:12px}
 @media (max-height:740px){ .tHero{height:clamp(170px,calc(100dvh - 440px),300px)} .tHero img{object-position:50% 50%} .brand h1{font-size:36px} .brand p{display:none} .hero .stg{height:46px} .hero img{height:45px} .hero .stg::before{width:42px;height:42px;margin-left:-21px} .hero .bar{display:none} .pickInfo{margin:8px 0;padding:6px 12px} #goBtn{padding:10px 0;font-size:23px} #sTitle .note{display:none} .tLinks button{padding:8px 0} }
+/* ── 나머지 화면도 허브 분위기로: 어두운 카드 + 금색 강조 ── */
+:root{--bg:#221E18;--bg2:#2B2620;--cd:#302A23;--ln:rgba(255,255,255,.09);--tx:#EFE7D6;--tx2:#CFC5B0;--mu:#A9A08C;--g1:#F2C14B;--g2:#E59A34}
+.screen{background:rgba(26,22,17,.84);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);color:var(--tx)}
+.card{background:linear-gradient(180deg,#352E26,#2B2620);border:1px solid rgba(242,193,75,.2);border-radius:22px;box-shadow:0 24px 50px -20px rgba(0,0,0,.9);color:var(--tx)}
+h1,.screen h2{color:var(--g1)}
+.btn{border:none;color:#2B2118;background:linear-gradient(180deg,#F7D06A,#E59A34);box-shadow:0 5px 0 #8A5418,0 14px 28px -12px rgba(229,154,52,.7);border-radius:18px}
+.btn:active{box-shadow:0 1px 0 #8A5418}
+.btn.sm{font:700 14px "Gowun Dodum",sans-serif;padding:10px 0;color:var(--tx);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);box-shadow:none;border-radius:12px}
+.btn.sm:active{background:rgba(255,255,255,.12);transform:none}
+.note{color:var(--mu);opacity:1}
+/* HUD */
+#xpbar{height:10px;border:1px solid rgba(255,255,255,.18);background:rgba(34,30,24,.72);box-shadow:0 2px 8px rgba(0,0,0,.35)}
+#xpbar i{background:linear-gradient(90deg,#E59A34,#F7D06A)}
+#hudrow{color:#FFF7E6;-webkit-text-stroke:0;text-shadow:0 2px 0 rgba(34,30,24,.9),0 0 8px rgba(34,30,24,.6)}
+#lvl{color:var(--g1);background:rgba(34,30,24,.78);border-radius:999px;padding:1px 11px;font-size:18px;text-shadow:none}
+#kills{background:rgba(34,30,24,.72);border-radius:999px;padding:2px 10px;font-size:14px}
+#skills span{font:700 11px "Gowun Dodum",sans-serif;color:var(--tx);background:rgba(34,30,24,.78);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:2px 8px}
+#skills span.evo{color:#2B2118;background:var(--g1);border-color:var(--g1)}
+#pauseBtn{border:1px solid rgba(255,255,255,.15);background:rgba(34,30,24,.8);color:var(--g1);box-shadow:0 4px 12px rgba(0,0,0,.4)}
+#pauseBtn:active{box-shadow:none}
+/* 레벨 업 카드 */
+#up h2{color:var(--g1);-webkit-text-stroke:0;text-shadow:0 3px 0 #6B3E12,0 0 26px rgba(242,193,75,.55)}
+#up .lvtxt{color:var(--tx2)}
+.opt{background:linear-gradient(180deg,#3A3229,#2E2822);border:1.5px solid rgba(255,255,255,.1);box-shadow:0 10px 24px -14px rgba(0,0,0,.9);color:var(--tx)}
+.opt:active{box-shadow:none}
+.opt .ic{border:none;background:#F6EBD5;box-shadow:inset 0 0 0 2px rgba(0,0,0,.08)}
+.opt .d{color:var(--tx2)}
+.opt .chip{border:none;border-radius:999px;padding:1px 8px;color:#2B2118}
+.opt .chip.up{background:rgba(255,255,255,.14);color:var(--tx)}
+.opt .chip.new{background:#8FD0FF}
+.opt .chip.evo{background:var(--g1)}
+.opt .pips i{border:none;background:rgba(255,255,255,.14);width:8px;height:8px}
+.opt .pips i.on{background:var(--g1);box-shadow:0 0 6px rgba(242,193,75,.7)}
+.opt.new{border-color:#5BA8E8;box-shadow:0 0 0 1px #5BA8E8,0 10px 26px -12px rgba(91,168,232,.8)}.opt.new .ic{background:#DDEBFA}
+.opt.pas .ic{background:#E6F4DE}
+.opt.evo{background:linear-gradient(135deg,#4A3A1E,#3A2E1C);border-color:var(--g1);box-shadow:0 0 0 1px var(--g1),0 0 30px rgba(242,193,75,.55)}
+.opt.evo .t{color:var(--g1)}
+.opt.evo .ic{background:#FFE7A6}
+.opt.evo::after,.opt.new::after{background:linear-gradient(100deg,transparent,rgba(255,255,255,.22),transparent)}
+/* 보물 상자 */
+#chest h2{color:var(--g1);-webkit-text-stroke:0;text-shadow:0 3px 0 #6B3E12,0 0 26px rgba(242,193,75,.55)}
+#chest .slot{border:3px solid var(--g1);background:#F6EBD5;box-shadow:0 0 0 6px rgba(242,193,75,.18),0 0 30px rgba(242,193,75,.45)}
+#chest .gotc{background:linear-gradient(180deg,#3A3229,#2E2822);border:1px solid rgba(242,193,75,.3);color:var(--tx2)}
+#chest .gotc img{background:#F6EBD5;border-radius:10px}
+#chest .gotc b{color:var(--tx)}
+#chOk{max-width:380px}
+/* 결과 */
+#res .big{color:var(--tx)!important}
+#res.win .big{color:var(--g1)!important}
+#res .score{color:var(--mu)}
+#res .score b{color:var(--g1);font-size:40px;text-shadow:0 0 22px rgba(242,193,75,.35)}
+#res .score .nb{border:none;background:var(--g1);color:#2B2118;border-radius:999px;padding:1px 8px}
+#rRival{color:var(--tx2)}#rRival b{color:var(--g1)}
+#res .stats div{border:1px solid var(--ln);background:rgba(255,255,255,.04);color:var(--mu)}
+#res .stats b{color:var(--tx)}
+#res .hxp{border:1px solid var(--ln);background:rgba(255,255,255,.04)}
+#res .hxp .bar,.skTop .bar{border:none;background:rgba(255,255,255,.1);height:8px}
+#res .hxp .bar i,.skTop .bar i{background:linear-gradient(90deg,#E59A34,#F7D06A)}
+#rGain{color:var(--g1);font-weight:700}#rNext{color:var(--mu)}
+#res .unl{border:1px solid var(--g1);background:rgba(242,193,75,.14);color:var(--tx2)}
+#res .unl b{color:var(--g1)}
+.ach{border:1px solid rgba(123,200,108,.45);background:rgba(123,200,108,.12);color:var(--tx2)}.ach b{color:#9BE07F}
+/* 순위 */
+.tabs .btn{font:700 13px "Gowun Dodum",sans-serif}
+.tabs .btn.on{background:var(--g1);color:#2B2118;border-color:var(--g1)}
+#bNote{color:var(--mu);opacity:1}
+.bRow{border-bottom:1px solid var(--ln)}.bRow .rk{color:var(--mu)}.bRow.top .rk{color:var(--g1)}.bRow .sc{color:var(--tx)}
+.bRow.me{background:rgba(242,193,75,.12)}
+.bRow img{background:rgba(255,255,255,.06);border-radius:50%}
+/* 기술 보기 */
+#sSkills h2{color:var(--tx)}
+#skLv{color:var(--mu)}
+.ulr{border:1px solid var(--ln);background:rgba(255,255,255,.04);color:var(--tx2)}
+.ulr.off{opacity:.45;background:transparent}
+.ulr .lvb{background:var(--g1);color:#2B2118}
+.ulr .ics img{border:none;background:#F6EBD5}
+.skTop img{background:rgba(255,255,255,.05);border-radius:50%}
+/* 멈춤 */
+#sPause .sub{color:var(--tx2)}
+#toast{background:#2B2620;color:var(--tx);border:1px solid rgba(242,193,75,.3)}
 </style>
 </head>
 <body>
@@ -485,7 +565,7 @@ function finish(){
   setTimeout(() => {
     $('hud').classList.add('hidden'); $('skills').classList.add('hidden'); $('up').classList.add('hidden');
     $('rBig').textContent = r.win ? (r.boss ? '골목을 지켰다!' : '3분 버텼다!') : quitting ? '원정 중단' : '쓰러졌다…'; quitting = false;
-    $('rBig').style.color = r.win ? '#E0663F' : '#2B2118';
+    $('res').classList.toggle('win', !!r.win);
     $('rScore').innerHTML = r.score.toLocaleString() + (newBest && SAVE.runs > 1 ? '<span class="nb">최고 기록!</span>' : '');
     $('rRival').textContent = ''; showRival();
     $('rAch').innerHTML = achGot.map(a => `<div class="ach"><b>업적 달성</b> · ${a}</div>`).join('');
