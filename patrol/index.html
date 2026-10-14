@@ -21,17 +21,28 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
 .tag{display:inline-block;font-size:12px;border:2px solid var(--ink);border-radius:99px;padding:2px 10px;background:#FFE08A}
 h1{font-family:"Black Han Sans",sans-serif;font-weight:400;font-size:40px;margin:8px 0 2px;letter-spacing:-1px;text-align:center}
 .sub{font-size:14px;margin:0 0 12px;text-align:center}
-.heroes{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
-.hero{border:2.5px solid var(--ink);border-radius:16px;padding:10px;display:flex;gap:10px;background:#fff;cursor:pointer;text-align:left}
-.hero.sel{background:#FFF1C9;box-shadow:0 0 0 3px var(--gold) inset}
-.hero{padding:8px 10px}.hero:not(.sel) img{width:44px;height:44px}.hero img{width:64px;height:64px;object-fit:contain;flex:none}
-.hero .nm{font-family:"Black Han Sans",sans-serif;font-size:20px;display:flex;align-items:center;gap:8px}
-.hero .lv{font-size:13px;background:var(--ink);color:var(--paper);border-radius:8px;padding:1px 7px;font-family:"Black Han Sans",sans-serif}
-.hero .bar{height:8px;border:2px solid var(--ink);border-radius:99px;background:#eee;overflow:hidden;margin:4px 0 6px}
+.heroes{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:8px}
+.hero{border:2.5px solid var(--ink);border-radius:14px;padding:6px 4px 7px;background:#fff;cursor:pointer;text-align:center;position:relative;transition:transform .12s}
+.hero:active{transform:scale(.96)}
+.hero.sel{background:#FFF1C9;box-shadow:0 0 0 3px var(--gold) inset,0 3px 0 var(--ink);transform:translateY(-2px)}
+.hero img{width:100%;height:56px;object-fit:contain;display:block}
+.hero .nm{font-family:"Black Han Sans",sans-serif;font-size:16px;line-height:1.2;margin-top:2px}
+.hero .lv{display:inline-block;font-size:11px;background:var(--ink);color:var(--paper);border-radius:7px;padding:0 6px;font-family:"Black Han Sans",sans-serif}
+.hero .lv.max{background:var(--gold);color:var(--ink)}
+.hero .bar{height:6px;border:1.5px solid var(--ink);border-radius:99px;background:#eee;overflow:hidden;margin:4px 6px 0}
 .hero .bar i{display:block;height:100%;background:#7BC86C}
-.hero ul{list-style:none;margin:0;padding:0;font-size:12px;line-height:1.5}
-.hero li.off{opacity:.45}
-.hero li b{font-weight:700}
+.pickInfo{border:2px dashed rgba(43,33,24,.35);border-radius:12px;padding:6px 10px;font-size:13px;line-height:1.45;margin-bottom:10px;text-align:center;min-height:42px}
+.pickInfo b{font-family:"Black Han Sans",sans-serif;font-weight:400}
+#sSkills .card{max-height:calc(100vh - 40px);overflow-y:auto}
+#sSkills h2{font-family:"Black Han Sans",sans-serif;font-weight:400;font-size:26px;margin:0;text-align:center}
+.skTop{display:flex;align-items:center;gap:10px;margin-bottom:8px}.skTop img{width:64px;height:64px;object-fit:contain}
+.skTop .bar{height:9px;border:2px solid var(--ink);border-radius:99px;background:#eee;overflow:hidden;margin-top:4px}.skTop .bar i{display:block;height:100%;background:#7BC86C}
+.ul{display:flex;flex-direction:column;gap:6px}
+.ulr{display:flex;gap:8px;align-items:center;border:2px solid var(--ink);border-radius:12px;padding:6px 8px;background:#fff;font-size:13px}
+.ulr.off{opacity:.5;background:#F2ECE0}
+.ulr .lvb{flex:none;font-family:"Black Han Sans",sans-serif;font-size:13px;background:var(--ink);color:var(--paper);border-radius:8px;padding:1px 6px}
+ @media (max-height:740px){ #sTitle .card{padding:14px 12px} #sTitle .key{height:84px;margin:-14px -12px 4px;width:calc(100% + 24px)} #sTitle h1{font-size:26px!important} #sTitle .sub{display:none} .hero img{height:44px} .hero .nm{font-size:14px} .pickInfo{font-size:12px;margin-bottom:8px;min-height:0} #goBtn{padding:9px 0;font-size:22px} #sTitle .note{display:none} }
+.ulr .ics{display:flex;gap:2px;flex:none}.ulr .ics img{width:30px;height:30px;border:1.5px solid var(--ink);border-radius:8px;background:#fff}
 .btn{font-family:"Black Han Sans",sans-serif;font-size:24px;border:3px solid var(--ink);background:var(--accent);color:#fff;border-radius:16px;padding:12px 0;width:100%;box-shadow:0 4px 0 var(--ink);cursor:pointer}
 .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
 .btn.sm{font-size:15px;padding:8px 0;background:#fff;color:var(--ink);box-shadow:0 3px 0 var(--ink)}
@@ -121,7 +132,7 @@ h1{font-family:"Black Han Sans",sans-serif;font-weight:400;font-size:40px;margin
 .homeBtn{position:fixed;top:calc(env(safe-area-inset-top) + 8px);left:8px;z-index:8;background:rgba(43,38,32,.86);border:none;border-radius:13px;padding:6px 13px;font:700 13px "Gowun Dodum",sans-serif;color:#EFE7D6;text-decoration:none;box-shadow:0 4px 14px -6px rgba(0,0,0,.8)}
 #pauseBtn{position:fixed;top:calc(env(safe-area-inset-top) + 66px);right:10px;z-index:4;width:40px;height:40px;border-radius:12px;border:2.5px solid var(--ink);background:rgba(255,248,236,.92);font:700 15px "Black Han Sans",sans-serif;color:var(--ink);box-shadow:0 3px 0 var(--ink)}
 #pauseBtn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
-.key{width:calc(100% + 32px);margin:-18px -16px 6px;height:190px;border-radius:19px 19px 0 0;overflow:hidden;border-bottom:3px solid var(--ink);background:#F6EBD5}
+.key{width:calc(100% + 32px);margin:-18px -16px 4px;height:clamp(96px,17vh,150px);border-radius:19px 19px 0 0;overflow:hidden;border-bottom:3px solid var(--ink);background:#F6EBD5}
 .key img{width:100%;height:100%;object-fit:cover;object-position:50% 72%;display:block}
 .best{font-size:13px;text-align:center;margin:-4px 0 10px}
 .best b{font-family:"Black Han Sans",sans-serif;font-weight:400;font-size:16px}
@@ -157,14 +168,15 @@ h1{font-family:"Black Han Sans",sans-serif;font-weight:400;font-size:40px;margin
 <div class="screen" id="sTitle">
   <div class="card">
     <div class="key"><img src="../assets/patrol/key.webp" alt="주민 원정" onerror="this.parentNode.remove()"></div>
-    <h1>주민 원정</h1>
-    <p class="sub">은행나무 골목에 골칫거리가 몰려와요. 3분만 버텨 주세요!</p>
+    <h1 style="font-size:32px;margin:4px 0 0">주민 원정</h1>
+    <p class="sub" style="font-size:13px;margin-bottom:6px">골칫거리 사이에서 3분만 버텨 주세요!</p>
     <div class="best" id="best"></div>
     <div class="heroes" id="heroes"></div>
+    <div class="pickInfo" id="pickInfo"></div>
     <button class="btn" id="goBtn">출발</button>
-    <div class="row"><button class="btn sm" id="rankBtn">순위 보기</button></div>
+    <div class="row"><button class="btn sm" id="skBtn">기술 보기</button><button class="btn sm" id="rankBtn">순위 보기</button></div>
     <div class="row hidden" id="dbgRow"><button class="btn sm" id="dbgUp">레벨 올려 보기(개발)</button><button class="btn sm" id="dbgReset">처음부터</button></div>
-    <div class="note">화면을 밀어서 움직여요. 공격은 저절로 해요.<br>판을 마칠 때마다 그 주민의 레벨이 올라가요.</div>
+    <div class="note">화면을 밀어서 움직여요. 공격은 저절로 해요.</div>
   </div>
 </div>
 
@@ -180,6 +192,15 @@ h1{font-family:"Black Han Sans",sans-serif;font-weight:400;font-size:40px;margin
   <div class="slot hidden" id="slot"><div class="reel" id="reel"></div></div>
   <div class="got" id="got"></div>
   <button class="btn hidden" id="chOk" style="max-width:380px;margin-top:12px">받기</button>
+</div>
+
+<div class="screen hidden" id="sSkills">
+  <div class="card">
+    <div class="skTop"><img id="skImg" alt=""><div style="flex:1"><h2 id="skName" style="text-align:left"></h2><div style="font-size:13px" id="skLv"></div><div class="bar"><i id="skBar"></i></div></div></div>
+    <div style="font-size:12px;opacity:.75;margin-bottom:8px">판을 마칠 때마다 경험치가 쌓여 주민 레벨이 올라요.</div>
+    <div class="ul" id="skList"></div>
+    <div class="row"><button class="btn sm" id="skClose">닫기</button></div>
+  </div>
 </div>
 
 <div class="screen hidden" id="sPause">
@@ -304,13 +325,26 @@ function heroInfo(k){ const xp = SAVE.xp[k] || 0, lv = C.heroLevel(xp), X = C.HE
 function renderTitle(){
   $('heroes').innerHTML = Object.keys(C.HEROES).map(k => { const H = C.HEROES[k], hi = heroInfo(k);
     return `<div class="hero ${SAVE.pick === k ? 'sel' : ''}" data-k="${k}"><img src="../assets/basket/ch_${k}.webp" alt="">
-      <div style="flex:1"><div class="nm">${H.n}<span class="lv">주민 Lv ${hi.lv}${hi.nxt == null ? ' · 최고' : ''}</span></div>
-      <div class="bar"><i style="width:${Math.round(hi.p*100)}%"></i></div>
-      ${SAVE.pick === k ? `<ul>${H.unlock.map(u => `<li class="${hi.lv >= u.lv ? '' : 'off'}">${hi.lv >= u.lv ? '✓' : '잠김'} <b>Lv${u.lv}</b> ${u.txt}</li>`).join('')}</ul>` : `<div style="font-size:12px;opacity:.7">${C.SKILLS[H.start].n} 외</div>`}</div></div>`; }).join('');
-  $('dbgRow').classList.toggle('hidden', !DEV); $('dbgUp').classList.toggle('hidden', heroInfo(SAVE.pick).nxt == null);
+      <div class="nm">${H.n}</div><span class="lv ${hi.nxt == null ? 'max' : ''}">Lv ${hi.lv}${hi.nxt == null ? ' 최고' : ''}</span>
+      <div class="bar"><i style="width:${Math.round(hi.p*100)}%"></i></div></div>`; }).join('');
+  const k = SAVE.pick, H = C.HEROES[k], hi = heroInfo(k), nx = H.unlock.find(u => u.lv > hi.lv);
+  $('pickInfo').innerHTML = `<b>${H.n}</b> 주민 Lv ${hi.lv}` + (nx ? ` · 다음 레벨까지 ${hi.nxt - hi.xp}<br>다음 <b>Lv${nx.lv}</b> · ${nx.txt}` : '<br>모든 보상을 받았어요');
+  $('dbgRow').classList.toggle('hidden', !DEV); $('dbgUp').classList.toggle('hidden', hi.nxt == null);
   $('best').innerHTML = SAVE.best ? '내 최고 점수 <b>' + SAVE.best.toLocaleString() + '</b>' : '';
-  document.querySelectorAll('.hero').forEach(el => el.onclick = () => { SAVE.pick = el.dataset.k; save(); renderTitle(); });
+  document.querySelectorAll('.hero').forEach(el => el.onclick = () => { if(SAVE.pick !== el.dataset.k) blip(600, 0.06, 'triangle', 0.05); SAVE.pick = el.dataset.k; save(); renderTitle(); });
 }
+// 기술 보기: 고른 주민의 레벨별 보상과 기술 그림
+function openSkills(){
+  const k = SAVE.pick, H = C.HEROES[k], hi = heroInfo(k);
+  $('skImg').src = '../assets/basket/ch_' + k + '.webp'; $('skName').textContent = H.n;
+  $('skLv').textContent = '주민 Lv ' + hi.lv + (hi.nxt == null ? ' · 최고' : ' · 다음 레벨까지 ' + (hi.nxt - hi.xp));
+  $('skBar').style.width = Math.round(hi.p*100) + '%';
+  $('skList').innerHTML = H.unlock.map(u => { const on = hi.lv >= u.lv, ics = (u.add || []).map(id => `<img src="${icon(id)}" alt="">`).join('');
+    return `<div class="ulr ${on ? '' : 'off'}"><span class="lvb">Lv${u.lv}</span>${ics ? `<span class="ics">${ics}</span>` : ''}<span>${u.txt}${on ? '' : ' (잠김)'}</span></div>`; }).join('');
+  $('sTitle').classList.add('hidden'); $('sSkills').classList.remove('hidden');
+}
+$('skBtn').onclick = () => { blip(520, 0.06, 'triangle', 0.05); openSkills(); };
+$('skClose').onclick = () => { $('sSkills').classList.add('hidden'); $('sTitle').classList.remove('hidden'); };
 renderTitle();
 $('dbgUp').onclick = () => { const k = SAVE.pick, hi = heroInfo(k); if(hi.nxt != null) SAVE.xp[k] = hi.nxt; save(); renderTitle(); blip(660, 0.15, 'triangle', 0.06); };
 $('dbgReset').onclick = () => { SAVE.xp = {}; save(); renderTitle(); };
