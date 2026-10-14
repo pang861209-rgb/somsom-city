@@ -172,6 +172,7 @@ const cv = $('cv'), ctx = cv.getContext('2d');
 let W = 0, H = 0;
 function resize(){ const d = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W*d; cv.height = H*d; ctx.setTransform(d, 0, 0, d, 0, 0); }
 addEventListener('resize', resize); resize();
+const ZOOM = 0.85;   // 화면을 조금 멀리서 보기 (시야 넓게)
 const COL = { ramda:'#D0563B', bookgeo:'#3E9C9A', kkito:'#EE8FAE', migae:'#4A5582', lachilchin:'#A98BD8', boneul:'#E9B840' };
 const SKCOL = { acorn:'#8B5A2B', tail:'#D0563B', button:'#C9A15A', pocket:'#B9743E', storm:'#F2B33D', spray:'#B79AD8', wave:'#4FA3D9', euca:'#6FA866', shell:'#6F5B3F', tide:'#2E7FC2', shoes:'#888', lunch:'#E98A5B', lens:'#6FA8DC', clock:'#C8A85A', ear:'#EE8FAE', brush:'#6FA8DC', pearl:'#F4EFE6', scare:'#EE8FAE', rainbow:'#E0663F', ants:'#2B2B2B', zap:'#F2A7BF', burrow:'#9A6B43', ribbon:'#F2A7BF', march:'#4A5582', yarn:'#A98BD8', tongs:'#F2C230', tea:'#C9A15A', net:'#B79AD8', scarf:'#D0563B', roll:'#A9A79C', flop:'#97782A', snack:'#E98A5B', yawn:'#B79AD8', bigroll:'#E9B840' };
 
@@ -427,7 +428,7 @@ function events(){
 // ── 그리기 ──
 function hash(x, y){ let h = (x*374761393 + y*668265263) | 0; h = (h ^ (h >>> 13))*1274126177; return ((h ^ (h >>> 16)) >>> 0)/4294967296; }
 function drawGround(){
-  const T = 64, x0 = Math.floor((cam.x - W/2)/T) - 1, x1 = Math.floor((cam.x + W/2)/T) + 1, y0 = Math.floor((cam.y - H/2)/T) - 1, y1 = Math.floor((cam.y + H/2)/T) + 1;
+  const T = 64, hw = W/2/ZOOM, hh = H/2/ZOOM, x0 = Math.floor((cam.x - hw)/T) - 1, x1 = Math.floor((cam.x + hw)/T) + 1, y0 = Math.floor((cam.y - hh)/T) - 1, y1 = Math.floor((cam.y + hh)/T) + 1;
   for(let ty = y0; ty <= y1; ty++) for(let tx = x0; tx <= x1; tx++){
     const h = hash(tx, ty), x = tx*T, y = ty*T;
     ctx.fillStyle = h < 0.33 ? '#D9CBB0' : h < 0.66 ? '#D2C3A6' : '#DDD0B6'; ctx.fillRect(x, y, T, T);
@@ -495,7 +496,7 @@ function frame(now){
   cam.x += (p.x - cam.x)*Math.min(1, dt*8); cam.y += (p.y - cam.y)*Math.min(1, dt*8);
   shake = Math.max(0, shake - dt); flashRing = Math.max(0, flashRing - dt*2);
   const sx = shake ? (Math.random() - 0.5)*shake*18 : 0, sy = shake ? (Math.random() - 0.5)*shake*18 : 0;
-  ctx.save(); ctx.translate(W/2 - cam.x + sx, H/2 - cam.y + sy);
+  ctx.save(); ctx.translate(W/2 + sx, H/2 + sy); ctx.scale(ZOOM, ZOOM); ctx.translate(-cam.x, -cam.y);
   try{ drawWorld(t, p, dt); } catch(err){ console.error(err); }
   ctx.restore();
   drawScreen(t, p, dt);
