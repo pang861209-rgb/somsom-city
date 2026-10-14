@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#3B2F28">
-<title>솜솜시티: 주민 원정 (시험판)</title>
+<title>솜솜시티: 주민 원정</title>
+<meta name="description" content="솜솜시티 주민 여섯이 골목을 지키는 3분 원정. 기술을 고르고 진화시키고, 주민마다 레벨을 올려요.">
+<script src="../village.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&display=swap">
@@ -115,6 +117,29 @@ h1{font-family:"Black Han Sans",sans-serif;font-weight:400;font-size:40px;margin
 #res .hxp .bar i{display:block;height:100%;background:#7BC86C;width:0;transition:width .9s ease-out}
 #res .unl{background:#FFE08A;border:2.5px solid var(--ink);border-radius:12px;padding:8px 10px;margin-top:8px;font-size:14px;animation:pop .35s ease-out both}
 #res .unl b{font-family:"Black Han Sans",sans-serif;font-weight:400;font-size:17px}
+
+.homeBtn{position:fixed;top:calc(env(safe-area-inset-top) + 8px);left:8px;z-index:8;background:rgba(43,38,32,.86);border:none;border-radius:13px;padding:6px 13px;font:700 13px "Gowun Dodum",sans-serif;color:#EFE7D6;text-decoration:none;box-shadow:0 4px 14px -6px rgba(0,0,0,.8)}
+#pauseBtn{position:fixed;top:calc(env(safe-area-inset-top) + 66px);right:10px;z-index:4;width:40px;height:40px;border-radius:12px;border:2.5px solid var(--ink);background:rgba(255,248,236,.92);font:700 15px "Black Han Sans",sans-serif;color:var(--ink);box-shadow:0 3px 0 var(--ink)}
+#pauseBtn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.key{width:calc(100% + 32px);margin:-18px -16px 6px;height:190px;border-radius:19px 19px 0 0;overflow:hidden;border-bottom:3px solid var(--ink);background:#F6EBD5}
+.key img{width:100%;height:100%;object-fit:cover;object-position:50% 72%;display:block}
+.best{font-size:13px;text-align:center;margin:-4px 0 10px}
+.best b{font-family:"Black Han Sans",sans-serif;font-weight:400;font-size:16px}
+#res .score{text-align:center;font-size:13px;margin-top:2px}
+#res .score b{display:block;font-family:"Black Han Sans",sans-serif;font-weight:400;font-size:34px;color:var(--accent);line-height:1.1}
+#res .score .nb{display:inline-block;background:#FFE08A;border:2px solid var(--ink);border-radius:8px;padding:0 6px;font-size:12px;margin-left:4px}
+#rRival{font-size:13px;text-align:center;margin:4px 0 10px;min-height:18px}
+.ach{font-size:13px;background:#E6F4DE;border:2px solid var(--ink);border-radius:10px;padding:5px 9px;margin-top:6px}
+#board .card{max-height:calc(100vh - 40px);display:flex;flex-direction:column}
+#board h2{font-family:"Black Han Sans",sans-serif;font-weight:400;font-size:28px;margin:0 0 8px;text-align:center}
+.tabs{display:flex;gap:6px;margin-bottom:6px}.tabs .btn{font-size:14px;padding:6px 0}.tabs .btn.on{background:var(--ink);color:var(--paper)}
+#bNote{font-size:12px;opacity:.7;text-align:center;margin-bottom:6px}
+#bList{overflow-y:auto;flex:1;min-height:120px}
+.bRow{display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1.5px dashed rgba(43,33,24,.25);font-size:15px}
+.bRow .rk{width:36px;font-family:"Black Han Sans",sans-serif}.bRow img{width:30px;height:30px;object-fit:contain}.bRow .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bRow .sc{font-family:"Black Han Sans",sans-serif}
+.bRow.top .rk{color:var(--accent)}.bRow.me{background:#FFF1C9;border-radius:8px}
+.bMsg{text-align:center;font-size:14px;padding:18px 6px;line-height:1.6}
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 90px);transform:translateX(-50%);z-index:20;background:var(--ink);color:var(--paper);border-radius:12px;padding:7px 14px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -125,16 +150,21 @@ h1{font-family:"Black Han Sans",sans-serif;font-weight:400;font-size:40px;margin
   <div id="hudrow"><span id="lvl">Lv 1</span><span id="time">3:00</span><span id="kills">0</span></div>
 </div>
 <div id="skills" class="hidden"></div>
+<button id="pauseBtn" class="hidden" aria-label="잠깐 멈춤">II</button>
+<a class="homeBtn" id="homeLink" href="../" title="솜솜시티 홈">← 홈</a>
+<div id="toast"></div>
 
 <div class="screen" id="sTitle">
   <div class="card">
-    <div style="text-align:center"><span class="tag">시험판 · 색깔 블록</span></div>
+    <div class="key"><img src="../assets/patrol/key.webp" alt="주민 원정" onerror="this.parentNode.remove()"></div>
     <h1>주민 원정</h1>
     <p class="sub">은행나무 골목에 골칫거리가 몰려와요. 3분만 버텨 주세요!</p>
+    <div class="best" id="best"></div>
     <div class="heroes" id="heroes"></div>
     <button class="btn" id="goBtn">출발</button>
-    <div class="row"><button class="btn sm" id="dbgUp">레벨 올려 보기(시험)</button><button class="btn sm" id="dbgReset">처음부터</button></div>
-    <div class="note">화면을 밀어서 움직여요. 공격은 저절로 해요.</div>
+    <div class="row"><button class="btn sm" id="rankBtn">순위 보기</button></div>
+    <div class="row hidden" id="dbgRow"><button class="btn sm" id="dbgUp">레벨 올려 보기(개발)</button><button class="btn sm" id="dbgReset">처음부터</button></div>
+    <div class="note">화면을 밀어서 움직여요. 공격은 저절로 해요.<br>판을 마칠 때마다 그 주민의 레벨이 올라가요.</div>
   </div>
 </div>
 
@@ -152,18 +182,41 @@ h1{font-family:"Black Han Sans",sans-serif;font-weight:400;font-size:40px;margin
   <button class="btn hidden" id="chOk" style="max-width:380px;margin-top:12px">받기</button>
 </div>
 
+<div class="screen hidden" id="sPause">
+  <div class="card" style="text-align:center">
+    <h1 style="font-size:34px">잠깐 멈춤</h1>
+    <p class="sub">숨 고르고 다시 가요.</p>
+    <button class="btn" id="resumeBtn">계속하기</button>
+    <div class="row"><button class="btn sm" id="quitBtn">그만하기</button></div>
+  </div>
+</div>
+
+<div class="screen hidden" id="board">
+  <div class="card">
+    <h2>원정 순위</h2>
+    <div class="tabs" id="bTabs"><button class="btn sm on" data-r="week">이번 주</button><button class="btn sm" data-r="all">전체</button></div>
+    <div id="bNote"></div>
+    <div id="bList"></div>
+    <div class="row"><button class="btn sm" id="bClose">닫기</button></div>
+  </div>
+</div>
+
 <div class="screen hidden" id="sRes">
   <div class="card" id="res">
     <div class="big" id="rBig">성공!</div>
+    <div class="score">점수<b id="rScore">0</b></div>
+    <div id="rRival"></div>
     <div class="stats"><div>버틴 시간<b id="rT">0</b></div><div>물리친 수<b id="rK">0</b></div><div>판 레벨<b id="rL">0</b></div></div>
     <div class="hxp"><div style="display:flex;justify-content:space-between;font-size:14px"><b id="rHero">람다</b><span id="rGain">+0</span></div>
       <div class="bar"><i id="rBar"></i></div><div style="font-size:12px" id="rNext"></div>
       <div id="rUnl"></div></div>
-    <button class="btn" id="againBtn">한 판 더</button>
-    <div class="row"><button class="btn sm" id="titleBtn">주민 바꾸기</button></div>
+    <div id="rAch"></div>
+    <button class="btn" id="againBtn" style="margin-top:12px">한 판 더</button>
+    <div class="row"><button class="btn sm" id="titleBtn">주민 바꾸기</button><button class="btn sm" id="resRank">순위</button></div>
   </div>
 </div>
 
+<script src="../assets/bgm.js" data-pos="left:74px;top:calc(env(safe-area-inset-top) + 8px)" data-show-if="#sTitle:not(.hidden)" data-vol="0.35" data-mute-key="somsom_patrol_muted"></script>
 <script src="core.js"></script>
 <script>
 const C = PatrolCore;
@@ -232,7 +285,8 @@ function icon(id){
 
 // ── 저장 (주민별 누적 경험치) ──
 const store = { get(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } }, set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} } };
-let SAVE = store.get('somsom_patrol', { xp:{}, pick:'ramda', runs:0 }); SAVE.xp = SAVE.xp || {};
+let SAVE = store.get('somsom_patrol', { xp:{}, pick:'ramda', runs:0 }); SAVE.xp = SAVE.xp || {}; SAVE.best = SAVE.best || 0; SAVE.used = SAVE.used || {};
+const DEV = /[?&]dev=1/.test(location.search);   // 개발용 버튼은 ?dev=1 일 때만
 const save = () => store.set('somsom_patrol', SAVE);
 
 // ── 소리 ──
@@ -253,7 +307,8 @@ function renderTitle(){
       <div style="flex:1"><div class="nm">${H.n}<span class="lv">주민 Lv ${hi.lv}${hi.nxt == null ? ' · 최고' : ''}</span></div>
       <div class="bar"><i style="width:${Math.round(hi.p*100)}%"></i></div>
       ${SAVE.pick === k ? `<ul>${H.unlock.map(u => `<li class="${hi.lv >= u.lv ? '' : 'off'}">${hi.lv >= u.lv ? '✓' : '잠김'} <b>Lv${u.lv}</b> ${u.txt}</li>`).join('')}</ul>` : `<div style="font-size:12px;opacity:.7">${C.SKILLS[H.start].n} 외</div>`}</div></div>`; }).join('');
-  $('dbgUp').classList.toggle('hidden', heroInfo(SAVE.pick).nxt == null);
+  $('dbgRow').classList.toggle('hidden', !DEV); $('dbgUp').classList.toggle('hidden', heroInfo(SAVE.pick).nxt == null);
+  $('best').innerHTML = SAVE.best ? '내 최고 점수 <b>' + SAVE.best.toLocaleString() + '</b>' : '';
   document.querySelectorAll('.hero').forEach(el => el.onclick = () => { SAVE.pick = el.dataset.k; save(); renderTitle(); });
 }
 renderTitle();
@@ -281,12 +336,24 @@ function start(){
   const k = SAVE.pick, hi = heroInfo(k);
   g = C.Game((Math.random()*2**32) >>> 0, k, hi.lv); startXp = hi.xp;
   fx = []; shake = 0; cam.x = 0; cam.y = 0; bossBanner = 0;
-  ['sTitle','sRes','up'].forEach(id => $(id).classList.add('hidden')); $('hud').classList.remove('hidden'); $('skills').classList.remove('hidden');
+  ['sTitle','sRes','up','sPause','board'].forEach(id => $(id).classList.add('hidden')); $('hud').classList.remove('hidden'); $('skills').classList.remove('hidden');
+  $('pauseBtn').classList.remove('hidden'); $('homeLink').classList.add('hidden');
   mode = 'PLAY'; last = performance.now(); renderSkills();
   blip(523, 0.12, 'triangle', 0.07); setTimeout(() => blip(784, 0.18, 'triangle', 0.07), 110);
 }
 $('goBtn').onclick = start; $('againBtn').onclick = start;
-$('titleBtn').onclick = () => { $('sRes').classList.add('hidden'); renderTitle(); $('sTitle').classList.remove('hidden'); mode = 'TITLE'; };
+function goTitle(){ ['sRes','sPause','board'].forEach(id => $(id).classList.add('hidden')); $('hud').classList.add('hidden'); $('skills').classList.add('hidden'); $('pauseBtn').classList.add('hidden');
+  $('homeLink').classList.remove('hidden'); renderTitle(); $('sTitle').classList.remove('hidden'); mode = 'TITLE'; }
+$('titleBtn').onclick = goTitle;
+// 잠깐 멈춤 — 버튼, 또는 앱을 벗어나면 저절로
+let pausedFrom = null;
+function pause(){ if(mode !== 'PLAY') return; pausedFrom = mode; mode = 'PAUSE'; $('sPause').classList.remove('hidden'); $('homeLink').classList.remove('hidden'); }
+function resume(){ if(mode !== 'PAUSE') return; $('sPause').classList.add('hidden'); $('homeLink').classList.add('hidden'); mode = pausedFrom || 'PLAY'; last = performance.now(); }
+$('pauseBtn').onclick = () => { blip(440, 0.06, 'triangle', 0.05); pause(); };
+$('resumeBtn').onclick = resume;
+$('quitBtn').onclick = () => { $('sPause').classList.add('hidden'); mode = 'PLAY'; g.p.hp = 0; g.over = true; quitting = true; };
+let quitting = false;
+document.addEventListener('visibilitychange', () => { if(document.hidden) pause(); });
 
 function renderSkills(){
   $('skills').innerHTML = Object.entries(g.p.skills).map(([id, lv]) => `<span class="${C.SKILLS[id].kind === 'evo' ? 'evo' : ''}">${C.SKILLS[id].n} ${C.SKILLS[id].kind === 'evo' ? '★' : lv >= C.MAXLV ? '최고' : lv}</span>`).join('');
@@ -347,12 +414,19 @@ let slow = 0;
 function finish(){
   mode = 'END';
   const r = g.result(), k = g.hero, gain = C.heroGain(r), before = heroInfo(k);
-  SAVE.xp[k] = (SAVE.xp[k] || 0) + gain; SAVE.runs++; save();
+  SAVE.xp[k] = (SAVE.xp[k] || 0) + gain; SAVE.runs++; SAVE.used[k] = 1;
+  const newBest = r.score > SAVE.best; if(newBest) SAVE.best = r.score; save();
   const after = heroInfo(k);
+  lastRes = r; const achGot = hubReport(r, k, after.lv);
+  $('pauseBtn').classList.add('hidden');
   setTimeout(() => {
     $('hud').classList.add('hidden'); $('skills').classList.add('hidden'); $('up').classList.add('hidden');
-    $('rBig').textContent = r.win ? (r.boss ? '골목을 지켰다!' : '3분 버텼다!') : '쓰러졌다…';
+    $('rBig').textContent = r.win ? (r.boss ? '골목을 지켰다!' : '3분 버텼다!') : quitting ? '원정 중단' : '쓰러졌다…'; quitting = false;
     $('rBig').style.color = r.win ? '#E0663F' : '#2B2118';
+    $('rScore').innerHTML = r.score.toLocaleString() + (newBest && SAVE.runs > 1 ? '<span class="nb">최고 기록!</span>' : '');
+    $('rRival').textContent = ''; showRival();
+    $('rAch').innerHTML = achGot.map(a => `<div class="ach"><b>업적 달성</b> · ${a}</div>`).join('');
+    $('homeLink').classList.remove('hidden');
     $('rT').textContent = Math.floor(r.t/60) + ':' + String(r.t % 60).padStart(2, '0'); $('rK').textContent = r.kills; $('rL').textContent = r.lv;
     $('rHero').textContent = C.HEROES[k].n + ' 주민 Lv ' + before.lv; $('rGain').textContent = '경험치 +' + gain;
     $('rBar').style.transition = 'none'; $('rBar').style.width = Math.round(before.p*100) + '%';
@@ -464,12 +538,13 @@ function drawFoe(e, t){
 function drawHero(t){
   const p = g.p, k = g.hero, moving = Math.hypot(p.ix, p.iy) > 0.1;
   if(moving){ walkPh += (1/60)*p.spd/22; if(Math.abs(p.ix) > 0.15) face = p.ix > 0 ? 1 : -1;
-    const sh = p.skills.shoes || 0; if(sh && Math.random() < 0.15 + sh*0.08) burst(p.x - p.ix*10, p.y + 14, { n:1, c:'#CDBB9A', a:Math.atan2(-p.iy, -p.ix), spread:0.8, v:30 + sh*10, s:3 + sh*0.5, grow:8, life:0.4 }); }
+    const sh = p.skills.shoes || 0; if(p.outfit && Math.random() < 0.3) burst(p.x - p.ix*8, p.y + 14, { n:1, sh:'star', c:'#F2B33D', v:12, s:3.5, life:0.6, up:10 });
+    if(sh && Math.random() < 0.15 + sh*0.08) burst(p.x - p.ix*10, p.y + 14, { n:1, c:'#CDBB9A', a:Math.atan2(-p.iy, -p.ix), spread:0.8, v:30 + sh*10, s:3 + sh*0.5, grow:8, life:0.4 }); }
   if(p.skills.pocket){ ctx.strokeStyle = 'rgba(185,116,62,.25)'; ctx.setLineDash([4, 6]); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y, p.magnet, t, t + Math.PI*2); ctx.stroke(); ctx.setLineDash([]); }
   const im = p.hurt > 0.2 && ok(IMG['h_' + k]) ? IMG['h_' + k] : IMG[k + (moving ? Math.floor(walkPh) % 4 : 0)];
   ctx.save(); ctx.translate(p.x, p.y);
   ctx.fillStyle = 'rgba(40,30,20,.25)'; ctx.beginPath(); ctx.ellipse(0, 14, 20, 7, 0, 0, 7); ctx.fill();
-  // 주민 색 발밑 고리 (5레벨 새 옷이면 금빛)
+  // 주민 색 발밑 고리 (주민 레벨 5면 금빛)
   ctx.strokeStyle = p.outfit ? '#F2B33D' : COL[k]; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(0, 14, 22, 8, 0, 0, 7); ctx.stroke();
   if(ok(im)){ const hh = { bookgeo:40, migae:34, boneul:62, kkito:66, lachilchin:48 }[k] || 58, ww = hh*im.naturalWidth/im.naturalHeight, bob = moving ? -Math.abs(Math.sin(walkPh*Math.PI/2))*4 : Math.sin(t*3)*1.5;
     if(p.roll > 0){ ctx.translate(0, -hh*0.4); ctx.rotate(t*24*face); ctx.translate(0, hh*0.4); }
@@ -479,6 +554,87 @@ function drawHero(t){
   // 체력 막대
   const w = 44; ctx.fillStyle = '#2B2118'; ctx.fillRect(p.x - w/2 - 2, p.y + 24, w + 4, 8); ctx.fillStyle = p.hp/p.maxhp < 0.3 ? '#E0663F' : '#7BC86C'; ctx.fillRect(p.x - w/2, p.y + 26, w*p.hp/p.maxhp, 4);
 }
+
+// ── 솜솜시티 허브 연동: 마을 도토리·대표 주민·업적·주간 순위 ──
+let lastRes = null;
+const ACH_NAMES = { patrol_first:'첫 원정', patrol_clear:'3분 버티기', patrol_boss:'골목 대장 물리치기', patrol_evo:'첫 진화', patrol_lv5:'주민 레벨 5', patrol_all6:'여섯 주민 모두 출동' };
+function toast(t){ const el = $('toast'); el.textContent = t; el.style.opacity = 1; clearTimeout(toast.h); toast.h = setTimeout(() => el.style.opacity = 0, 1800); }
+function hubReport(r, k, heroLv){
+  const got = [];
+  try{
+    const st = JSON.parse(localStorage.getItem('somsom_stats') || '{}');
+    // 마을 도토리: 다른 게임과 비슷하게 한 판 30~40개 수준
+    const give = Math.max(1, Math.min(60, Math.round(r.score/550)));
+    st.played = st.played || {}; st.played.patrol = (st.played.patrol || 0) + 1;
+    st.coins = (st.coins || 0) + give; st.chars = st.chars || {}; st.chars[k] = (st.chars[k] || 0) + 1; st.last = k;
+    localStorage.setItem('somsom_stats', JSON.stringify(st));
+    if(window.SV && SV.add) SV.add('patrol', give, k);
+    const ach = JSON.parse(localStorage.getItem('somsom_ach') || '{}');
+    const un = id => { if(!ach[id]){ ach[id] = Date.now(); if(ACH_NAMES[id]) got.push(ACH_NAMES[id]); } };
+    un('patrol_first'); if(r.win) un('patrol_clear'); if(r.boss) un('patrol_boss'); if(r.evo) un('patrol_evo');
+    if(heroLv >= 5) un('patrol_lv5'); if(Object.keys(SAVE.used).length >= 6) un('patrol_all6');
+    const n = ['leaf','run','match','defense','basket','boxes','patrol','merge','expedition'].filter(x => st.played[x]).length;
+    if(n >= 3) un('all_three'); if(n >= 4) un('all_four');
+    if(Object.keys(st.chars).length >= 6) un('all_chars'); if((st.coins || 0) >= 500) un('coins_500');
+    localStorage.setItem('somsom_ach', JSON.stringify(ach));
+  }catch(e){}
+  pushRanking(r, k);
+  return got;
+}
+const FB = 'https://firestore.googleapis.com/v1/projects/somsom-city/databases/(default)/documents', FB_KEY = 'AIzaSyBfld7SRrVTxDG0nE_6Z3Mw5kSRTo5bIGY';
+const myNick = () => { try{ return (localStorage.getItem('somsom_name') || '').trim(); }catch(e){ return ''; } };
+const escH = t => String(t).replace(/[<>&"]/g, c => ({ '<':'&lt;', '>':'&gt;', '&':'&amp;', '"':'&quot;' }[c]));
+// 닉네임이 있을 때만 조용히 올림 (실패해도 게임엔 영향 없음)
+async function pushRanking(r, k){
+  try{ const nm = myNick(); if(!nm || r.score <= 0) return;
+    await fetch(FB + '/patrol_scores?key=' + FB_KEY, { method:'POST', headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ fields:{ n:{ stringValue:nm.slice(0, 10) }, s:{ integerValue:String(r.score) }, t:{ integerValue:String(Date.now()) }, c:{ stringValue:k } } }) });
+  }catch(e){}
+}
+// 정렬·사람마다 최고 한 판은 받아서 여기서 (서버 정렬은 색인을 따로 만들어야 함)
+async function fetchBoard(range){
+  const q = { from:[{ collectionId:'patrol_scores' }], limit:1000 };
+  if(range === 'week') q.where = { fieldFilter:{ field:{ fieldPath:'t' }, op:'GREATER_THAN_OR_EQUAL', value:{ integerValue:String(Date.now() - 7*24*3600e3) } } };
+  const res = await fetch(FB + ':runQuery?key=' + FB_KEY, { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ structuredQuery:q }) });
+  const j = await res.json(); if(!Array.isArray(j)) throw new Error('bad');
+  const best = {};
+  for(const e of j){ if(!e.document) continue; const f = e.document.fields || {};
+    const n = String((f.n && f.n.stringValue) || '?').slice(0, 12), sc = +((f.s && f.s.integerValue) || 0), c = (f.c && f.c.stringValue) || '';
+    if(!best[n] || sc > best[n].s) best[n] = { n, s:sc, c }; }
+  return best;
+}
+function withMine(best){ // 방금 끝난 판은 서버 반영 전일 수 있어 바로 얹는다
+  const me = myNick(); if(me && lastRes && lastRes.score > 0 && (!best[me] || lastRes.score > best[me].s)) best[me] = { n:me, s:lastRes.score, c:g.hero };
+  return Object.values(best).sort((a, b) => b.s - a.s);
+}
+async function showRival(){
+  const me = myNick(), el = $('rRival'); if(!me){ el.textContent = '솜솜시티 첫 화면에서 이름을 정하면 순위에 올라가요'; return; }
+  try{ const rows = withMine(await fetchBoard('week')), i = rows.findIndex(x => x.n === me); if(i < 0 || mode !== 'END') return;
+    el.innerHTML = rows.length < 2 ? '이번 주 <b>1위</b> · 아직 혼자예요' :
+      i === 0 ? `이번 주 <b>1위</b> · 2위 ${escH(rows[1].n)}보다 ${(rows[0].s - rows[1].s).toLocaleString()}점 앞` :
+      `이번 주 <b>${i + 1}위</b> · ${i}위 ${escH(rows[i - 1].n)}까지 ${(rows[i - 1].s - rows[i].s + 1).toLocaleString()}점`;
+  }catch(e){}
+}
+let boardRange = 'week', boardFrom = 'sTitle';
+async function openBoard(range, from){
+  if(range) boardRange = range; if(from) boardFrom = from;
+  document.querySelectorAll('#bTabs .btn').forEach(b => b.classList.toggle('on', b.dataset.r === boardRange));
+  $('bNote').textContent = boardRange === 'week' ? '최근 7일 · 사람마다 최고 한 판' : '지금까지 · 사람마다 최고 한 판';
+  const list = $('bList'); list.innerHTML = '<div class="bMsg">불러오는 중…</div>';
+  ['sTitle','sRes'].forEach(id => $(id).classList.add('hidden')); $('board').classList.remove('hidden');
+  const want = boardRange, me = myNick(); let rows;
+  try{ rows = withMine(await fetchBoard(want)); }
+  catch(e){ if(want === boardRange) list.innerHTML = '<div class="bMsg">지금은 순위를 못 불러왔어요.<br>잠시 뒤 다시 열어 보세요.</div>'; return; }
+  if(want !== boardRange) return;
+  if(!rows.length){ list.innerHTML = `<div class="bMsg">${want === 'week' ? '이번 주' : '아직'} 기록이 없어요.<br><b>첫 번째가 되어 보세요.</b></div>`; return; }
+  list.innerHTML = rows.slice(0, 50).map((x, i) => `<div class="bRow${x.n === me ? ' me' : ''}${i < 3 ? ' top' : ''}"><span class="rk">${i + 1}위</span>` +
+    (C.HEROES[x.c] ? `<img src="../assets/basket/ch_${x.c}.webp" alt="">` : '<img alt="">') + `<span class="nm">${escH(x.n)}</span><span class="sc">${x.s.toLocaleString()}</span></div>`).join('') +
+    (me ? '' : '<div class="bMsg">솜솜시티 첫 화면에서 <b>이름을 정하면</b> 내 점수도 순위에 올라가요.</div>');
+}
+$('rankBtn').onclick = () => { blip(520, 0.06, 'triangle', 0.05); openBoard(null, 'sTitle'); };
+$('resRank').onclick = () => { blip(520, 0.06, 'triangle', 0.05); openBoard('week', 'sRes'); };
+document.querySelectorAll('#bTabs .btn').forEach(b => b.onclick = () => openBoard(b.dataset.r));
+$('bClose').onclick = () => { $('board').classList.add('hidden'); if(boardFrom === 'sTitle') renderTitle(); $(boardFrom).classList.remove('hidden'); };
 
 function frame(now){
   const dt = Math.min(0.05, (now - last)/1000); last = now; sfxBudget = 4;

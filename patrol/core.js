@@ -74,7 +74,7 @@
         { lv:2, add:['button'],       txt:'새 기술: 단추 부메랑' },
         { lv:3, add:['pocket','storm'], txt:'새 기술: 불룩한 주머니 · 진화 「도토리 폭풍」' },
         { lv:4, startLv:2,            txt:'도토리 던지기 2단계로 시작' },
-        { lv:5, hpK:1.15, outfit:1,   txt:'새 옷 「가을 조끼」 · 체력 +15%' },
+        { lv:5, hpK:1.15, outfit:1,   txt:'금빛 발자국 · 체력 +15%' },
       ] },
     bookgeo: { n:'북거씨', hp:120, spd:112, armor:1, start:'spray',
       unlock: [
@@ -82,7 +82,7 @@
         { lv:2, add:['euca'],         txt:'새 기술: 유칼립투스 장판' },
         { lv:3, add:['shell','tide'], txt:'새 기술: 단단한 등딱지 · 진화 「밀물」' },
         { lv:4, startLv:2,            txt:'향수 분무 2단계로 시작' },
-        { lv:5, hpK:1.15, outfit:1,   txt:'새 옷 「바다색 터틀넥」 · 체력 +15%' },
+        { lv:5, hpK:1.15, outfit:1,   txt:'금빛 발자국 · 체력 +15%' },
       ] },
   };
   Object.assign(HEROES, {
@@ -92,7 +92,7 @@
         { lv:2, add:['pearl'],          txt:'새 기술: 진주 구슬' },
         { lv:3, add:['scare','rainbow'], txt:'새 기술: 깜짝 순발력 · 진화 「무지개 붓질」' },
         { lv:4, startLv:2,              txt:'쫑긋 소리 2단계로 시작' },
-        { lv:5, hpK:1.15, outfit:1,     txt:'새 옷 「노을빛 조끼」 · 체력 +15%' },
+        { lv:5, hpK:1.15, outfit:1,     txt:'금빛 발자국 · 체력 +15%' },
       ] },
     migae: { n:'미개', hp:90, spd:150, armor:0, start:'ants', r:11,
       unlock: [
@@ -100,15 +100,15 @@
         { lv:2, add:['burrow'],         txt:'새 기술: 개미굴' },
         { lv:3, add:['ribbon','march'], txt:'새 기술: 분홍 리본 · 진화 「개미 행진」' },
         { lv:4, startLv:2,              txt:'개미 친구 2단계로 시작' },
-        { lv:5, hpK:1.15, outfit:1,     txt:'새 옷 「산책 부츠」 · 체력 +15%' },
+        { lv:5, hpK:1.15, outfit:1,     txt:'금빛 발자국 · 체력 +15%' },
       ] },
-    lachilchin: { n:'할머니', hp:135, spd:126, armor:0, start:'yarn', r:14,
+    lachilchin: { n:'할머니', hp:140, spd:126, armor:1, start:'yarn', r:14,
       unlock: [
         { lv:1, add:['yarn','tongs'],   txt:'실타래 굴리기 · 은행 집게' },
         { lv:2, add:['net'],            txt:'새 기술: 뜨개 그물' },
         { lv:3, add:['tea','scarf'],    txt:'새 기술: 따뜻한 차 · 진화 「할머니 목도리」' },
         { lv:4, startLv:2,              txt:'실타래 굴리기 2단계로 시작' },
-        { lv:5, hpK:1.15, outfit:1,     txt:'새 옷 「꽃무늬 앞치마」 · 체력 +15%' },
+        { lv:5, hpK:1.15, outfit:1,     txt:'금빛 발자국 · 체력 +15%' },
       ] },
     boneul: { n:'보늘', hp:160, spd:100, armor:1, start:'roll', r:17,
       unlock: [
@@ -116,7 +116,7 @@
         { lv:2, add:['yawn'],           txt:'새 기술: 하품' },
         { lv:3, add:['snack','bigroll'], txt:'새 기술: 과자 봉지 · 진화 「대왕 데굴」' },
         { lv:4, startLv:2,              txt:'데굴데굴 2단계로 시작' },
-        { lv:5, hpK:1.15, outfit:1,     txt:'새 옷 「늘보의 식탁 티셔츠」 · 체력 +15%' },
+        { lv:5, hpK:1.15, outfit:1,     txt:'금빛 발자국 · 체력 +15%' },
       ] },
   });
   const COMMON = ['shoes','lunch','lens','clock'];
@@ -124,6 +124,8 @@
   const MAXLV = 5;
 
   function heroLevel(xp){ let l = 1; for(let i = 2; i < HERO_XP.length; i++) if(xp >= HERO_XP[i]) l = i; return l; }
+  // 순위 점수: 오래 버티고 많이 물리칠수록, 성공·대장 처치에 큰 보너스
+  function score(res){ return res.kills*10 + res.t*10 + (res.win ? 1000 : 0) + (res.boss ? 1500 : 0); }
   function heroGain(res){ return Math.round(res.kills*0.15 + res.t*0.5 + (res.win ? 80 : 0) + (res.boss ? 40 : 0)); }
 
   function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
@@ -427,10 +429,10 @@
         else { g.pendingUp = 0; p.hp = Math.min(p.maxhp, p.hp + p.maxhp*0.3); g.events.push({ type:'allmax' }); } }   // 모든 기술이 최고 단계면 카드 대신 체력 회복
     };
 
-    g.result = () => ({ t:Math.floor(g.t), kills:g.kills, win:g.win, boss:g.bossDown, lv:p.lv });
+    g.result = () => { const r = { t:Math.floor(g.t), kills:g.kills, win:g.win, boss:g.bossDown, lv:p.lv, evo:Object.keys(p.skills).filter(id => SKILLS[id].kind === 'evo').length }; r.score = score(r); return r; };
     return g;
   }
 
-  const api = { DEFAULTS, FOES, SKILLS, HEROES, HERO_XP, MAXLV, heroLevel, heroGain, Game, mulberry32 };
+  const api = { DEFAULTS, FOES, SKILLS, HEROES, HERO_XP, MAXLV, heroLevel, heroGain, score, Game, mulberry32 };
   if(typeof module !== 'undefined') module.exports = api; else root.PatrolCore = api;
 })(this);

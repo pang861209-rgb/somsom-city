@@ -12,7 +12,7 @@ function bot(g){
   fx += Math.cos(g.t*0.4)*0.35 + (Math.random() - 0.5)*0.8; fy += Math.sin(g.t*0.4)*0.35 + (Math.random() - 0.5)*0.8;
   g.setInput(fx, fy);
 }
-for(const hero of Object.keys(C.HEROES)) for(const hl of [1,3,5]){
+for(const hero of Object.keys(C.HEROES).filter(h => !process.env.HERO || h === process.env.HERO)) for(const hl of [1,3,5]){
   let win = 0, t = 0, lv = 0, kills = 0, boss = 0, gain = 0; const ups = [];
   for(let s = 0; s < N; s++){
     const g = C.Game(s*7919 + 3, hero, hl); let firstUp = 0;

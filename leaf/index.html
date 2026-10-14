@@ -1785,7 +1785,9 @@ function achReport(ev){
     }
   }
   const p = st.played||{};
-  if(p.leaf && p.run && p.match) achUnlock('all_three');
+  const nPlayed = Object.keys(p).filter(x => p[x]).length;   // 짝맞추기가 내려가서 '서로 다른 게임 수'로 센다
+  if(nPlayed >= 3) achUnlock('all_three');
+  if(nPlayed >= 4) achUnlock('all_four');
   if(Object.keys(st.chars||{}).length >= 6) achUnlock('all_chars');
   if((st.coins||0) >= 500) achUnlock('coins_500');
 
