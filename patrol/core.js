@@ -44,7 +44,7 @@
 
   // ── 주민: 기본 능력 + 주민 레벨별로 열리는 것 ──
   const HEROES = {
-    ramda: { n:'람다', hp:85, spd:150, armor:0, start:'acorn',
+    ramda: { n:'람다', hp:100, spd:150, armor:0, start:'acorn',
       unlock: [
         { lv:1, add:['acorn','tail'], txt:'도토리 던지기 · 꼬리 털기' },
         { lv:2, add:['button'],       txt:'새 기술: 단추 부메랑' },
@@ -83,7 +83,7 @@
     p.skills[H.start] = startLv;
 
     const g = { P, hero:heroKey, heroLv, p, foes:[], shots:[], areas:[], gems:[], t:0, over:false, win:false, kills:0, boss:null, bossDown:false,
-      events:[], pendingUp:0, choices:null, pool, rnd, spawnAcc:0, orbit:0 };
+      events:[], pendingUp:0, chests:[], chest:false, choices:null, pool, rnd, spawnAcc:0, orbit:0 };
 
     const need = lv => 2 + lv*3 + Math.floor(lv*lv*0.15);
     const lvOf = id => p.skills[id] || 0;
@@ -112,11 +112,9 @@
       if(!out.length) out.push('lunch');
       return out.map(id => ({ id, from:lvOf(id), to:lvOf(id) + 1 }));
     }
-    g.choose = function(i){
-      if(!g.choices) return;
-      const o = g.choices[i]; if(!o) return;
+    function apply(o){
       const s = SKILLS[o.id];
-      p.skills[o.id] = o.to;
+      p.skills[o.id] = o.to; p.t[o.id] = 0;
       if(s.kind === 'evo'){ delete p.skills[s.from[0]]; }
       if(o.id === 'lunch'){ p.maxhp += 20; p.hp = Math.min(p.maxhp, p.hp + 20 + p.maxhp*0.25); }
       if(o.id === 'shoes') p.spd *= 1.10;
@@ -125,11 +123,25 @@
       if(o.id === 'pocket'){ p.magnet *= 1.3; p.xpK += o.to % 2 === 0 ? 0.10 : 0; }
       if(o.id === 'shell'){ p.armor += 1; p.thorns += 2; }
       g.events.push({ type:'pick', id:o.id, lv:o.to });
+    }
+    g.choose = function(i){
+      if(!g.choices) return;
+      const o = g.choices[i]; if(!o) return;
+      apply(o);
       g.choices = null; g.pendingUp--;
       if(g.pendingUp > 0) g.choices = offers();
     };
 
     for(let i = 0; i < 6; i++){ const e = spawn('dust', i/6*Math.PI*2); e.x = Math.cos(i)*200; e.y = Math.sin(i)*200; }
+
+    // 보물 상자 열기: 1개 60% · 2개 30% · 3개 10%
+    g.openChest = function(){
+      if(!g.chest) return null;
+      g.chest = false;
+      const r = rnd(), n = r < 0.6 ? 1 : r < 0.9 ? 2 : 3, got = [];
+      for(let i = 0; i < n; i++){ const o = offers()[0]; if(!o) break; apply(o); got.push(o); }
+      return got;
+    };
 
     g.setInput = function(x, y){ const m = Math.hypot(x, y); if(m > 1){ x /= m; y /= m; } p.ix = x; p.iy = y; if(m > 0.1){ p.fx = x/(m || 1); p.fy = y/(m || 1); } };
 
@@ -142,7 +154,7 @@
     }
     function spawner(dt){
       const t = g.t;
-      const rate = 1.8 + t*0.085 + (t > 100 ? (t - 100)*0.09 : 0);
+      const rate = 1.3 + t*0.09 + (t > 100 ? (t - 100)*0.09 : 0);
       g.spawnAcc += rate*dt;
       while(g.spawnAcc >= 1){ g.spawnAcc--;
         const r = rnd();
@@ -154,6 +166,7 @@
       }
       // 무리 지어 오기 (원 모양 포위)
       if(Math.floor((t - dt)/30) !== Math.floor(t/30) && t > 25){ const n = 10 + Math.floor(t/20); for(let i = 0; i < n; i++) spawn(t > 70 ? 'nut' : 'dust', i/n*Math.PI*2); g.events.push({ type:'ring' }); }
+      if(Math.floor((t - dt)/40) !== Math.floor(t/40) && t > 30 && t < P.bossAt){ const e = spawn(t > 90 ? 'pile' : 'cloud'); e.elite = true; e.hp *= 8; e.maxhp = e.hp; e.r *= 1.35; e.spd *= 0.85; g.events.push({ type:'elite' }); }
       if(!g.boss && !g.bossDown && t >= P.bossAt){ g.boss = spawn('boss'); g.boss.summon = 4; g.events.push({ type:'boss' }); }
     }
 
@@ -165,7 +178,8 @@
       g.events.push({ type:'hit', x:e.x, y:e.y - e.r, dmg:Math.round(dmg) });
       if(e.hp <= 0){ e.dead = true; g.kills++;
         const f = FOES[e.type];
-        g.gems.push({ x:e.x, y:e.y, v:f.xp, big:e.type === 'boss' || e.type === 'pile' });
+        g.gems.push({ x:e.x, y:e.y, v:f.xp*(e.elite ? 4 : 1), big:e.type === 'boss' || e.type === 'pile' || e.elite });
+        if(e.elite || e.type === 'boss') g.chests.push({ x:e.x + 18, y:e.y });
         g.events.push({ type:'die', x:e.x, y:e.y, foe:e.type });
         if(e === g.boss){ g.boss = null; g.bossDown = true; g.events.push({ type:'bossDown' }); }
       }
@@ -230,7 +244,7 @@
     }
 
     g.update = function(dt){
-      if(g.over || g.choices) return;
+      if(g.over || g.choices || g.chest) return;
       g.dt = dt; g.t += dt;
       if(g.t >= P.time){ g.over = true; g.win = true; g.events.push({ type:'end', win:true }); return; }
       // 주민 이동
@@ -248,7 +262,7 @@
         e.x += (dx/d*sp + e.vx)*dt; e.y += (dy/d*sp + e.vy)*dt;
         e.vx *= Math.max(0, 1 - dt*8); e.vy *= Math.max(0, 1 - dt*8);
         if(e.flash > 0) e.flash -= dt; if(e.slow > 0) e.slow -= dt;
-        if(d < e.r + p.r){ touching += Math.max(1, e.dmg - p.armor); if(p.thorns && !(e.thornT > 0)){ e.thornT = 0.5; hurt(e, p.thorns, -dx, -dy, 120); } }
+        if(d < e.r + p.r){ touching += Math.max(1, e.dmg*Math.min(1, 0.6 + g.t/300) - p.armor); if(p.thorns && !(e.thornT > 0)){ e.thornT = 0.5; hurt(e, p.thorns, -dx, -dy, 120); } }
         if(e.thornT > 0) e.thornT -= dt;
         if(e.type === 'boss'){ e.summonT = (e.summonT || 6) - dt; if(e.summonT <= 0){ e.summonT = 6; for(let i = 0; i < 6; i++) { const s = spawn('dust'); s.x = e.x + Math.cos(i)*50; s.y = e.y + Math.sin(i)*50; } g.events.push({ type:'summon' }); } }
       }
@@ -287,6 +301,8 @@
           while(p.xp >= p.next){ p.xp -= p.next; p.lv++; p.next = need(p.lv); g.pendingUp++; } }
       }
       g.gems = g.gems.filter(m => !m.got);
+      for(const c of g.chests){ if(Math.hypot(p.x - c.x, p.y - c.y) < p.r + 18){ c.got = true; g.chest = true; g.events.push({ type:'chest' }); } }
+      g.chests = g.chests.filter(c => !c.got);
       if(g.gems.length > 400) g.gems.splice(0, g.gems.length - 400);
       if(g.pendingUp > 0 && !g.choices){ g.choices = offers(); g.events.push({ type:'levelup', lv:p.lv }); }
     };

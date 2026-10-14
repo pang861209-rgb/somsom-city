@@ -16,7 +16,7 @@ for(const hero of ['ramda','bookgeo']) for(const hl of [1,2,3,4,5]){
   let win = 0, t = 0, lv = 0, kills = 0, boss = 0, gain = 0; const ups = [];
   for(let s = 0; s < N; s++){
     const g = C.Game(s*7919 + 3, hero, hl); let firstUp = 0;
-    while(!g.over){ if(g.choices){ if(!firstUp) firstUp = g.t; const c = g.choices; let i = c.findIndex(o => C.SKILLS[o.id].kind === 'evo'); if(i < 0) i = c.findIndex(o => C.SKILLS[o.id].kind === 'atk'); g.choose(i < 0 ? 0 : i); continue; }
+    while(!g.over){ if(g.chest){ g.openChest(); continue; } if(g.choices){ if(!firstUp) firstUp = g.t; const c = g.choices; let i = c.findIndex(o => C.SKILLS[o.id].kind === 'evo'); if(i < 0) i = c.findIndex(o => C.SKILLS[o.id].kind === 'atk'); g.choose(i < 0 ? 0 : i); continue; }
       bot(g); g.update(1/30); g.events.length = 0; }
     const r = g.result(); win += r.win; t += r.t; lv += r.lv; kills += r.kills; boss += r.boss; gain += C.heroGain(r); ups.push(firstUp);
   }
