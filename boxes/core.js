@@ -48,14 +48,15 @@
   };
 
   // ── 친구 도움 카드 (v1.1) ── 짐 주인 보너스를 받으면 그 친구 카드가 한 장 생긴다
-  //  kkito 돌려 놓기 · migae 바꿔 오기 · lachilchin 되돌리기 · ramda 단추로 바꾸기 · boneul 한 줄 치우기 · bookgeo 다음 정리 두 배
+  //  kkito 돌려 놓기 · migae 바꿔 오기 · lachilchin 되돌리기 · ramda 단추로 바꾸기 · boneul 한 줄 치우기 · bookgeo 등딱지로 밀기(3×3 치우기)
+  //  (10/20 북거씨 '향수 한 방울 — 다음 정리 ×2'는 막혔을 때 쓸모가 없다는 피드백으로 교체)
   const CARD = {
     kkito:      { n:'돌려 놓기',   d:'상자 하나를 90도 돌려요',            pick:true },
     migae:      { n:'바꿔 오기',   d:'아래 상자를 새로 받아 와요',          pick:false },
     lachilchin: { n:'되돌리기',    d:'방금 놓은 상자를 되돌려요',           pick:false },
     ramda:      { n:'단추로 바꾸기', d:'상자 하나를 한 칸짜리 단추로 바꿔요', pick:true },
     boneul:     { n:'한 줄 치우기', d:'가장 꽉 찬 줄을 굴러서 치워요',       pick:false },
-    bookgeo:    { n:'향수 한 방울', d:'다음 정리 점수가 두 배',              pick:false },
+    bookgeo:    { n:'등딱지로 밀기', d:'선반에서 고른 곳 3×3 칸을 치워요',   pick:'board' },
   };
   // 조각을 90도 돌린 모양 — 같은 모양이 목록에 있으면 그걸 쓴다
   const keyOf = cells => cells.map(([r,c])=>r*10+c).sort((a,b)=>a-b).join(',');
@@ -108,6 +109,10 @@
       const f = bigF(), W = W0.map((w,i) => SHAPES[i].n >= 5 ? w*f : w), tot = W.reduce((a,v)=>a+v,0);
       let r = rng()*tot; for(let i=0;i<SHAPES.length;i++){ r -= W[i]; if(r <= 0) return SHAPES[i]; } return SHAPES[0]; };
     const piece = s => ({ s, owner: (rng()*OWNERS.length)|0 });
+    // 북거씨 — 고른 칸을 가운데로 한 3×3 (선반 밖으로 나가면 안쪽으로 밀어 넣는다)
+    const win3 = idx => { const r0 = Math.max(0, Math.min(N-3, Math.floor(idx/N)-1)), c0 = Math.max(0, Math.min(N-3, idx%N-1)), out = [];
+      for(let r=r0;r<r0+3;r++) for(let c=c0;c<c0+3;c++) out.push(r*N+c); return out; };
+    g.win3 = win3;
     g.deal = function(){
       let set = [piece(pick()), piece(pick()), piece(pick())];
       if(o.assist){
@@ -131,7 +136,7 @@
       if(k === 'lachilchin') return !!g.prev;
       if(k === 'migae')      return tray.length > 0;
       if(k === 'boneul')     return g.board.some(v => v >= 0);
-      if(k === 'bookgeo')    return !g.boost;
+      if(k === 'bookgeo')    return g.board.some(v => v >= 0);
       return false;
     };
     // 막혔을 때 이 카드로 살아날 수 있나
@@ -139,6 +144,12 @@
       if(!g.cards[k]) return false;
       if(k === 'kkito') return g.tray.some(p => p && fitsAnywhere(g.board, rotateShape(p.s)));
       if(k === 'ramda') return g.board.some(v => v < 0);
+      if(k === 'bookgeo'){                       // 3×3을 어딘가 치우면 남은 상자 하나라도 들어가나
+        const left = g.tray.filter(Boolean);
+        for(let r=1;r<N-1;r++) for(let c=1;c<N-1;c++){ const t = g.board.slice(); for(const j of win3(r*N+c)) t[j] = -1;
+          if(left.some(p => fitsAnywhere(t, p.s))) return true; }
+        return false;
+      }
       return k === 'lachilchin' ? !!g.prev : (k === 'migae' || k === 'boneul');
     };
     g.checkOver = function(){
@@ -166,7 +177,10 @@
         res.removed = []; res.line = best;
         for(let j=0;j<N;j++){ const at = best[0]==='r' ? best[1]*N+j : j*N+best[1]; if(g.board[at] >= 0){ res.removed.push([Math.floor(at/N), at%N, g.board[at]]); g.board[at] = -1; } }
       }
-      else if(k === 'bookgeo'){ g.boost = true; }
+      else if(k === 'bookgeo'){
+        res.removed = [];
+        for(const j of win3(i)) if(g.board[j] >= 0){ res.removed.push([Math.floor(j/N), j%N, g.board[j]]); g.board[j] = -1; }
+      }
       g.cards[k]--; if(!g.cards[k]) delete g.cards[k];
       g.st.cardsUsed++; if(g.stuck) g.st.saved++;
       if(k !== 'lachilchin') g.prev = null;
