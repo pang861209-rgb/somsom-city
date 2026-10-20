@@ -131,8 +131,8 @@
   <div class="how"><i>1</i><span>아래 상자 세 개를 하나씩 끌어서 선반에 놓아요. 돌릴 수는 없어요.</span></div>
   <div class="how"><i>2</i><span>가로나 세로 한 줄이 꽉 차면 정리돼요. 여러 줄을 한 번에 지우면 점수가 크게 올라요.</span></div>
   <div class="how"><i>3</i><span>계속 지우면 <b>연속</b> 배수가 올라가요. 세 번 연달아 못 지우면 끊겨요.</span></div>
-  <div class="how"><i>4</i><span>한 줄에 <b>같은 친구 짐이 6칸 이상</b>이면 그 친구가 기뻐하고 점수가 두 배예요.</span></div>
-  <div class="how"><i>5</i><span><b>친구 카드</b>: 처음에 한 장, 짐 주인 보너스 세 번마다 한 장 더(최대 두 장). 막히면 카드로 살릴 수 있어요.</span></div>
+  <div class="how"><i>4</i><span>한 줄에 <b>같은 친구 짐이 5칸 이상</b>이면 그 친구가 기뻐하고 점수가 두 배예요.</span></div>
+  <div class="how"><i>5</i><span><b>친구 카드</b>: 처음에 한 장, 짐 주인 보너스 네 번마다 한 장 더(최대 두 장). 막히면 카드로 살릴 수 있어요.</span></div>
   <div class="how"><i>6</i><span>카드도 없이 남은 상자가 어디에도 안 들어가면 끝. 판마다 상자 순서가 새로 섞여요.</span></div>
   <div class="owners" id="ownerGrid"></div>
   <button class="big" id="howClose">알았어요</button>
@@ -188,6 +188,8 @@ function sfx(name, a, b){
   if(name==='pick')  tone(520,0.05,'triangle',0.035);
   if(name==='place'){ tone(170,0.07,'triangle',0.07); tone(340,0.05,'sine',0.03,0.02); }
   if(name==='bad')   tone(130,0.14,'sawtooth',0.03);
+  if(name==='tick'){ tone(1480,0.05,'square',0.03); tone(990,0.05,'square',0.025,0.12); }
+  if(name==='break') [523,392,262].forEach((f,i)=>tone(f,0.16,'triangle',0.05,i*0.08));
   if(name==='clear'){
     // 연속이 이어질수록 한 음씩(온음) 올라간다. 여러 줄이면 화음이 두꺼워진다
     const n = Math.min(12, a||1), f = 392*Math.pow(2,(n-1)*2/12), k = Math.min(4, (b||1)+1);
@@ -229,6 +231,9 @@ let pickCard = null;           // 대상을 골라야 하는 카드: 끼토·람
 let aimBook = false;           // 북거씨: 누른 채 움직이며 고르고, 손을 떼면 치운다
 let pickCell = -1;             // 북거씨 카드 — 손가락이 가리키는 선반 칸(3×3 미리 보기)
 let cardPop = {};              // 새로 받은 카드 반짝임
+let flyers = [];               // v1.2 큰 정리 때 짐 아이콘이 주인에게 날아간다
+let praise = null;             // v1.2 정리 칭찬 {txt, lv, t}
+let comboBreak = null;         // v1.2 연속이 끊긴 순간 {n, t}
 let pops = [], parts = [], floats = [], faces = [], placed = [], shakeT = 0, flash = 0, overT = 0;
 let dealSeen = 0, dealT = 1, shownScore = 0, curve = [0], paceBest = null, placedBy = {}, trayBad = [0,0,0], hint = null, hintT = 0, overDim = 0;
 function paceLoad(){ const p = load(PACEKEY, null); paceBest = (p && p.s === SAVE.best && Array.isArray(p.c)) ? p.c : null; }
@@ -246,6 +251,7 @@ function startGame(fresh){
     try{ localStorage.removeItem(RUNKEY); }catch(e){}
   }
   pops = []; parts = []; floats = []; faces = []; placed = []; shakeT = 0; flash = 0; overT = 0; overDim = 0;
+  flyers = []; praise = null; comboBreak = null;
   shownScore = g.score; drag = null; trayBad = [0,0,0]; pickCard = null; pickCell = -1; aimBook = false; cardPop = {};
   paceLoad();
   mode = 'PLAY'; show(null);
@@ -377,25 +383,36 @@ function drawCards(t){
 function cellXY(r, c){ return { x: BX + c*CELL, y: BY + r*CELL }; }
 function doPlace(i, r, c){
   const own = OW[g.tray[i].owner];
+  const prevCombo = g.combo;
   const res = g.place(i, r, c); if(!res) return;
   placedBy[own] = (placedBy[own]||0) + 1;
   for(const [rr,cc] of res.cells) placed.push({ r:rr, c:cc, t:0 });
   sfx('place'); buzz(8);
   if(res.nL){
-    const cy = (res.rows.length ? res.rows : [3.5]).reduce((a,v)=>a+v,0)/(res.rows.length||1);
-    const cx = (res.cols.length ? res.cols : [3.5]).reduce((a,v)=>a+v,0)/(res.cols.length||1);
+    // v1.2 놓은 상자에서 가장 가까운 칸부터 바깥으로 쓸려 나간다
+    const cy = res.cells.reduce((a,v)=>a+v[0],0)/res.cells.length, cx = res.cells.reduce((a,v)=>a+v[1],0)/res.cells.length;
     for(const [rr,cc,w] of res.removed){
-      const dly = Math.hypot(rr-cy, cc-cx)*0.035;
+      const dly = Math.hypot(rr-cy, cc-cx)*0.045;
       pops.push({ r:rr, c:cc, w, t:-dly });
       if(Math.random() < 0.5) for(let k=0;k<2;k++){ const p = cellXY(rr,cc);
         parts.push({ x:p.x+CELL/2, y:p.y+CELL/2, vx:(Math.random()-.5)*260, vy:-80-Math.random()*220, t:0, col:COL[OW[w]] || '#ddd', s:3+Math.random()*4 }); }
     }
-    sfx('clear', res.combo, res.nL); buzz(res.nL > 1 ? 30 : 14);
-    shakeT = Math.min(0.45, 0.12*res.nL + (res.clearAll ? 0.25 : 0));
+    sfx('clear', res.combo, res.nL); buzz(res.nL > 1 ? [20,30,40].slice(0, res.nL) : 14);
+    shakeT = Math.min(0.6, 0.1 + 0.14*(res.nL-1) + (res.clearAll ? 0.25 : 0));
+    if(!res.clearAll) praise = { txt: ['정리!','깔끔해요!','대단해요!','완벽해요!'][Math.min(3, res.nL-1)], lv: Math.min(4, res.nL), t: 0 };
+    if(res.nL >= 3) flash = Math.max(flash, 0.5);
+    if(res.nL >= 2){
+      // 가장 많이 치운 주인에게 짐 아이콘이 날아간다
+      const cnt = {}; for(const [,,w] of res.removed) cnt[w] = (cnt[w]||0) + 1;
+      const top = +Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];
+      const tx = BX + S - CELL*0.9, ty = BY + CELL*1.1;
+      res.removed.forEach(([rr,cc,w], j) => { if(j % 2) return; const p = cellXY(rr,cc);
+        flyers.push({ x0:p.x+CELL/2, y0:p.y+CELL/2, tx, ty, k: OW[w], t: -0.1 - j*0.012 }); });
+      faces.push({ k: OW[top], x: tx, y: ty + CELL*1.4, t: -0.25, small: true });
+    }
     const mid = cellXY(res.rows.length ? res.rows[0] : 3.5, res.cols.length ? res.cols[0] : 3.5);
     for(const f of floats) if(f.t >= 0) f.t = Math.max(f.t, 0.75);   // 앞 글자는 빨리 치운다
-    floats.push({ x: BX + S/2, y: BY + S*0.42, txt: '+' + res.gained, t: 0, big: res.nL >= 2 || res.combo >= 3, sub:
-      (res.nL >= 2 ? res.nL + '줄 한 번에!' : '') + (res.combo >= 2 ? (res.nL >= 2 ? ' · ' : '') + '연속 ' + res.combo : '') });
+    floats.push({ x: BX + S/2, y: BY + S*0.52, txt: '+' + res.gained, t: 0, big: false, sub: res.combo >= 2 ? '연속 ' + res.combo : '' });
     const seen = new Set();
     for(const w of res.ownerLines){ if(seen.has(w) || seen.size >= 2) continue; seen.add(w);
       faces.push({ k: OW[w], x: BX + S*(seen.size===1 ? 0.3 : 0.7), y: BY + S*0.65, t: 0 }); }
@@ -406,9 +423,12 @@ function doPlace(i, r, c){
       floats.push({ x: BX + S/2, y: BY + S*0.78, txt: NAME[k] + ' 카드!', t: -0.25, big: false, sub: C.CARD[k].n });
       if(!SAVE.cardHint){ SAVE.cardHint = 1; save(KEY, SAVE); setHint('친구 카드를 받았어요 · 막히면 아래 카드를 눌러요', 5); } }
     if(res.boost) floats.push({ x: BX + S/2, y: BY + S*0.3, txt: '향수 ×2', t: -0.1, big: false });
-    if(hint && SAVE.plays < 1) setHint('같은 친구 짐으로 한 줄을 6칸 이상 채우면 두 배!', 4);
-  } else if(hint && SAVE.plays < 1 && g.placed === 1){
-    setHint('가로나 세로 한 줄을 꽉 채우면 정리돼요', 99);
+    if(hint && SAVE.plays < 1) setHint('같은 친구 짐으로 한 줄을 5칸 이상 채우면 두 배!', 4);
+  } else {
+    if(hint && SAVE.plays < 1 && g.placed === 1) setHint('가로나 세로 한 줄을 꽉 채우면 정리돼요', 99);
+    // v1.2 연속 — 끊기면 아깝게, 한 번 남으면 째깍
+    if(prevCombo >= 2 && g.combo === 0){ comboBreak = { n: prevCombo, t: 0 }; sfx('break'); buzz([30,20,30]); }
+    else if(g.combo >= 1 && g.miss === g.o.comboKeep - 1){ sfx('tick'); buzz(12); }
   }
   curve[g.placed] = g.score;
   saveRun();
@@ -580,16 +600,35 @@ function drawHud(){
 function drawCombo(){
   // 연속 — 배수와 남은 기회(점 세 개)
   const y = BY - 18;
+  if(comboBreak && comboBreak.t < 1.4){
+    const k = comboBreak.t/1.4, txt = '연속 ' + comboBreak.n + '에서 끊겼어요';
+    ctx.save(); ctx.globalAlpha = 1 - Math.max(0, k-0.6)/0.4;
+    ctx.font = '900 14px sans-serif'; const tw = ctx.measureText(txt).width;
+    // 띠가 둘로 갈라져 떨어진다
+    const sp = Math.min(1, k*3)*14, dy = Math.max(0, k-0.15)*30;
+    for(const sd of [-1,1]){ ctx.save(); ctx.translate(W/2 + sd*sp, y + dy); ctx.rotate(sd*0.12*Math.min(1,k*3));
+      ctx.beginPath(); ctx.rect(sd < 0 ? -tw/2-30 : 0, -16, tw/2+30, 32); ctx.clip();
+      rr(-tw/2-24, -13, tw+48, 26, 13); ctx.fillStyle = '#8A7458'; ctx.fill();
+      ctx.fillStyle = '#FFF3DC'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(txt, 0, 1); ctx.restore(); }
+    ctx.restore();
+    return;
+  }
   if(g.combo >= 1){
     const mul = Math.min(8, 1 + 0.5*(g.combo-1));
     const txt = '연속 ' + g.combo + (mul > 1 ? '  ×' + mul.toFixed(1).replace('.0','') : '');
     ctx.font = '900 14px sans-serif'; const tw = ctx.measureText(txt).width;
+    const last = g.miss === g.o.comboKeep - 1, blink = last ? 0.55 + 0.45*Math.sin(T*14) : 1;
+    ctx.save(); ctx.globalAlpha = blink;
     rr(W/2 - tw/2 - 34, y - 13, tw + 68, 26, 13);
-    ctx.fillStyle = g.combo >= 5 ? '#D9542F' : '#F2A13B'; ctx.fill();
+    ctx.fillStyle = last ? '#D9542F' : g.combo >= 5 ? '#E8742F' : '#F2A13B'; ctx.fill();
+    if(last){ ctx.lineWidth = 2; ctx.strokeStyle = '#2B1A08'; ctx.stroke(); }
+    ctx.restore();
     ctx.fillStyle = '#2B1A08'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(txt, W/2 - 8, y + 1);
     const left = g.o.comboKeep - g.miss;
     for(let i=0;i<g.o.comboKeep;i++){ ctx.beginPath(); ctx.arc(W/2 + tw/2 + 8 + i*9, y + 1, 3.2, 0, 7);
       ctx.fillStyle = i < left ? '#2B1A08' : 'rgba(43,26,8,.25)'; ctx.fill(); }
+    if(last){ ctx.font = '900 11px sans-serif'; ctx.fillStyle = '#C0452B'; ctx.textAlign = 'center';
+      ctx.fillText('한 번 남았어요!', W/2, y + 22); }
   } else {
     ctx.font = '800 12px sans-serif'; ctx.fillStyle = 'rgba(59,42,28,.55)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(hint ? '' : '줄을 채우면 정리돼요 · 연달아 지우면 배수', W/2, y + 1);
@@ -602,6 +641,10 @@ function drawBoard(t){
   const pad = 7;
   rr(BX-pad, BY-pad, S+pad*2, S+pad*2, 14); ctx.fillStyle = '#8A6441'; ctx.fill();
   ctx.lineWidth = 3; ctx.strokeStyle = danger ? 'rgba(217,84,47,' + (0.55 + 0.45*Math.sin(t*6)) + ')' : '#5E4128'; ctx.stroke();
+  if(g.combo >= 5 && !danger){                 // 연속이 길어질수록 선반이 빛난다
+    ctx.save(); ctx.lineWidth = g.combo >= 10 ? 6 : 4; ctx.strokeStyle = g.combo >= 10 ? 'rgba(255,214,90,.95)' : 'rgba(255,190,80,.7)';
+    ctx.shadowColor = '#FFC94A'; ctx.shadowBlur = (g.combo >= 10 ? 22 : 12)*(0.7 + 0.3*Math.sin(t*5));
+    rr(BX-pad-2, BY-pad-2, S+pad*2+4, S+pad*2+4, 16); ctx.stroke(); ctx.restore(); }
   rr(BX-2, BY-2, S+4, S+4, 9); ctx.fillStyle = '#EBDDC4'; ctx.fill();
   for(let r=0;r<N;r++) for(let c=0;c<N;c++){ const p = cellXY(r,c);
     rr(p.x+2, p.y+2, CELL-4, CELL-4, CELL*0.16); ctx.fillStyle = (r+c)%2 ? '#E2D2B6' : '#E6D7BD'; ctx.fill(); }
@@ -624,6 +667,7 @@ function drawBoard(t){
       for(const j of g.win3(pickCell)){ const p = cellXY(Math.floor(j/N), j%N); rr(p.x+1, p.y+1, CELL-2, CELL-2, CELL*0.16); ctx.fill(); } }
     ctx.restore();
   }
+  drawOwnerHints(t);
   // 놓일 자리 그림자
   if(drag && drag.ok){ const p = g.tray[drag.i]; const o = cellXY(drag.r, drag.c); drawPiece(p, o.x, o.y, CELL, 0.38); }
   // 사라지는 칸
@@ -631,6 +675,36 @@ function drawBoard(t){
     const k = Math.min(1, q.t/0.3), p = cellXY(q.r,q.c);
     drawCell(p.x, p.y, CELL, q.w, 1-k, 1 + 0.25*k - (k > 0.6 ? (k-0.6)*2 : 0));
     if(k < 0.4){ ctx.save(); ctx.globalAlpha = 0.6*(1-k/0.4); ctx.fillStyle = '#FFFFFF'; rr(p.x+2,p.y+2,CELL-4,CELL-4,CELL*0.16); ctx.fill(); ctx.restore(); }
+  }
+}
+// v1.2 짐 주인 보너스 진행 — 한 줄에 같은 친구 짐이 (기준-2)칸 이상 모였고 아직 채울 수 있으면,
+// 그 줄의 첫 빈칸에 친구 얼굴과 "3/5"를 보여 준다. 많이 모인 줄 셋까지만.
+function drawOwnerHints(t){
+  const need = g.o.ownerMin, cand = [];
+  const scan = (cells, kind, idx) => {
+    const cnt = {}; let empty = null, ne = 0;
+    for(const [r,c] of cells){ const w = g.board[r*N+c]; if(w < 0){ ne++; if(!empty) empty = [r,c]; } else cnt[w] = (cnt[w]||0) + 1; }
+    if(!ne) return;
+    for(const w in cnt){ const n = cnt[w]; if(n >= need - 2 && n + ne >= need) cand.push({ w:+w, n, at: empty, kind, idx, cells }); }
+  };
+  for(let r=0;r<N;r++){ const cs=[]; for(let c=0;c<N;c++) cs.push([r,c]); scan(cs,'r',r); }
+  for(let c=0;c<N;c++){ const cs=[]; for(let r=0;r<N;r++) cs.push([r,c]); scan(cs,'c',c); }
+  cand.sort((a,b)=>b.n-a.n);
+  const used = new Set(); let shown = 0;
+  for(const h of cand){
+    const key = h.at[0]*N + h.at[1]; if(used.has(key) || shown >= 3) continue; used.add(key); shown++;
+    const k = OW[h.w], p = cellXY(h.at[0], h.at[1]), close = h.n >= need - 1;
+    ctx.save();
+    // 그 줄의 같은 주인 칸을 살짝 밝힌다
+    ctx.globalAlpha = close ? 0.35 + 0.15*Math.sin(t*6) : 0.2; ctx.fillStyle = COL[k];
+    for(const [r,c] of h.cells){ if(g.board[r*N+c] !== h.w) continue; const q = cellXY(r,c); rr(q.x+1,q.y+1,CELL-2,CELL-2,CELL*0.18); ctx.fill(); }
+    ctx.globalAlpha = 1;
+    rr(p.x+3, p.y+3, CELL-6, CELL-6, CELL*0.2); ctx.fillStyle = 'rgba(255,248,236,.92)'; ctx.fill();
+    ctx.lineWidth = close ? 2.5 : 1.5; ctx.strokeStyle = COL[k]; ctx.stroke();
+    const im = FACE[k]; if(im.complete && im.naturalWidth){ const hh = CELL*0.5, ww = hh*im.naturalWidth/im.naturalHeight; ctx.drawImage(im, p.x + CELL/2 - ww/2, p.y + 4, ww, hh); }
+    ctx.fillStyle = close ? '#C0452B' : '#5B4A38'; ctx.font = '900 ' + Math.max(9, CELL*0.26) + 'px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(h.n + '/' + need, p.x + CELL/2, p.y + CELL*0.76);
+    ctx.restore();
   }
 }
 function drawTray(t){
@@ -650,9 +724,10 @@ function drawFx(){
     ctx.fillRect(p.x - p.s/2, p.y - p.s/2, p.s, p.s); ctx.restore(); }
   for(const f of faces){ if(f.t < 0) continue; const k = f.t/1.6, im = FACE[f.k];
     ctx.save(); ctx.globalAlpha = k < 0.15 ? k/0.15 : Math.max(0, 1 - (k-0.7)/0.3);
-    const sz = CELL*2.6*(k < 0.15 ? 0.6 + 2.6*k : 1), y = f.y - 60*k;
+    const sz = CELL*(f.small ? 1.6 : 2.6)*(k < 0.15 ? 0.6 + 2.6*k : 1), y = f.y - (f.small ? 20 : 60)*k;
     if(im.complete && im.naturalWidth){ const h = sz, w = sz*im.naturalWidth/im.naturalHeight; ctx.drawImage(im, f.x - w/2, y - h, w, h); }
     ctx.font = '900 14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    if(f.small){ ctx.restore(); continue; }
     const txt = f.card ? NAME[f.k] + ': ' + C.CARD[f.k].n + '!' : NAME[f.k] + '네 ' + ITEM[f.k] + ' 정리! ×2', tw = ctx.measureText(txt).width;
     rr(f.x - tw/2 - 10, y + 4, tw + 20, 26, 13); ctx.fillStyle = '#2B2118'; ctx.fill();
     ctx.fillStyle = '#FFD68A'; ctx.fillText(txt, f.x, y + 17); ctx.restore(); }
@@ -667,6 +742,20 @@ function drawFx(){
     if(f.sub){ ctx.font = '900 15px sans-serif'; ctx.lineWidth = 4; ctx.strokeText(f.sub, 0, f.big ? 32 : 24);
       ctx.fillStyle = '#FFF3DC'; ctx.fillText(f.sub, 0, f.big ? 32 : 24); }
     ctx.restore(); }
+  for(const f of flyers){ if(f.t < 0) continue; const k = Math.min(1, f.t/0.55), e = k*k*(3-2*k), im = IT[f.k];
+    const x = f.x0 + (f.tx - f.x0)*e, y = f.y0 + (f.ty - f.y0)*e - Math.sin(k*Math.PI)*CELL*1.2, sz = CELL*(0.7 - 0.35*k);
+    ctx.save(); ctx.globalAlpha = 1 - Math.max(0, k-0.85)/0.15;
+    if(im.complete && im.naturalWidth) ctx.drawImage(im, x - sz/2, y - sz/2, sz, sz); ctx.restore(); }
+  if(praise && praise.t < 1.0){
+    const k = praise.t/1.0, lv = praise.lv, pop = k < 0.12 ? 0.4 + 5*k : 1 + 0.04*Math.sin(k*20)*(1-k);
+    const sizes = [0, 30, 40, 50, 58], cols = [0, '#FFF3DC', '#FFD27A', '#FFB74A', '#FF8E3C'];
+    ctx.save(); ctx.globalAlpha = Math.max(0, 1 - Math.max(0, k-0.65)/0.35);
+    ctx.translate(W/2, BY + S*0.36 - 18*k); ctx.scale(pop, pop); ctx.rotate(lv >= 3 ? -0.05 : 0);
+    ctx.font = "900 " + sizes[lv] + "px 'Black Han Sans',sans-serif"; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineWidth = 7 + lv; ctx.strokeStyle = '#3B2A1C'; ctx.strokeText(praise.txt, 0, 0);
+    ctx.fillStyle = cols[lv]; ctx.fillText(praise.txt, 0, 0);
+    ctx.restore();
+  }
   if(flash > 0){ ctx.fillStyle = 'rgba(255,248,220,' + (flash*0.6) + ')'; ctx.fillRect(0,0,W,H); }
   if(hint && mode === 'PLAY'){
     ctx.font = '800 13px sans-serif'; const tw = Math.min(W - 40, ctx.measureText(hint).width);
@@ -690,6 +779,9 @@ function frame(now){
   for(const f of floats) f.t += dt; floats = floats.filter(f => f.t < 1.1);
   for(const f of faces) f.t += dt; faces = faces.filter(f => f.t < 1.6);
   for(const k in cardPop) cardPop[k] = Math.max(0, cardPop[k] - dt);
+  for(const f of flyers) f.t += dt; flyers = flyers.filter(f => f.t < 0.6);
+  if(praise){ praise.t += dt; if(praise.t > 1.0) praise = null; }
+  if(comboBreak){ comboBreak.t += dt; if(comboBreak.t > 1.4) comboBreak = null; }
   for(let i=0;i<3;i++) if(trayBad[i] > 0) trayBad[i] = Math.max(0, trayBad[i] - dt);
   if(flash > 0) flash = Math.max(0, flash - dt*2.2);
   if(shakeT > 0) shakeT = Math.max(0, shakeT - dt);
