@@ -695,15 +695,13 @@ function drawOwnerHints(t){
     const key = h.at[0]*N + h.at[1]; if(used.has(key) || shown >= 3) continue; used.add(key); shown++;
     const k = OW[h.w], p = cellXY(h.at[0], h.at[1]), close = h.n >= need - 1;
     ctx.save();
-    // 그 줄의 같은 주인 칸을 살짝 밝힌다
-    ctx.globalAlpha = close ? 0.35 + 0.15*Math.sin(t*6) : 0.2; ctx.fillStyle = COL[k];
+    // 눈에 거슬리지 않게 흐릿하게: 같은 주인 칸은 아주 옅게, 빈 칸엔 반투명 얼굴과 n/5
+    ctx.globalAlpha = close ? 0.16 : 0.1; ctx.fillStyle = COL[k];
     for(const [r,c] of h.cells){ if(g.board[r*N+c] !== h.w) continue; const q = cellXY(r,c); rr(q.x+1,q.y+1,CELL-2,CELL-2,CELL*0.18); ctx.fill(); }
-    ctx.globalAlpha = 1;
-    rr(p.x+3, p.y+3, CELL-6, CELL-6, CELL*0.2); ctx.fillStyle = 'rgba(255,248,236,.92)'; ctx.fill();
-    ctx.lineWidth = close ? 2.5 : 1.5; ctx.strokeStyle = COL[k]; ctx.stroke();
-    const im = FACE[k]; if(im.complete && im.naturalWidth){ const hh = CELL*0.5, ww = hh*im.naturalWidth/im.naturalHeight; ctx.drawImage(im, p.x + CELL/2 - ww/2, p.y + 4, ww, hh); }
-    ctx.fillStyle = close ? '#C0452B' : '#5B4A38'; ctx.font = '900 ' + Math.max(9, CELL*0.26) + 'px sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(h.n + '/' + need, p.x + CELL/2, p.y + CELL*0.76);
+    ctx.globalAlpha = close ? 0.5 : 0.35;
+    const im = FACE[k]; if(im.complete && im.naturalWidth){ const hh = CELL*0.44, ww = hh*im.naturalWidth/im.naturalHeight; ctx.drawImage(im, p.x + CELL/2 - ww/2, p.y + CELL*0.1, ww, hh); }
+    ctx.fillStyle = '#5B4A38'; ctx.font = '800 ' + Math.max(8, CELL*0.22) + 'px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(h.n + '/' + need, p.x + CELL/2, p.y + CELL*0.74);
     ctx.restore();
   }
 }
