@@ -685,7 +685,7 @@ function drawOwnerHints(t){
     const cnt = {}; let empty = null, ne = 0;
     for(const [r,c] of cells){ const w = g.board[r*N+c]; if(w < 0){ ne++; if(!empty) empty = [r,c]; } else cnt[w] = (cnt[w]||0) + 1; }
     if(!ne) return;
-    for(const w in cnt){ const n = cnt[w]; if(n >= need - 2 && n + ne >= need) cand.push({ w:+w, n, at: empty, kind, idx, cells }); }
+    for(const w in cnt){ const n = cnt[w]; if(n === need - 1) cand.push({ w:+w, n, at: empty, kind, idx, cells }); }
   };
   for(let r=0;r<N;r++){ const cs=[]; for(let c=0;c<N;c++) cs.push([r,c]); scan(cs,'r',r); }
   for(let c=0;c<N;c++){ const cs=[]; for(let r=0;r<N;r++) cs.push([r,c]); scan(cs,'c',c); }
@@ -693,12 +693,10 @@ function drawOwnerHints(t){
   const used = new Set(); let shown = 0;
   for(const h of cand){
     const key = h.at[0]*N + h.at[1]; if(used.has(key) || shown >= 3) continue; used.add(key); shown++;
-    const k = OW[h.w], p = cellXY(h.at[0], h.at[1]), close = h.n >= need - 1;
+    const k = OW[h.w], p = cellXY(h.at[0], h.at[1]);
     ctx.save();
-    // 눈에 거슬리지 않게 흐릿하게: 같은 주인 칸은 아주 옅게, 빈 칸엔 반투명 얼굴과 n/5
-    ctx.globalAlpha = close ? 0.16 : 0.1; ctx.fillStyle = COL[k];
-    for(const [r,c] of h.cells){ if(g.board[r*N+c] !== h.w) continue; const q = cellXY(r,c); rr(q.x+1,q.y+1,CELL-2,CELL-2,CELL*0.18); ctx.fill(); }
-    ctx.globalAlpha = close ? 0.5 : 0.35;
+    // 한 칸만 더 채우면 짐 주인 보너스인 줄에만, 빈 칸에 아주 옅게 얼굴과 4/5
+    ctx.globalAlpha = 0.22;
     const im = FACE[k]; if(im.complete && im.naturalWidth){ const hh = CELL*0.44, ww = hh*im.naturalWidth/im.naturalHeight; ctx.drawImage(im, p.x + CELL/2 - ww/2, p.y + CELL*0.1, ww, hh); }
     ctx.fillStyle = '#5B4A38'; ctx.font = '800 ' + Math.max(8, CELL*0.22) + 'px sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(h.n + '/' + need, p.x + CELL/2, p.y + CELL*0.74);
