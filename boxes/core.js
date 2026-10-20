@@ -40,11 +40,18 @@
     bigStart: 0.4,      // 5칸 이상 조각의 비중 배율 (처음 → ramp조각째)
     bigEnd: 1.1,
     ramp: 120,
-    ownerMin: 6,        // 한 줄 8칸 중 같은 주인 짐이 이만큼이면 짐 주인 보너스
+    // v1.2 후반 압박 — 카드 도입 뒤 판이 늘어져(봇 74 → 134조각) lateAt 조각부터 lateRamp에 걸쳐 조인다
+    lateAt: 40,         // 이 조각 수부터
+    lateRamp: 40,       // 이만큼에 걸쳐 최대로
+    lateBig: 3.5,       // 5칸 이상 조각 비중을 이 배까지 더
+    lateMid: 2,         // 4칸 조각 비중을 이 배까지 더
+    lateHelp: 0.9,      // 줄 지울 조각 도움을 이 비율만큼 줄인다
+    lateAssist: 1,      // 최대 압박에서 새 조각 세 개 중 반드시 들어가야 하는 수
+    ownerMin: 5,        // 한 줄 8칸 중 같은 주인 짐이 이만큼이면 짐 주인 보너스 (v1.2: 6 → 5, 우연 10% → 노릴 만한 28%)
     comboKeep: 3,       // 이만큼 연달아 못 지우면 연속이 끊긴다
     cardMax: 2,         // 친구 도움 카드를 한 번에 들고 있을 수 있는 수
     cardStart: 1,       // 판을 시작할 때 받는 카드 수
-    earnEvery: 3,       // 짐 주인 보너스 이만큼마다 카드 한 장 (봇: 1·1이면 한 판이 두 배로 길어져 줄임)
+    earnEvery: 4,       // 짐 주인 보너스 이만큼마다 카드 한 장 (봇: 1·1이면 한 판이 두 배로 길어져 줄임)
   };
 
   // ── 친구 도움 카드 (v1.1) ── 짐 주인 보너스를 받으면 그 친구 카드가 한 장 생긴다
@@ -97,8 +104,10 @@
     const W0 = SHAPES.map(s => (o.w && o.w[s.k] != null) ? o.w[s.k] : s.w);
     // 판이 길어질수록 큰 조각(5칸 이상)이 잦아지고 도움이 줄어든다 — 초반은 너그럽게, 후반은 조이게
     const ramp = () => Math.min(1, g.placed / o.ramp);
-    const bigF = () => o.bigStart + (o.bigEnd - o.bigStart) * ramp();
-    const helpNow = () => o.helpStart + (o.helpEnd - o.helpStart) * ramp();
+    const late = () => Math.max(0, Math.min(1, (g.placed - o.lateAt) / o.lateRamp));
+    const bigF = () => (o.bigStart + (o.bigEnd - o.bigStart) * ramp()) * (1 + (o.lateBig - 1) * late());
+    const midF = () => 1 + (o.lateMid - 1) * late();
+    const helpNow = () => (o.helpStart + (o.helpEnd - o.helpStart) * ramp()) * (1 - o.lateHelp * late());
     const g = {
       o, board: new Array(N*N).fill(-1), tray: [null,null,null],
       score: 0, combo: 0, miss: 0, over: false, stuck: false, placed: 0,
@@ -106,7 +115,7 @@
       st: { lines: 0, clears: 0, maxCombo: 0, maxMulti: 0, clearAll: 0, owner: 0, ownerBy: {}, fromClear: 0, fromBonus: 0, deals: 0, cardsGot: 0, cardsUsed: 0, saved: 0 },
     };
     const pick = () => {
-      const f = bigF(), W = W0.map((w,i) => SHAPES[i].n >= 5 ? w*f : w), tot = W.reduce((a,v)=>a+v,0);
+      const f = bigF(), m = midF(), W = W0.map((w,i) => SHAPES[i].n >= 5 ? w*f : SHAPES[i].n === 4 ? w*m : w), tot = W.reduce((a,v)=>a+v,0);
       let r = rng()*tot; for(let i=0;i<SHAPES.length;i++){ r -= W[i]; if(r <= 0) return SHAPES[i]; } return SHAPES[0]; };
     const piece = s => ({ s, owner: (rng()*OWNERS.length)|0 });
     // 북거씨 — 고른 칸을 가운데로 한 3×3 (선반 밖으로 나가면 안쪽으로 밀어 넣는다)
@@ -116,7 +125,7 @@
     g.deal = function(){
       let set = [piece(pick()), piece(pick()), piece(pick())];
       if(o.assist){
-        const need = o.assist >= 2 ? 2 : 1;
+        const need = (o.assist >= 2 && late() < 1) ? 2 : Math.max(1, Math.min(o.assist, o.lateAssist));
         for(let k=0; k<30 && set.filter(p => fitsAnywhere(g.board, p.s)).length < need; k++) set = [piece(pick()), piece(pick()), piece(pick())];
       }
       if(rng() < helpNow() && !set.some(p => clearsSomething(g.board, p.s))){
