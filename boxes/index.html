@@ -225,7 +225,9 @@ addEventListener('resize', layout); layout();
 // ── 상태 ────────────────────────────────────────────────────
 let mode = 'TITLE', g = null, seed = 0;
 let drag = null;               // {i, x, y, r, c, ok, lines}
-let pickCard = null;           // 상자를 골라야 하는 카드(끼토·람다)를 눌렀을 때 그 카드 키
+let pickCard = null;           // 대상을 골라야 하는 카드: 끼토·람다는 아래 상자, 북거씨는 선반 칸
+let aimBook = false;           // 북거씨: 누른 채 움직이며 고르고, 손을 떼면 치운다
+let pickCell = -1;             // 북거씨 카드 — 손가락이 가리키는 선반 칸(3×3 미리 보기)
 let cardPop = {};              // 새로 받은 카드 반짝임
 let pops = [], parts = [], floats = [], faces = [], placed = [], shakeT = 0, flash = 0, overT = 0;
 let dealSeen = 0, dealT = 1, shownScore = 0, curve = [0], paceBest = null, placedBy = {}, trayBad = [0,0,0], hint = null, hintT = 0, overDim = 0;
@@ -244,7 +246,7 @@ function startGame(fresh){
     try{ localStorage.removeItem(RUNKEY); }catch(e){}
   }
   pops = []; parts = []; floats = []; faces = []; placed = []; shakeT = 0; flash = 0; overT = 0; overDim = 0;
-  shownScore = g.score; drag = null; trayBad = [0,0,0]; pickCard = null; cardPop = {};
+  shownScore = g.score; drag = null; trayBad = [0,0,0]; pickCard = null; pickCell = -1; aimBook = false; cardPop = {};
   paceLoad();
   mode = 'PLAY'; show(null);
   hint = null; hintT = 0;
@@ -276,6 +278,11 @@ cv.addEventListener('pointerdown', e=>{
   // 친구 카드
   const ci = cardHit(x, y);
   if(ci){ if(ci === 'giveup'){ g.giveUp(); finishStuck(); return; } tapCard(ci); return; }
+  if(pickCard === 'bookgeo'){
+    const c = Math.floor((x - BX)/CELL), r = Math.floor((y - BY)/CELL);
+    if(r >= 0 && r < N && c >= 0 && c < N){ pickCell = r*N + c; aimBook = true; try{ cv.setPointerCapture(e.pointerId); }catch(_){} return; }
+    pickCard = null; pickCell = -1; hint = null; return;
+  }
   if(pickCard){
     for(let i=0;i<3;i++){ const s = slotRect(i);
       if(g.tray[i] && x >= s.x && x < s.x+s.w && y >= s.y - 10 && y < s.y+s.h){ applyCard(pickCard, i); return; } }
@@ -287,15 +294,18 @@ cv.addEventListener('pointerdown', e=>{
       try{ cv.setPointerCapture(e.pointerId); }catch(_){}
       return; } }
 });
-cv.addEventListener('pointermove', e=>{ if(!drag) return; const p = pos(e); drag.x = p.x; drag.y = p.y; updateSnap(); });
+cv.addEventListener('pointermove', e=>{
+  if(pickCard === 'bookgeo'){ if(!aimBook) return; const p = pos(e), c = Math.floor((p.x - BX)/CELL), r = Math.floor((p.y - BY)/CELL); pickCell = (r>=0&&r<N&&c>=0&&c<N) ? r*N+c : -1; return; }
+  if(!drag) return; const p = pos(e); drag.x = p.x; drag.y = p.y; updateSnap(); });
 function endDrag(){
+  if(aimBook){ aimBook = false; const at = pickCell; pickCell = -1; if(at >= 0) applyCard('bookgeo', at); else { pickCard = null; hint = null; } return; }
   if(!drag) return;
   const d = drag; drag = null;
   if(d.ok) doPlace(d.i, d.r, d.c);
   else if(d.y < TY - 10){ sfx('bad'); trayBad[d.i] = 0.35; }
 }
 cv.addEventListener('pointerup', endDrag);
-cv.addEventListener('pointercancel', ()=>{ drag = null; });
+cv.addEventListener('pointercancel', ()=>{ drag = null; aimBook = false; pickCell = -1; });
 
 // ── 친구 도움 카드 ──────────────────────────────────────────
 function cardSlots(){                 // 카드 줄 칸 위치 (최대 cardMax장)
@@ -304,7 +314,7 @@ function cardSlots(){                 // 카드 줄 칸 위치 (최대 cardMax�
 }
 function heldCards(){ const out = []; for(const k of OW) for(let i=0;i<(g.cards[k]||0);i++) out.push(k); return out; }
 function cardHit(x, y){
-  if(g.stuck && !g.over && y >= BY + S*0.56 && y <= BY + S*0.56 + 34 && Math.abs(x - W/2) < 60) return 'giveup';
+  if(g.stuck && !g.over && !pickCard && y >= BY + S*0.56 && y <= BY + S*0.56 + 34 && Math.abs(x - W/2) < 60) return 'giveup';
   const cs = cardSlots(), held = heldCards();
   for(let i=0;i<cs.length;i++){ const c = cs[i]; if(held[i] && x >= c.x && x < c.x+c.w && y >= c.y && y < c.y+c.h) return held[i]; }
   return null;
@@ -312,7 +322,7 @@ function cardHit(x, y){
 function tapCard(k){
   ac();
   if(!g.canUse(k)){ sfx('bad'); setHint(k === 'lachilchin' ? '되돌릴 상자가 없어요' : '지금은 쓸 수 없어요', 1.6); return; }
-  if(C.CARD[k].pick){ pickCard = k; setHint(NAME[k] + ': ' + (k === 'kkito' ? '돌릴 상자를 누르세요' : '단추로 바꿀 상자를 누르세요'), 99); return; }
+  if(C.CARD[k].pick){ pickCard = k; setHint(NAME[k] + ': ' + (k === 'kkito' ? '돌릴 상자를 누르세요' : k === 'ramda' ? '단추로 바꿀 상자를 누르세요' : '치울 곳을 선반에서 누르세요'), 99); return; }
   applyCard(k);
 }
 function applyCard(k, i){
@@ -350,10 +360,9 @@ function drawCards(t){
     ctx.font = '800 10px sans-serif'; ctx.fillStyle = 'rgba(43,26,8,.7)'; ctx.fillText(NAME[k] + ' 카드', c.x + c.h + 2, c.y + c.h/2 + 8, c.w - c.h - 6);
     ctx.restore();
   }
-  if(g.boost){ ctx.font = '900 11px sans-serif'; ctx.textAlign = 'right'; ctx.fillStyle = '#7A4FA0'; ctx.fillText('향수 · 다음 정리 ×2', BX + S, BY - 18); }
   ctx.restore();
   // 막혔을 때 — 끝내기 전에 카드를 쓰라고 알린다
-  if(g.stuck && !g.over && overT === 0){
+  if(g.stuck && !g.over && overT === 0 && !pickCard){
     ctx.save(); ctx.fillStyle = 'rgba(43,33,24,.82)'; rr(BX + 14, BY + S*0.32, S - 28, S*0.36, 16); ctx.fill();
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#FFF3DC';
     ctx.font = "900 22px 'Black Han Sans',sans-serif"; ctx.fillText('막혔어요!', W/2, BY + S*0.40);
@@ -607,6 +616,14 @@ function drawBoard(t){
   }
   if(L && hot.size){ ctx.save(); ctx.globalAlpha = 0.28 + 0.12*Math.sin(t*10); ctx.fillStyle = '#FFF6D8';
     for(const k of hot){ const p = cellXY(Math.floor(k/N), k%N); rr(p.x+1, p.y+1, CELL-2, CELL-2, CELL*0.16); ctx.fill(); } ctx.restore(); }
+  // 북거씨 — 치울 3×3 미리 보기
+  if(pickCard === 'bookgeo'){
+    ctx.save(); ctx.strokeStyle = 'rgba(80,120,60,' + (0.5 + 0.4*Math.sin(t*8)) + ')'; ctx.lineWidth = 3; ctx.setLineDash([6,5]);
+    rr(BX+2, BY+2, S-4, S-4, 10); ctx.stroke(); ctx.setLineDash([]);
+    if(pickCell >= 0){ ctx.fillStyle = 'rgba(166,209,150,.45)';
+      for(const j of g.win3(pickCell)){ const p = cellXY(Math.floor(j/N), j%N); rr(p.x+1, p.y+1, CELL-2, CELL-2, CELL*0.16); ctx.fill(); } }
+    ctx.restore();
+  }
   // 놓일 자리 그림자
   if(drag && drag.ok){ const p = g.tray[drag.i]; const o = cellXY(drag.r, drag.c); drawPiece(p, o.x, o.y, CELL, 0.38); }
   // 사라지는 칸
