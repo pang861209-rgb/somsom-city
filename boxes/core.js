@@ -56,12 +56,12 @@
   };
 
   // ── 친구 도움 카드 (v1.1) ── 짐 주인 보너스를 받으면 그 친구 카드가 한 장 생긴다
-  //  kkito 돌려 놓기 · migae 바꿔 오기 · lachilchin 되돌리기 · ramda 단추로 바꾸기 · boneul 한 줄 치우기 · bookgeo 등딱지로 밀기(3×3 치우기)
+  //  kkito 돌려 놓기 · migae 바꿔 오기 · lachilchin 실 풀기(이어진 같은 짐 치우기) · ramda 단추로 바꾸기 · boneul 한 줄 치우기 · bookgeo 등딱지로 밀기(3×3 치우기)
   //  (10/20 북거씨 '향수 한 방울 — 다음 정리 ×2'는 막혔을 때 쓸모가 없다는 피드백으로 교체)
   const CARD = {
     kkito:      { n:'돌려 놓기',   d:'상자 하나를 90도 돌려요',            pick:true },
     migae:      { n:'바꿔 오기',   d:'아래 상자를 새로 받아 와요',          pick:false },
-    lachilchin: { n:'되돌리기',    d:'방금 놓은 상자를 되돌려요',           pick:false },
+    lachilchin: { n:'실 풀기',     d:'누른 짐과 이어진 같은 친구 짐을 모두 치워요', pick:'board' },
     ramda:      { n:'단추로 바꾸기', d:'상자 하나를 한 칸짜리 단추로 바꿔요', pick:true },
     boneul:     { n:'한 줄 치우기', d:'가장 꽉 찬 줄을 굴러서 치워요',       pick:false },
     bookgeo:    { n:'등딱지로 밀기', d:'선반에서 고른 곳 3×3 칸을 치워요',   pick:'board' },
@@ -112,7 +112,7 @@
     const g = {
       o, board: new Array(N*N).fill(-1), tray: [null,null,null],
       score: 0, combo: 0, miss: 0, over: false, stuck: false, placed: 0,
-      cards: {}, boost: false, prev: null,
+      cards: {}, boost: false,
       st: { lines: 0, clears: 0, maxCombo: 0, maxMulti: 0, clearAll: 0, owner: 0, ownerBy: {}, fromClear: 0, fromBonus: 0, deals: 0, cardsGot: 0, cardsUsed: 0, saved: 0 },
     };
     const pick = () => {
@@ -123,6 +123,14 @@
     const win3 = idx => { const r0 = Math.max(0, Math.min(N-3, Math.floor(idx/N)-1)), c0 = Math.max(0, Math.min(N-3, idx%N-1)), out = [];
       for(let r=r0;r<r0+3;r++) for(let c=c0;c<c0+3;c++) out.push(r*N+c); return out; };
     g.win3 = win3;
+    // 할머니 — 누른 칸과 위아래옆으로 이어진 같은 주인 짐 (실타래 풀리듯)
+    const yarn = idx => { const w = g.board[idx]; if(w == null || w < 0) return [];
+      const out = [idx], seen = new Set(out);
+      for(let q=0;q<out.length;q++){ const j = out[q], r = Math.floor(j/N), c = j%N;
+        for(const [dr,dc] of [[1,0],[-1,0],[0,1],[0,-1]]){ const rr = r+dr, cc = c+dc, n = rr*N+cc;
+          if(rr>=0 && rr<N && cc>=0 && cc<N && !seen.has(n) && g.board[n] === w){ seen.add(n); out.push(n); } } }
+      return out; };
+    g.area = (k, idx) => k === 'bookgeo' ? win3(idx) : k === 'lachilchin' ? yarn(idx) : [];
     g.deal = function(){
       let set = [piece(pick()), piece(pick()), piece(pick())];
       if(o.assist){
@@ -143,7 +151,7 @@
       const tray = g.tray.map((p,j)=>[p,j]).filter(([p])=>p);
       if(k === 'kkito')      return i == null ? tray.some(([p]) => rotateShape(p.s).k !== p.s.k) : !!g.tray[i] && rotateShape(g.tray[i].s).k !== g.tray[i].s.k;
       if(k === 'ramda')      return i == null ? tray.some(([p]) => p.s.n > 1) : !!g.tray[i] && g.tray[i].s.n > 1;
-      if(k === 'lachilchin') return !!g.prev;
+      if(k === 'lachilchin') return i == null ? g.board.some(v => v >= 0) : g.board[i] >= 0;
       if(k === 'migae')      return tray.length > 0;
       if(k === 'boneul')     return g.board.some(v => v >= 0);
       if(k === 'bookgeo')    return g.board.some(v => v >= 0);
@@ -160,7 +168,13 @@
           if(left.some(p => fitsAnywhere(t, p.s))) return true; }
         return false;
       }
-      return k === 'lachilchin' ? !!g.prev : (k === 'migae' || k === 'boneul');
+      if(k === 'lachilchin'){                    // 어느 짐 덩어리를 풀면 남은 상자 하나라도 들어가나
+        const left = g.tray.filter(Boolean), seen = new Set();
+        for(let j=0;j<N*N;j++){ if(g.board[j] < 0 || seen.has(j)) continue; const a = yarn(j); a.forEach(x => seen.add(x));
+          const t = g.board.slice(); for(const x of a) t[x] = -1; if(left.some(p => fitsAnywhere(t, p.s))) return true; }
+        return false;
+      }
+      return k === 'migae' || k === 'boneul';
     };
     g.checkOver = function(){
       const left = g.tray.filter(Boolean);
@@ -175,7 +189,6 @@
       const res = { k };
       if(k === 'kkito'){ g.tray[i] = { s: rotateShape(g.tray[i].s), owner: g.tray[i].owner }; }
       else if(k === 'ramda'){ g.tray[i] = { s: SHAPES[0], owner: 3 }; }
-      else if(k === 'lachilchin'){ const p = JSON.parse(g.prev); Object.assign(g, restoreState(p)); g.prev = null; res.undo = true; }
       else if(k === 'migae'){
         const idx = g.tray.map((p,j)=>p?j:-1).filter(j=>j>=0);
         for(let t=0;t<30;t++){ for(const j of idx) g.tray[j] = piece(pick()); if(g.tray.some(p => p && fitsAnywhere(g.board, p.s))) break; }
@@ -187,13 +200,12 @@
         res.removed = []; res.line = best;
         for(let j=0;j<N;j++){ const at = best[0]==='r' ? best[1]*N+j : j*N+best[1]; if(g.board[at] >= 0){ res.removed.push([Math.floor(at/N), at%N, g.board[at]]); g.board[at] = -1; } }
       }
-      else if(k === 'bookgeo'){
+      else if(k === 'bookgeo' || k === 'lachilchin'){
         res.removed = [];
-        for(const j of win3(i)) if(g.board[j] >= 0){ res.removed.push([Math.floor(j/N), j%N, g.board[j]]); g.board[j] = -1; }
+        for(const j of g.area(k, i)) if(g.board[j] >= 0){ res.removed.push([Math.floor(j/N), j%N, g.board[j]]); g.board[j] = -1; }
       }
       g.cards[k]--; if(!g.cards[k]) delete g.cards[k];
       g.st.cardsUsed++; if(g.stuck) g.st.saved++;
-      if(k !== 'lachilchin') g.prev = null;
       g.checkOver();
       res.over = g.over;
       return res;
@@ -206,7 +218,6 @@
     g.place = function(i, r0, c0){
       const p = g.tray[i];
       if(!p || g.over || !fits(g.board, p.s, r0, c0)) return null;
-      g.prev = JSON.stringify(stateOf());
       for(const [r,c] of p.s.cells) g.board[(r0+r)*N + c0+c] = p.owner;
       g.tray[i] = null; g.placed++;
       let gained = p.s.n;                              // 놓은 칸마다 1점
