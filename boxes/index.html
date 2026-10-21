@@ -228,8 +228,9 @@ addEventListener('resize', layout); layout();
 let mode = 'TITLE', g = null, seed = 0;
 let drag = null;               // {i, x, y, r, c, ok, lines}
 let pickCard = null;           // 대상을 골라야 하는 카드: 끼토·람다는 아래 상자, 북거씨는 선반 칸
-let aimBook = false;           // 북거씨: 누른 채 움직이며 고르고, 손을 떼면 치운다
-let pickCell = -1;             // 북거씨 카드 — 손가락이 가리키는 선반 칸(3×3 미리 보기)
+let aimBook = false;           // 북거씨·할머니: 누른 채 움직이며 고르고, 손을 떼면 치운다
+let pickCell = -1;             // 선반에서 고르는 카드 — 손가락이 가리키는 칸(치울 곳 미리 보기)
+const boardPick = () => !!pickCard && C.CARD[pickCard].pick === 'board';
 let cardPop = {};              // 새로 받은 카드 반짝임
 let flyers = [];               // v1.2 큰 정리 때 짐 아이콘이 주인에게 날아간다
 let praise = null;             // v1.2 정리 칭찬 {txt, lv, t}
@@ -284,7 +285,7 @@ cv.addEventListener('pointerdown', e=>{
   // 친구 카드
   const ci = cardHit(x, y);
   if(ci){ if(ci === 'giveup'){ g.giveUp(); finishStuck(); return; } tapCard(ci); return; }
-  if(pickCard === 'bookgeo'){
+  if(boardPick()){
     const c = Math.floor((x - BX)/CELL), r = Math.floor((y - BY)/CELL);
     if(r >= 0 && r < N && c >= 0 && c < N){ pickCell = r*N + c; aimBook = true; try{ cv.setPointerCapture(e.pointerId); }catch(_){} return; }
     pickCard = null; pickCell = -1; hint = null; return;
@@ -301,10 +302,13 @@ cv.addEventListener('pointerdown', e=>{
       return; } }
 });
 cv.addEventListener('pointermove', e=>{
-  if(pickCard === 'bookgeo'){ if(!aimBook) return; const p = pos(e), c = Math.floor((p.x - BX)/CELL), r = Math.floor((p.y - BY)/CELL); pickCell = (r>=0&&r<N&&c>=0&&c<N) ? r*N+c : -1; return; }
+  if(boardPick()){ if(!aimBook) return; const p = pos(e), c = Math.floor((p.x - BX)/CELL), r = Math.floor((p.y - BY)/CELL); pickCell = (r>=0&&r<N&&c>=0&&c<N) ? r*N+c : -1; return; }
   if(!drag) return; const p = pos(e); drag.x = p.x; drag.y = p.y; updateSnap(); });
 function endDrag(){
-  if(aimBook){ aimBook = false; const at = pickCell; pickCell = -1; if(at >= 0) applyCard('bookgeo', at); else { pickCard = null; hint = null; } return; }
+  if(aimBook){ aimBook = false; const at = pickCell; pickCell = -1;
+    if(at >= 0 && g.area(pickCard, at).length) applyCard(pickCard, at);
+    else if(at >= 0){ sfx('bad'); }                 // 할머니: 빈 칸을 고르면 다시 고르게 둔다
+    else { pickCard = null; hint = null; } return; }
   if(!drag) return;
   const d = drag; drag = null;
   if(d.ok) doPlace(d.i, d.r, d.c);
@@ -327,8 +331,8 @@ function cardHit(x, y){
 }
 function tapCard(k){
   ac();
-  if(!g.canUse(k)){ sfx('bad'); setHint(k === 'lachilchin' ? '되돌릴 상자가 없어요' : '지금은 쓸 수 없어요', 1.6); return; }
-  if(C.CARD[k].pick){ pickCard = k; setHint(NAME[k] + ': ' + (k === 'kkito' ? '돌릴 상자를 누르세요' : k === 'ramda' ? '단추로 바꿀 상자를 누르세요' : '치울 곳을 선반에서 누르세요'), 99); return; }
+  if(!g.canUse(k)){ sfx('bad'); setHint('지금은 쓸 수 없어요', 1.6); return; }
+  if(C.CARD[k].pick){ pickCard = k; setHint(NAME[k] + ': ' + (k === 'kkito' ? '돌릴 상자를 누르세요' : k === 'ramda' ? '단추로 바꿀 상자를 누르세요' : k === 'lachilchin' ? '풀어낼 짐을 선반에서 누르세요' : '치울 곳을 선반에서 누르세요'), 99); return; }
   applyCard(k);
 }
 function applyCard(k, i){
@@ -339,7 +343,6 @@ function applyCard(k, i){
   faces.push({ k, x: W/2, y: BY + S*0.62, t: 0, card: true });
   if(res.removed) for(const [rr,cc,w] of res.removed){ pops.push({ r:rr, c:cc, w, t:-cc*0.03 });
     const p = cellXY(rr,cc); parts.push({ x:p.x+CELL/2, y:p.y+CELL/2, vx:(Math.random()-.5)*200, vy:-120, t:0, col:COL[OW[w]], s:5 }); }
-  if(res.undo){ curve.length = g.placed + 1; placed = []; }
   saveRun();
   if(res.over){ finishStuck(); }
 }
@@ -659,12 +662,13 @@ function drawBoard(t){
   }
   if(L && hot.size){ ctx.save(); ctx.globalAlpha = 0.28 + 0.12*Math.sin(t*10); ctx.fillStyle = '#FFF6D8';
     for(const k of hot){ const p = cellXY(Math.floor(k/N), k%N); rr(p.x+1, p.y+1, CELL-2, CELL-2, CELL*0.16); ctx.fill(); } ctx.restore(); }
-  // 북거씨 — 치울 3×3 미리 보기
-  if(pickCard === 'bookgeo'){
-    ctx.save(); ctx.strokeStyle = 'rgba(80,120,60,' + (0.5 + 0.4*Math.sin(t*8)) + ')'; ctx.lineWidth = 3; ctx.setLineDash([6,5]);
+  // 북거씨 3×3 · 할머니 이어진 같은 짐 — 치울 곳 미리 보기
+  if(boardPick()){
+    const pc = pickCard === 'bookgeo' ? '80,120,60' : '120,90,160', fc = pickCard === 'bookgeo' ? 'rgba(166,209,150,.45)' : 'rgba(110,80,160,.45)';
+    ctx.save(); ctx.strokeStyle = 'rgba(' + pc + ',' + (0.5 + 0.4*Math.sin(t*8)) + ')'; ctx.lineWidth = 3; ctx.setLineDash([6,5]);
     rr(BX+2, BY+2, S-4, S-4, 10); ctx.stroke(); ctx.setLineDash([]);
-    if(pickCell >= 0){ ctx.fillStyle = 'rgba(166,209,150,.45)';
-      for(const j of g.win3(pickCell)){ const p = cellXY(Math.floor(j/N), j%N); rr(p.x+1, p.y+1, CELL-2, CELL-2, CELL*0.16); ctx.fill(); } }
+    if(pickCell >= 0){ ctx.fillStyle = fc;
+      for(const j of g.area(pickCard, pickCell)){ const p = cellXY(Math.floor(j/N), j%N); rr(p.x+1, p.y+1, CELL-2, CELL-2, CELL*0.16); ctx.fill(); } }
     ctx.restore();
   }
   drawOwnerHints(t);
