@@ -39,7 +39,7 @@
   border:1px solid var(--sui-line) !important; box-shadow:none !important;
   font-family:var(--sui-font) !important; font-size:13.5px !important; font-weight:700 !important;
   line-height:1.1 !important; text-shadow:none !important;
-  display:inline-flex !important; align-items:center !important; justify-content:center !important; gap:5px;
+  display:inline-flex !important; align-items:center !important; justify-content:center !important; gap:5px; white-space:nowrap !important;
   cursor:pointer; transition:background .1s;
 }
 .sui-pill:not(#_s1):not(#_s2):active{ background:rgba(255,255,255,.18) !important; transform:none !important; }
@@ -66,3 +66,6 @@
 
 /* 강조 알약 — "오늘의 도전"처럼 한 화면에 하나만 눈에 띄어야 하는 보조 버튼 */
 .sui-pill.sui-hot:not(#_s1):not(#_s2){ background:var(--sui-gold) !important; color:var(--sui-night) !important; border-color:var(--sui-gold) !important; }
+
+/* 좁은 줄용 작은 알약 — 버튼이 여럿 나란히 있을 때 */
+.sui-pill.sui-sm:not(#_s1):not(#_s2){ min-height:34px !important; padding:0 11px !important; font-size:12px !important; }
