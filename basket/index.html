@@ -338,7 +338,7 @@
   <div id="hud" class="hidden">
     <div id="acornPill"><img src="../assets/basket/i_acorn.webp" alt=""><span id="acornN">0</span></div>
     <div id="scoreBox"><div id="score">0</div><div id="bestLine">최고 0</div></div>
-    <button id="pauseBtn" class="sui-icon" aria-label="일시정지">II</button>
+    <button id="pauseBtn" class="sui-icon" aria-label="일시정지">❙❙</button>
     <button id="skillBtn" aria-label="스킬"><div id="skillRing"></div><div id="skillFace"><img id="skillImg" alt=""></div><div id="skillLbl">스킬</div></button>
     <div id="nextBox"><span class="lb">NEXT</span><span id="nextImgs"></span></div>
     <div id="chainBox"><span id="chainTxt"></span></div>
@@ -1182,7 +1182,7 @@ function showResult(){
   $('resScore').textContent=G.score.toLocaleString();
   $('resBadge').classList.toggle('hidden',!isBest);
   $('resNear').textContent=isBest?(prevBest?`이전 최고 ${prevBest.toLocaleString()}점을 넘었어요!`:'첫 기록이에요!')
-    :`최고 기록까지 ${(SAVE.best-G.score).toLocaleString()}점!`;
+    :(SAVE.best-G.score<=SAVE.best*.2?`아깝다! 최고 기록까지 ${(SAVE.best-G.score).toLocaleString()}점`:`최고 기록 ${SAVE.best.toLocaleString()}점`);
   $('resBigImg').src=fsrc(G.maxLv); $('resBigName').textContent=`${FR[G.maxLv].n} (${G.maxLv+1}단계)`+(G.maxLv<MAXLV?` · 다음은 ${FR[G.maxLv+1].n}`:'');
   $('resStats').innerHTML=`<div><b>${G.merges}</b>합치기</div><div><b>${G.maxChain}</b>최대 연쇄</div><div><b>${G.skillUses}</b>스킬</div>`;
   const ln=(a,b)=>`<div class="ln"><span>${a}</span><span>+${b}</span></div>`;

@@ -231,6 +231,7 @@ h1,.screen h2{color:var(--g1)}
 #res .score b{color:var(--g1);font-size:40px;text-shadow:0 0 22px rgba(242,193,75,.35)}
 #res .score .nb{border:none;background:var(--g1);color:#2B2118;border-radius:999px;padding:1px 8px}
 #rRival{color:var(--tx2)}#rRival b{color:var(--g1)}
+#rNear{font-size:14px;text-align:center;margin:2px 0 0;font-weight:700;color:var(--tx)}#rNear b{color:var(--g1)}
 #res .stats div{border:1px solid var(--ln);background:rgba(255,255,255,.04);color:var(--mu)}
 #res .stats b{color:var(--tx)}
 #res .hxp{border:1px solid var(--ln);background:rgba(255,255,255,.04)}
@@ -269,7 +270,7 @@ h1,.screen h2{color:var(--g1)}
   <div id="hudrow"><span id="lvl">Lv 1</span><span id="time">3:00</span><span id="kills">0</span></div>
 </div>
 <div id="skills" class="hidden"></div>
-<button id="pauseBtn" class="sui-icon hidden" aria-label="잠깐 멈춤">II</button>
+<button id="pauseBtn" class="sui-icon hidden" aria-label="잠깐 멈춤">❙❙</button>
 <a class="homeBtn" id="homeLink" href="../" title="솜솜시티 홈">← 홈</a>
 <div id="toast"></div>
 
@@ -335,6 +336,7 @@ h1,.screen h2{color:var(--g1)}
   <div class="card" id="res">
     <div class="big" id="rBig">성공!</div>
     <div class="score">점수<b id="rScore">0</b></div>
+    <div id="rNear"></div>
     <div id="rRival"></div>
     <div class="stats"><div>버틴 시간<b id="rT">0</b></div><div>물리친 수<b id="rK">0</b></div><div>판 레벨<b id="rL">0</b></div></div>
     <div class="hxp"><div style="display:flex;justify-content:space-between;font-size:14px"><b id="rHero">람다</b><span id="rGain">+0</span></div>
@@ -559,7 +561,7 @@ function finish(){
   mode = 'END';
   const r = g.result(), k = g.hero, gain = C.heroGain(r), before = heroInfo(k);
   SAVE.xp[k] = (SAVE.xp[k] || 0) + gain; SAVE.runs++; SAVE.used[k] = 1;
-  const newBest = r.score > SAVE.best; if(newBest) SAVE.best = r.score; save();
+  const prevBest = SAVE.best, newBest = r.score > prevBest; if(newBest) SAVE.best = r.score; save();
   const after = heroInfo(k);
   lastRes = r; const achGot = hubReport(r, k, after.lv);
   $('pauseBtn').classList.add('hidden');
@@ -568,6 +570,7 @@ function finish(){
     $('rBig').textContent = r.win ? (r.boss ? '골목을 지켰다!' : '3분 버텼다!') : quitting ? '원정 중단' : '쓰러졌다…'; quitting = false;
     $('res').classList.toggle('win', !!r.win);
     $('rScore').innerHTML = r.score.toLocaleString() + (newBest && SAVE.runs > 1 ? '<span class="nb">최고 기록!</span>' : '');
+    $('rNear').innerHTML = newBest ? (prevBest ? '예전 최고 ' + prevBest.toLocaleString() + '점을 넘었어요' : '첫 기록이에요') : (prevBest - r.score <= prevBest*0.2 ? '아깝다! 최고 기록까지 <b>' + (prevBest - r.score).toLocaleString() + '점</b>' : '최고 기록 ' + prevBest.toLocaleString() + '점');
     $('rRival').textContent = ''; showRival();
     $('rAch').innerHTML = achGot.map(a => `<div class="ach"><b>업적 달성</b> · ${a}</div>`).join('');
     $('homeLink').classList.remove('hidden');
