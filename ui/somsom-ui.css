@@ -76,3 +76,17 @@
 /* 밝은 종이 위 알약 — 창고 정리처럼 카드가 밝은 화면에서 */
 .sui-pill.sui-paper:not(#_s1):not(#_s2){ background:rgba(59,42,28,.07) !important; color:#3B2A1C !important; border-color:rgba(59,42,28,.22) !important; }
 .sui-pill.sui-paper:not(#_s1):not(#_s2):active{ background:rgba(59,42,28,.14) !important; }
+
+/* 칩 — 순위 창의 기간(오늘·이번 주·전체), 챕터·필터. 30px 알약, 고른 것은 은행 노랑 */
+.sui-chip:not(#_s1):not(#_s2){
+  min-height:30px !important; padding:0 14px !important; border-radius:999px !important;
+  background:rgba(255,255,255,.08) !important; color:var(--sui-sub) !important;
+  border:1px solid var(--sui-line) !important; box-shadow:none !important; transform:none !important;
+  font-family:var(--sui-font) !important; font-size:12.5px !important; font-weight:700 !important; line-height:1 !important;
+  align-items:center !important; justify-content:center !important; white-space:nowrap !important; cursor:pointer;
+}
+:where(.sui-chip){ display:inline-flex; }
+.sui-chip.on:not(#_s1):not(#_s2), .sui-chip.sel:not(#_s1):not(#_s2){ background:var(--sui-gold) !important; color:var(--sui-night) !important; border-color:var(--sui-gold) !important; }
+/* 밝은 종이 위 칩 */
+.sui-chip.sui-paper:not(#_s1):not(#_s2){ background:rgba(59,42,28,.06) !important; color:#8A7458 !important; border-color:rgba(59,42,28,.18) !important; }
+.sui-chip.sui-paper.on:not(#_s1):not(#_s2){ background:var(--sui-gold) !important; color:var(--sui-night) !important; border-color:var(--sui-gold) !important; }

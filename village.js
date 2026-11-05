@@ -17,9 +17,17 @@
     return m.getUTCFullYear()*10000+(m.getUTCMonth()+1)*100+m.getUTCDate();
   }
   function weekEnd(w){ const y=Math.floor(w/10000),mo=Math.floor(w/100)%100-1,da=w%100; return Date.UTC(y,mo,da+7)-9*3600e3; }
+  // 끼토에게 코가 그려진 컷 (그림체 가이드: 끼토는 코 없음) — 다시 그릴 때까지 2026-11-02 주부터 보상에서 뺀다.
+  // 지난 주들의 보상 컷은 그대로 둔다 (이미 열린 앨범이 바뀌지 않게). 노션 「게임 그림 점검 리스트」 2장
+  const NOSE=["b3_give_0.jpg", "d4_ramda_shop_0.jpg", "d6_ramda_buttons_0.jpg", "d11_lachil_sewing_0.jpg", "d14_market_ramda_0.jpg", "d16_ginkgo_grandma_0.jpg", "i1_grandma_0.jpg", "i1_grandma_nap_0.jpg", "p_a_garden_0.jpg", "p_a_snack_0.jpg", "p_bk_paper_0.jpg", "p_bon_photo_0.jpg", "p_city_ramda_0.jpg", "p_fest_frame_0.jpg", "p_fest_full_0.jpg", "p_fest_zone_0.jpg", "p_gm_window_frame_0.jpg", "p_lam_eve_0.jpg", "p_lam_items_0.jpg", "p_lam_notice_n_0.jpg", "p_v_stall_0.jpg", "r_bk_blend_0.jpg", "r_gm_stairs_0.jpg", "r_lam_mend_0.jpg", "u3_ramda_shutter_0.jpg", "u7_lachil_lap_0.jpg", "u_fest_wall_0.jpg", "u_lam_mc_0.jpg", "u_lam_projector_0.jpg", "u_n_cup_0.jpg", "u_v_fan_0.jpg", "w3_dusk_0.jpg", "w_a_lantern_0.jpg", "w_bk_note_0.jpg", "w_bon_cough_0.jpg", "w_bon_soup_0.jpg", "w_fest_lanterns_0.jpg", "w_fest_sea_0.jpg", "w_gm_song_0.jpg", "w_gm_window_0.jpg", "w_gm_window_song_0.jpg", "w_v_bkslow_0.jpg", "a6_festival_prep_0.jpg", "d7_bookgeo_strip_0.jpg", "p_lam_cup_0.jpg", "p_lam_cityhall_0.jpg", "r_lam_notice_0.jpg", "r_gm_wave_0.jpg", "p_v_bkdry_0.jpg", "p_mg_search_0.jpg", "p_roof_open_0.jpg", "u_screen_up_0.jpg", "u_n_nap_0.jpg", "u_fest_full_0.jpg", "r_lam_rehearsal_0.jpg", "r_fest_reading_0.jpg", "w_lam_lantern_0.jpg", "w_v_mat_0.jpg", "fs_kkito_guest.png"];
+  const FROM=20261102, CUTS_OK=CUTS.filter(c=>NOSE.indexOf(c)<0);
+  const widx=w=>{ const y=Math.floor(w/10000),mo=Math.floor(w/100)%100-1,da=w%100; return Math.floor(Date.UTC(y,mo,da)/(7*864e5)); };
+  const pick=(list,i)=>list[((i%list.length)+list.length)%list.length];
+  // FROM 주에 원래 나오던 컷에서 이어지도록 맞춘다 (이번 주 컷이 갑자기 바뀌지 않게)
+  const SHIFT=CUTS_OK.indexOf(pick(CUTS,widx(FROM)))-widx(FROM);
   function cutFor(w){ // 주마다 정해진 한 컷 (모두에게 같은 컷)
-    const y=Math.floor(w/10000),mo=Math.floor(w/100)%100-1,da=w%100;
-    const idx=Math.floor(Date.UTC(y,mo,da)/(7*864e5)); return ROOT+'assets/day/'+CUTS[((idx%CUTS.length)+CUTS.length)%CUTS.length];
+    const c = w>=FROM ? pick(CUTS_OK, widx(w)+SHIFT) : pick(CUTS, widx(w));
+    return ROOT+'assets/day/'+c;
   }
   function add(game, amount, charKey){
     const a=Math.max(0,Math.min(PER_RUN_MAX,Math.round(+amount||0)));

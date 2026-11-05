@@ -314,13 +314,13 @@
     <div class="in">
       <button class="footBtn" id="achOpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="14" r="6"/><path d="M8.5 9.2 6 2h4l2 4 2-4h4l-2.5 7.2"/><path d="m12 11.5.9 1.8 2 .3-1.45 1.4.35 2-1.8-.95-1.8.95.35-2-1.45-1.4 2-.3z" fill="currentColor" stroke-width="1"/></svg>업적</button>
       <button class="footBtn" id="dexOpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10 4.8 7 4.3 3.5 4.8v13.5c3.5-.5 6.5 0 8.5 1.7 2-1.7 5-2.2 8.5-1.7V4.8C17 4.3 14 4.8 12 6.5z"/><path d="M12 6.5V20"/></svg>도감</button>
-      <button class="footBtn" id="wkOpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4v1.5A3.5 3.5 0 0 0 7.5 11M17 6h3v1.5a3.5 3.5 0 0 1-3.5 3.5"/><path d="M12 14v3M8.5 20h7l-1-3h-5z"/></svg>주간 랭킹</button>
+      <button class="footBtn" id="wkOpen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4v1.5A3.5 3.5 0 0 0 7.5 11M17 6h3v1.5a3.5 3.5 0 0 1-3.5 3.5"/><path d="M12 14v3M8.5 20h7l-1-3h-5z"/></svg>주간 순위</button>
     </div>
   </div>
 
   <div id="wkPanel" class="sheetWrap">
     <div class="sheet">
-      <div class="hd"><span class="t">이번 주 통합 랭킹</span><span class="c" id="wkNote"></span></div>
+      <div class="hd"><span class="t">이번 주 통합 순위</span><span class="c" id="wkNote"></span></div>
       <div id="wkList"></div>
       <button class="footBtn" id="wkClose">닫기</button>
     </div>
@@ -337,9 +337,9 @@
   <div id="namePanel" class="sheetWrap">
     <div class="sheet">
       <div class="hd"><span class="t">이름 정하기</span><span class="c" id="nameCount">0 / 8</span></div>
-      <input id="nameField" maxlength="8" placeholder="랭킹에 쓸 이름 (8자)" autocomplete="off" enterkeyhint="done">
+      <input id="nameField" maxlength="8" placeholder="순위에 쓸 이름 (8자)" autocomplete="off" enterkeyhint="done">
       <div class="nameErr" id="nameErr"></div>
-      <div class="nameNote">모든 게임의 랭킹에 이 이름으로 올라가요.<br>이름을 바꾸면 이전 이름으로 올린 기록은 그대로 남고, 앞으로의 기록부터 새 이름으로 올라가요.</div>
+      <div class="nameNote">모든 게임의 순위에 이 이름으로 올라가요.<br>이름을 바꾸면 이전 이름으로 올린 기록은 그대로 남고, 앞으로의 기록부터 새 이름으로 올라가요.</div>
       <div class="nameBtns">
         <button class="footBtn" id="nameCancel">취소</button>
         <button class="footBtn pri" id="nameSave">저장</button>

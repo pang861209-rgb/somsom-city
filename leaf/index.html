@@ -23,7 +23,7 @@
   .howto { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; }
   .howto .pill { font-size:11px; font-weight:700; color:#5a4a3a; background:#f3ede2; border:1.5px solid #e2d8c4; border-radius:20px; padding:4px 12px; }
   .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; width:100%; }
-  .card { border:2px solid #222; border-radius:12px; background:#fff; padding:7px 5px 6px; cursor:pointer; box-shadow:2px 2px 0 #222; display:flex; flex-direction:column; gap:2px; text-align:center; transition:transform .07s; }
+  .card { border:2px solid #222; border-radius:16px; background:#fff; padding:7px 5px 6px; cursor:pointer; box-shadow:2px 2px 0 #222; display:flex; flex-direction:column; gap:2px; text-align:center; transition:transform .07s; }
   .card:active { transform:translate(2px,2px); box-shadow:none; }
   .card img { width:100%; height:66px; object-fit:contain; }
   .card .nm { font-weight:800; font-size:13px; color:#5a4a3a; line-height:1.15; }
@@ -307,7 +307,7 @@
       <div id="qHead"></div>
       <div id="qSub"></div>
       <div id="qUp"></div>
-      <div id="qTap">탭하면 바로 다시 ▶</div>
+      <div id="qTap">탭하면 바로 한 판 더 ▶</div>
       <div id="qRow">
         <button id="qUpBtn" class="sui-pill">🌰 강화</button>
         <button id="qResBtn" class="sui-pill">결과·순위</button>
@@ -369,7 +369,7 @@
     <h1>🏆 솜솜 순위</h1>
     <div class="sub">전 세계 솜솜시티 주민들의 기록</div>
     <div id="rankList" style="width:100%;max-height:420px;overflow-y:auto;"></div>
-    <button onclick="ui.toSelect()">닫기</button>
+    <button class="sui-pill" onclick="ui.toSelect()">← 뒤로</button>
   </div>
 
   <div id="result" class="screen hidden">
@@ -1361,7 +1361,7 @@ const ui = {
         (cost === undefined ? '<button disabled>MAX</button>'
           : '<button data-k="' + u.k + '"' + (w < cost ? ' disabled' : '') + '>🌰 ' + cost + '</button>') + '</div>';
     });
-    html += '<button id="upClose">닫기</button>';
+    html += '<button id="upClose" class="sui-pill">닫기</button>';
     $('upCard').innerHTML = html;
     $('upCard').querySelectorAll('button[data-k]').forEach(b => b.onclick = e => {
       e.stopPropagation();

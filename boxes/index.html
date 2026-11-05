@@ -80,7 +80,7 @@
   .rk .n{width:30px;color:#8A7458;}
   .rk .nm{flex:1;}
   .rk .s{color:#C06A1C;}
-  .tabs{display:flex;gap:6px;background:#EFE3CC;border-radius:12px;padding:4px;}
+  .tabs{display:flex;gap:6px;justify-content:center;}
   .tabs button{flex:1;background:none;border-radius:9px;padding:8px 0;font-size:13.5px;font-weight:800;color:#8A7458;}
   .tabs button.on{background:#FFF8EC;color:#3B2A1C;box-shadow:0 1px 3px rgba(0,0,0,.12);}
   #boardNote{font-size:11.5px;color:#8A7458;text-align:center;}
@@ -144,10 +144,10 @@
 
 <div id="boardSheet" class="sheetWrap"><div class="sheet">
   <div class="hd"><span class="t">순위</span><span class="c" id="boardDay"></span></div>
-  <div class="tabs" id="boardTabs"><button data-r="today" class="on">오늘</button><button data-r="week">이번 주</button><button data-r="all">전체</button></div>
+  <div class="tabs" id="boardTabs"><button data-r="today" class="sui-chip sui-paper on">오늘</button><button data-r="week" class="sui-chip sui-paper">이번 주</button><button data-r="all" class="sui-chip sui-paper">전체</button></div>
   <div id="boardList"></div>
   <div id="boardNote"></div>
-  <button class="big" id="boardClose">닫기</button>
+  <button class="sui-pill sui-paper big" id="boardClose">닫기</button>
 </div></div>
 
 <div id="pauseSheet" class="sheetWrap"><div class="sheet">
