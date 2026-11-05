@@ -259,6 +259,7 @@ h1,.screen h2{color:var(--g1)}
 #sPause .sub{color:var(--tx2)}
 #toast{background:#2B2620;color:var(--tx);border:1px solid rgba(242,193,75,.3)}
 </style>
+<link rel="stylesheet" href="../ui/somsom-ui.css">   <!-- 솜솜 UI: 여섯 게임 공통 판 밖 모양 -->
 </head>
 <body>
 <canvas id="cv"></canvas>
@@ -268,7 +269,7 @@ h1,.screen h2{color:var(--g1)}
   <div id="hudrow"><span id="lvl">Lv 1</span><span id="time">3:00</span><span id="kills">0</span></div>
 </div>
 <div id="skills" class="hidden"></div>
-<button id="pauseBtn" class="hidden" aria-label="잠깐 멈춤">II</button>
+<button id="pauseBtn" class="sui-icon hidden" aria-label="잠깐 멈춤">II</button>
 <a class="homeBtn" id="homeLink" href="../" title="솜솜시티 홈">← 홈</a>
 <div id="toast"></div>
 
@@ -280,8 +281,8 @@ h1,.screen h2{color:var(--g1)}
       <div class="secT">출동할 주민</div>
       <div class="heroes" id="heroes"></div>
       <div class="pickInfo" id="pickInfo"></div>
-      <button id="goBtn">출발</button>
-      <div class="tLinks"><button id="skBtn">기술 보기</button><button id="rankBtn">순위</button></div>
+      <button id="goBtn" class="sui-cta">원정 떠나기</button>
+      <div class="tLinks"><button id="skBtn" class="sui-pill">기술</button><button id="rankBtn" class="sui-pill">순위</button></div>
       <div class="row hidden" id="dbgRow"><button class="btn sm" id="dbgUp">레벨 올려 보기(개발)</button><button class="btn sm" id="dbgReset">처음부터</button></div>
       <div class="note">화면을 밀어서 움직여요. 공격은 저절로 해요.</div>
     </div>
@@ -340,8 +341,8 @@ h1,.screen h2{color:var(--g1)}
       <div class="bar"><i id="rBar"></i></div><div style="font-size:12px" id="rNext"></div>
       <div id="rUnl"></div></div>
     <div id="rAch"></div>
-    <button class="btn" id="againBtn" style="margin-top:12px">한 판 더</button>
-    <div class="row"><button class="btn sm" id="titleBtn">주민 바꾸기</button><button class="btn sm" id="resRank">순위</button></div>
+    <button class="sui-cta btn" id="againBtn" style="margin-top:12px">한 판 더</button>
+    <div class="row"><button class="sui-pill btn sm" id="titleBtn">주민 바꾸기</button><button class="sui-pill btn sm" id="resRank">순위</button></div>
   </div>
 </div>
 

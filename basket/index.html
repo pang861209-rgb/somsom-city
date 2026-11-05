@@ -223,10 +223,10 @@
   /* ═══ 솜솜시티 공통 스킨 — 다른 게임(짝맞추기·낙엽피하기·솜솜 합체)과 같은 톤 ═══
      타이틀: 전면 삽화 + 로고 + 하단 갈색 띠 / 메뉴·결과: 허브와 같은 어두운 갈색 / 게임판: 밝게 유지 */
   :root{--paper:#2B2620;--cream:rgba(255,255,255,.07);--txt:#EFE7D6;--mut:#A9A08C;--line:rgba(255,255,255,.12);}
-  body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background-color:#221E18;}
-  #app{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;}
+  body{font-family:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif;background-color:#221E18;}
+  #app{font-family:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif;}
   .homeBtn{position:absolute;top:8px;left:8px;z-index:60;background:rgba(43,38,32,.86);border:none;border-radius:13px;padding:6px 13px;
-    font:700 13px 'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#EFE7D6;text-decoration:none;box-shadow:0 4px 14px -6px rgba(0,0,0,.8);backdrop-filter:blur(3px);}
+    font:700 13px 'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#EFE7D6;text-decoration:none;box-shadow:0 4px 14px -6px rgba(0,0,0,.8);backdrop-filter:blur(3px);}
   .homeBtn:active{background:rgba(43,38,32,.96);transform:translateY(1px);}
 
   /* 타이틀 — 공통 히어로 */
@@ -275,7 +275,7 @@
   /* 메뉴·결과·일시정지 — 허브 톤 */
   .dim{background:rgba(22,15,10,.72);}
   .card{background:#2B2620;border:none;border-radius:22px;color:#EFE7D6;box-shadow:0 6px 0 -1px rgba(228,217,192,.25),0 18px 28px -16px rgba(0,0,0,.7);}
-  .card h2{font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif;color:#F2C14B;font-weight:400;}
+  .card h2{font-family:'Black Han Sans','Gowun Dodum','Apple SD Gothic Neo',sans-serif;color:#F2C14B;font-weight:400;}
   .sub{color:#A9A08C;}
   .card .sub b{color:#EFE7D6;}
   .btn{background:rgba(255,255,255,.10);border:none;color:#EFE7D6;box-shadow:none;}
@@ -294,7 +294,7 @@
   .fc.lock .im img{filter:brightness(0) invert(1) opacity(.18);}
   .fc .cost{background:rgba(255,255,255,.14);color:#EFE7D6;} .fc .cost.can{background:#F2C14B;color:#221E18;}
   /* 결과 */
-  #resScore{color:#F2C14B;font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif;}
+  #resScore{color:#F2C14B;font-family:'Black Han Sans','Gowun Dodum','Apple SD Gothic Neo',sans-serif;}
   #resNear{color:#CFC5B0;}
   #resBig{background:rgba(255,255,255,.07);border:none;} #resBig .t{color:#A9A08C;} #resBig .t b{color:#EFE7D6;}
   #resStats div{background:rgba(255,255,255,.07);color:#A9A08C;} #resStats b{color:#EFE7D6;}
@@ -312,7 +312,7 @@
   #revive .sub b{color:#F2C14B;}
   /* 새 열매 발견 카드 */
   #discover .dc{background:#2B2620;border-color:#F2C14B;}
-  #discover .lb{color:#F2C14B;} #discover .nm{color:#EFE7D6;font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif;}
+  #discover .lb{color:#F2C14B;} #discover .nm{color:#EFE7D6;font-family:'Black Han Sans','Gowun Dodum','Apple SD Gothic Neo',sans-serif;}
   #discover .lv{color:#A9A08C;} #discover .say{background:rgba(255,255,255,.07);} #discover .say span{color:#EFE7D6;} #discover .rw{color:#F2C14B;}
 
   /* 게임 중 버튼 — 밝은 게임판 위의 어두운 알약 (짝맞추기와 같은 방식) */
@@ -323,12 +323,13 @@
   #skillBtn.ready #skillLbl{background:#e0503c;color:#fff;}
   #skillFace{background:#2B2620;border-color:rgba(255,255,255,.2);}
   #bestLine{background:rgba(43,38,32,.86);color:#EFE7D6;}
-  #score{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;font-weight:900;color:#fff7e8;-webkit-text-stroke:0;
+  #score{font-family:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif;font-weight:900;color:#fff7e8;-webkit-text-stroke:0;
     text-shadow:0 3px 0 #7c4a2d,0 7px 16px rgba(60,30,20,.35);}
   #toast span{background:rgba(43,38,32,.92);}
   #hint span{background:rgba(43,38,32,.9);color:#EFE7D6;border:none;} #hint span b{color:#F2C14B;}
   #targetBar .box{background:rgba(43,38,32,.94);}
 </style>
+<link rel="stylesheet" href="../ui/somsom-ui.css">   <!-- 솜솜 UI: 여섯 게임 공통 판 밖 모양 -->
 </head>
 <body>
 <div id="fit"><div id="app">
@@ -337,7 +338,7 @@
   <div id="hud" class="hidden">
     <div id="acornPill"><img src="../assets/basket/i_acorn.webp" alt=""><span id="acornN">0</span></div>
     <div id="scoreBox"><div id="score">0</div><div id="bestLine">최고 0</div></div>
-    <button id="pauseBtn" aria-label="일시정지">II</button>
+    <button id="pauseBtn" class="sui-icon" aria-label="일시정지">II</button>
     <button id="skillBtn" aria-label="스킬"><div id="skillRing"></div><div id="skillFace"><img id="skillImg" alt=""></div><div id="skillLbl">스킬</div></button>
     <div id="nextBox"><span class="lb">NEXT</span><span id="nextImgs"></span></div>
     <div id="chainBox"><span id="chainTxt"></span></div>
@@ -357,12 +358,12 @@
     </div>
     <div id="titleBottom">
       <div id="friendChip"><img id="fcImg" alt=""><div class="t"><b id="fcName">끼토</b><span id="fcSkill"></span></div><span id="fcNew"></span><span class="chg">바꾸기 ›</span></div>
-      <button id="startBtn">바구니 채우러 가기</button>
+      <button id="startBtn" class="sui-cta">바구니 채우러 가기</button>
       <div id="titleBtns">
-        <button id="dexBtn">도감</button>
-        <button id="recBtn">기록</button>
-        <button id="rankBtn">순위</button>
-        <button id="howBtn">방법</button>
+        <button id="dexBtn" class="sui-pill">도감</button>
+        <button id="recBtn" class="sui-pill">기록</button>
+        <button id="rankBtn" class="sui-pill">순위</button>
+        <button id="howBtn" class="sui-pill">방법</button>
       </div>
       <div id="goalMini"></div>
       <span class="titleTag">GAME 06 · 가을 바구니</span>
@@ -453,8 +454,8 @@
       <div id="resStats"></div>
       <div id="resAcorn"></div>
       <div id="resGoals"></div>
-      <button class="btn primary" id="againBtn">한 판 더!</button>
-      <div class="row"><button class="btn" id="resRank">순위</button><button class="btn" id="resFriend">친구 바꾸기</button><button class="btn" id="resHome">처음으로</button></div>
+      <button class="sui-cta btn primary" id="againBtn">한 판 더</button>
+      <div class="row"><button class="sui-pill btn" id="resRank">순위</button><button class="sui-pill btn" id="resFriend">친구 바꾸기</button><button class="sui-pill btn" id="resHome">처음으로</button></div>
     </div>
   </div>
 
@@ -1044,9 +1045,9 @@ function drawCombo(){ // 바구니 위쪽 가운데: 이어지는 동안 큰 연
     ctx.save(); ctx.translate(cx,cy); ctx.scale(pop,pop); ctx.rotate(Math.sin(G.t*9)*.03*Math.min(1,n/4));
     ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.lineJoin='round';
     const fs=Math.min(76,40+n*5);
-    ctx.font=`900 ${fs}px 'Black Han Sans','Apple SD Gothic Neo',sans-serif`; ctx.lineWidth=9; ctx.strokeStyle='#3a2014';
+    ctx.font=`900 ${fs}px 'Black Han Sans','Gowun Dodum','Apple SD Gothic Neo',sans-serif`; ctx.lineWidth=9; ctx.strokeStyle='#3a2014';
     ctx.strokeText(n+'연쇄',0,0); ctx.fillStyle=col; ctx.fillText(n+'연쇄',0,0);
-    ctx.font=`900 ${Math.round(fs*.48)}px 'Black Han Sans','Apple SD Gothic Neo',sans-serif`; ctx.lineWidth=6;
+    ctx.font=`900 ${Math.round(fs*.48)}px 'Black Han Sans','Gowun Dodum','Apple SD Gothic Neo',sans-serif`; ctx.lineWidth=6;
     ctx.strokeText('점수 ×'+comboMul(n),0,fs*.72); ctx.fillStyle='#fff7e8'; ctx.fillText('점수 ×'+comboMul(n),0,fs*.72);
     // 다음 합치기까지 남은 시간 막대
     ctx.fillStyle='rgba(58,32,20,.55)'; ctx.fillRect(-60,fs*1.12,120,7); ctx.fillStyle=col; ctx.fillRect(-60,fs*1.12,120*left,7);
@@ -1055,10 +1056,10 @@ function drawCombo(){ // 바구니 위쪽 가운데: 이어지는 동안 큰 연
   const e=G.comboEnd; if(e){ const a=(G.t-e.t)/1.6; if(a>1){ G.comboEnd=null; return; }
     const y=cy-10-a*40, al=a<.75?1:1-(a-.75)/.25, s=a<.12?.6+a/.12*.5:a<.22?1.1-(a-.12):1;
     ctx.save(); ctx.globalAlpha=al; ctx.translate(cx,y); ctx.scale(s,s); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.lineJoin='round';
-    ctx.font=`900 ${e.n>=5?30:24}px 'Black Han Sans','Apple SD Gothic Neo',sans-serif`; ctx.lineWidth=7; ctx.strokeStyle='#3a2014';
+    ctx.font=`900 ${e.n>=5?30:24}px 'Black Han Sans','Gowun Dodum','Apple SD Gothic Neo',sans-serif`; ctx.lineWidth=7; ctx.strokeStyle='#3a2014';
     const t1=`${e.n}연쇄 보너스`, t2='+'+e.bonus.toLocaleString();
     ctx.strokeText(t1,0,-18); ctx.fillStyle='#fff7e8'; ctx.fillText(t1,0,-18);
-    ctx.font=`900 ${e.n>=5?52:40}px 'Black Han Sans','Apple SD Gothic Neo',sans-serif`; ctx.lineWidth=9;
+    ctx.font=`900 ${e.n>=5?52:40}px 'Black Han Sans','Gowun Dodum','Apple SD Gothic Neo',sans-serif`; ctx.lineWidth=9;
     ctx.strokeText(t2,0,22); ctx.fillStyle='#F2C14B'; ctx.fillText(t2,0,22); ctx.restore(); }
 }
 function landY(x,r){ let y=BOX.B-r;

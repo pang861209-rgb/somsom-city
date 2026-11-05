@@ -16,7 +16,7 @@
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body { height:100%; overflow:hidden; }
-  body { background:#0e0e0e; font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; display:flex; justify-content:center; align-items:center; }
+  body { background:#0e0e0e; font-family:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif; display:flex; justify-content:center; align-items:center; }
   #app { width:100vw; height:100dvh; height:100dvh; position:relative; user-select:none; }
   canvas { display:block; width:100%; height:100%; background:#fdfbf5; touch-action:none; }
   /* 아이폰 세로로 열면 이 화면이 가장 먼저 보인다 — 허브에서 넘어온 톤을 그대로 잇는다 */
@@ -90,7 +90,7 @@
 
   /* ── 일시정지 (Phase 1) ── */
   .pauseBtn{position:absolute;top:8px;left:76px;z-index:60;background:rgba(43,38,32,.86);border:none;
-    border-radius:13px;padding:6px 13px;font:700 14px 'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#EFE7D6;
+    border-radius:13px;padding:6px 13px;font:700 14px 'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#EFE7D6;
     box-shadow:0 4px 14px -6px rgba(0,0,0,.8);cursor:pointer;display:none;line-height:1.2;backdrop-filter:blur(3px);}
   .pauseBtn:active{background:rgba(43,38,32,.96);transform:translateY(1px);}
   #pauseWrap{position:absolute;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
@@ -116,7 +116,7 @@
   #achToast{position:absolute;top:14px;left:50%;transform:translateX(-50%) translateY(-140%);z-index:95;
     background:#2B2620;border-radius:17px;padding:10px 16px;display:flex;align-items:center;gap:10px;
     box-shadow:0 16px 26px -16px rgba(0,0,0,.75);opacity:0;visibility:hidden;transition:transform .45s cubic-bezier(.2,.8,.3,1),opacity .3s;
-    font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;white-space:nowrap;pointer-events:none;}
+    font-family:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif;white-space:nowrap;pointer-events:none;}
   #achToast.on{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible;}
   #achToast .ai{font-size:20px;}
   #achToast .at{font-size:11px;font-weight:800;color:#F2C14B;letter-spacing:.06em;}
@@ -129,18 +129,18 @@
 
   /* ── 한 판 더 (즉시 재시작 시트) — 가로 화면이라 낮고 넓게 ── */
   #quick{position:absolute;inset:0;z-index:58;display:none;align-items:flex-end;justify-content:center;cursor:pointer;
-    background:linear-gradient(to bottom,rgba(34,30,24,0) 25%,rgba(34,30,24,.75) 70%);font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;}
+    background:linear-gradient(to bottom,rgba(34,30,24,0) 25%,rgba(34,30,24,.75) 70%);font-family:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif;}
   #quick.on{display:flex;animation:qIn .28s ease-out;}
   @keyframes qIn{from{opacity:0}to{opacity:1}}
   #quickCard{margin:0 12px 10px;width:min(520px,100%);background:#2B2620;border-radius:20px;padding:12px 14px 10px;color:#EFE7D6;
     display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center;animation:qUp .32s cubic-bezier(.2,.8,.3,1);
     box-shadow:0 18px 28px -16px rgba(0,0,0,.7);}
   @keyframes qUp{from{transform:translateY(30px)}to{transform:translateY(0)}}
-  #qHead{font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif;font-size:21px;color:#F2C14B;line-height:1.15;}
+  #qHead{font-family:'Black Han Sans','Gowun Dodum','Apple SD Gothic Neo',sans-serif;font-size:21px;color:#F2C14B;line-height:1.15;}
   #qHead.near{color:#FF8A4C;animation:qPulse .9s ease-in-out infinite;transform-origin:left center;}
   @keyframes qPulse{50%{transform:scale(1.04)}}
   #qSub{font-size:11.5px;color:#A9A08C;grid-column:1;}
-  #qTap{grid-column:2;grid-row:1 / span 2;font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif;font-size:17px;color:#221E18;
+  #qTap{grid-column:2;grid-row:1 / span 2;font-family:'Black Han Sans','Gowun Dodum','Apple SD Gothic Neo',sans-serif;font-size:17px;color:#221E18;
     background:#F2C14B;border-radius:15px;padding:12px 16px;text-align:center;animation:qBlink 1.2s ease-in-out infinite;white-space:nowrap;}
   @keyframes qBlink{50%{filter:brightness(1.12)}}
   #qRow{grid-column:1 / span 2;display:flex;gap:7px;}
@@ -151,9 +151,9 @@
   body{background:#221E18;color:#EFE7D6;}
   .screen{background:#221E18;color:#EFE7D6;}
   #select,#ranking,#result,#setup,#dex,#game{background:#221E18;}
-  h1{font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif;color:#F2C14B;letter-spacing:-.01em;font-weight:400;}
+  h1{font-family:'Black Han Sans','Gowun Dodum','Apple SD Gothic Neo',sans-serif;color:#F2C14B;letter-spacing:-.01em;font-weight:400;}
   .sub,.selSub{color:#A9A08C;}
-  #titleLogo,#logo{font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif;color:#F2C14B;
+  #titleLogo,#logo{font-family:'Black Han Sans','Gowun Dodum','Apple SD Gothic Neo',sans-serif;color:#F2C14B;
     text-shadow:0 3px 14px rgba(0,0,0,.6);font-weight:400;}
   #titleSub,#logoSub,#fsHint{color:#E6DCC6;text-shadow:0 2px 8px rgba(0,0,0,.7);}
   #titleBg,#introImg{filter:brightness(.72) saturate(.92);}
@@ -244,8 +244,8 @@
   #title{ padding:0 !important; gap:0 !important; justify-content:flex-start !important; align-items:flex-start !important; overflow:hidden; background:linear-gradient(#b898cb 0%,#efae7e 60%,#caa26a 100%) !important; }
   #titleBg{ position:absolute !important; left:0 !important; top:0 !important; width:100% !important; height:calc(100% - 60px) !important; object-fit:cover; object-position:center bottom; filter:none !important; z-index:0; }
   #titleTop{ position:relative; z-index:2; margin:44px 0 0 7%; display:flex; flex-direction:column; align-items:flex-start !important; text-align:left; gap:8px; }
-  .logoTop{ font-size:13px; font-weight:800; color:#fff7e8; letter-spacing:5px; text-shadow:0 2px 0 rgba(96,58,38,.5); font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; }
-  #logo{ font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif !important; font-size:40px !important; line-height:1.1 !important; font-weight:900 !important; color:#fff7e8 !important; letter-spacing:2px !important; transform:rotate(-2deg); transform-origin:left center; margin:0 !important;
+  .logoTop{ font-size:13px; font-weight:800; color:#fff7e8; letter-spacing:5px; text-shadow:0 2px 0 rgba(96,58,38,.5); font-family:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif; }
+  #logo{ font-family:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif !important; font-size:40px !important; line-height:1.1 !important; font-weight:900 !important; color:#fff7e8 !important; letter-spacing:2px !important; transform:rotate(-2deg); transform-origin:left center; margin:0 !important;
     text-shadow:0 3px 0 #7c4a2d, 0 7px 16px rgba(60,30,20,.4) !important; }
   #logoSub{ margin-top:4px !important; font-size:11px !important; font-weight:700 !important; color:#5a4130 !important; background:rgba(255,247,232,.85); border:1.5px solid rgba(124,74,45,.5); border-radius:20px; padding:5px 12px; text-shadow:none !important; max-width:360px; }
   #titleBtns{ position:absolute !important; left:0; right:0; bottom:0; z-index:2; height:60px; flex-direction:row !important; justify-content:center; align-items:center !important; gap:10px !important; padding:0 12px;
@@ -254,12 +254,13 @@
   #titleBtns .cta:active{ transform:translateY(4px) !important; box-shadow:none !important; }
   #titleBtns .ghost{ font-size:12px !important; padding:8px 14px !important; border-radius:20px !important; background:rgba(255,247,232,.14) !important; color:#ffefd8 !important; border:1.5px solid rgba(255,239,216,.55) !important; box-shadow:none !important; }
 </style>
+<link rel="stylesheet" href="../ui/somsom-ui.css">   <!-- 솜솜 UI: 여섯 게임 공통 판 밖 모양 -->
 </head>
 <body>
 <div id="rotate"><div class="rIcon"></div><div class="rTitle">가로로 돌려주세요</div><div class="rSub">마감 질주는 가로 화면 전용이에요</div><a class="rHome" href="../">← 솜솜시티로</a></div>
 <div id="app">
   <div id="achToast"><span class="ai">🏅</span><span><span class="at">업적 달성</span><br><span class="an"></span></span></div>
-  <button id="pauseBtn" class="pauseBtn" title="일시정지">❙❙</button>
+  <button id="pauseBtn" class="sui-icon pauseBtn" title="일시정지">❙❙</button>
   <div id="pauseWrap"><div id="pauseCard">
     <div class="pt">잠깐 쉬는 중</div>
     <div class="ps">기록은 그대로 있어요</div>
@@ -275,8 +276,8 @@
       <div id="qSub"></div>
       <div id="qTap">탭하면 바로 다시 ▶</div>
       <div id="qRow">
-        <button id="qResBtn">결과·랭킹</button>
-        <button id="qSelBtn">캐릭터 변경</button>
+        <button id="qResBtn" class="sui-pill">결과·순위</button>
+        <button id="qSelBtn" class="sui-pill">주민 바꾸기</button>
       </div>
     </div>
   </div>
@@ -290,9 +291,9 @@
       <div id="logoSub">은행잎 골목을 달려 최대한 멀리! · 탭 / 스페이스 = 점프 (공중에서 한 번 더!)</div>
     </div>
     <div id="titleBtns" class="row">
-      <button class="cta" onclick="ui.toSelect()">달리러 가기 ▶</button>
-      <button class="ghost" onclick="ui.showRanking()">🏆 랭킹</button>
-      <button class="ghost" onclick="goFullscreen()">⛶ 전체화면</button>
+      <button class="cta sui-cta" onclick="ui.toSelect()">달리러 가기 ▶</button>
+      <button class="ghost sui-pill" onclick="ui.showRanking()">🏆 순위</button>
+      <button class="ghost sui-pill" onclick="goFullscreen()">⛶ 전체화면</button>
     </div>
   </div>
 
@@ -306,9 +307,9 @@
       <span class="pill">아슬아슬 넘으면 보너스</span>
       <span class="pill">⚠ 떨어지는 은행 주의</span>
     </div>
-    <div id="dailyRow"><button id="dailyBtn2"></button></div>
+    <div id="dailyRow"><button id="dailyBtn2" class="sui-pill sui-hot"></button></div>
     <div class="grid" id="charGrid"></div>
-    <button onclick="ui.toTitle()" style="font-size:13px;padding:7px 16px;">← 뒤로</button>
+    <button class="sui-pill" onclick="ui.toTitle()">← 뒤로</button>
   </div>
 
   <div id="intro" class="screen hidden" onclick="ui.beginFromIntro()">
@@ -333,12 +334,12 @@
     <div id="resScore" style="font-size:22px;font-weight:800;color:#5a4a3a;"></div>
     <div id="resDetail" class="sub"></div>
     <div id="resBest" class="sub"></div>
-    <div id="nameRow"><input id="nameInput" maxlength="8" placeholder="이름 (8자)"><button id="submitBtn" onclick="submitScore()">🏆 랭킹 등록</button></div>
+    <div id="nameRow"><input id="nameInput" maxlength="8" placeholder="이름 (8자)"><button id="submitBtn" onclick="submitScore()">🏆 순위 등록</button></div>
     <div class="row">
-      <button onclick="ui.replay()">다시</button>
-      <button onclick="ui.toSelect()">캐릭터 변경</button>
-      <button onclick="shareCard()">📸 자랑</button>
-      <button onclick="ui.toTitle()" style="font-size:13px;padding:7px 14px;">메인</button>
+      <button class="sui-cta" onclick="ui.replay()">🔁 한 판 더</button>
+      <button class="sui-pill" onclick="ui.toSelect()">주민 바꾸기</button>
+      <button class="sui-pill" onclick="shareCard()">📸 자랑하기</button>
+      <button class="sui-pill" onclick="ui.toTitle()">처음으로</button>
     </div>
   </div>
 </div>
@@ -841,7 +842,7 @@ function endGame(score){                                // 결과·랭킹 화면
   $('resBest').textContent=c.name+' 최고기록: '+best+' m';
   $('nameRow').style.display=score>=1?'flex':'none';
   $('nameInput').value=localStorage.getItem('somsom_name')||'';
-  $('submitBtn').disabled=false; $('submitBtn').textContent='🏆 랭킹 등록';
+  $('submitBtn').disabled=false; $('submitBtn').textContent='🏆 순위 등록';
   document.querySelectorAll('#result .cf').forEach(e=>e.remove());
   if(isNew){ const cols=['#e8c14a','#e8915a','#8a6fa8','#7fa05b','#d2452a']; for(let i=0;i<20;i++){ const d=document.createElement('div'); d.className='cf'; d.style.cssText='position:absolute;top:-14px;width:10px;height:14px;border-radius:3px;pointer-events:none;left:'+(Math.random()*100)+'%;background:'+cols[i%5]+';animation:cf 2.4s ease-in '+(Math.random()*.7)+'s forwards;'; $('result').appendChild(d); setTimeout(()=>d.remove(),3400);} }
   ui.show('result');
