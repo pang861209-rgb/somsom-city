@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { background:#f3ede2; font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; display:flex; justify-content:center; align-items:center; min-height:100dvh; }
+  body { background:#f3ede2; font-family:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif; display:flex; justify-content:center; align-items:center; min-height:100dvh; }
   #app { width:min(420px,100vw); height:100dvh; position:relative; }
   canvas { display:block; width:100%; height:100%; background:#fdfbf5; border-radius:0; }
   .screen { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; background:#fdfbf5; border-radius:12px; padding:20px; text-align:center; }
@@ -71,7 +71,7 @@
 
   /* ── 일시정지 (Phase 1) ── */
   .pauseBtn{position:absolute;top:8px;left:76px;z-index:60;background:rgba(43,38,32,.86);border:none;
-    border-radius:13px;padding:6px 13px;font:700 14px 'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#EFE7D6;
+    border-radius:13px;padding:6px 13px;font:700 14px 'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#EFE7D6;
     box-shadow:0 4px 14px -6px rgba(0,0,0,.8);cursor:pointer;display:none;line-height:1.2;backdrop-filter:blur(3px);}
   .pauseBtn:active{background:rgba(43,38,32,.96);transform:translateY(1px);}
   #pauseWrap{position:absolute;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
@@ -92,7 +92,7 @@
   #achToast{position:absolute;top:14px;left:50%;transform:translateX(-50%) translateY(-140%);z-index:95;
     background:#2B2620;border-radius:17px;padding:10px 16px;display:flex;align-items:center;gap:10px;
     box-shadow:0 16px 26px -16px rgba(0,0,0,.75);opacity:0;visibility:hidden;transition:transform .45s cubic-bezier(.2,.8,.3,1),opacity .3s;
-    font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;white-space:nowrap;pointer-events:none;}
+    font-family:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif;white-space:nowrap;pointer-events:none;}
   #achToast.on{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible;}
   #achToast .ai{font-size:20px;}
   #achToast .at{font-size:11px;font-weight:800;color:#F2C14B;letter-spacing:.06em;}
@@ -106,13 +106,13 @@
   /* ── 한 판 더 (즉시 재시작 시트 · 강화) ── */
   #quick{position:absolute;inset:0;z-index:58;display:none;flex-direction:column;justify-content:flex-end;
     background:linear-gradient(to bottom,rgba(34,30,24,0) 30%,rgba(34,30,24,.78) 62%);cursor:pointer;
-    font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;}
+    font-family:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif;}
   #quick.on{display:flex;animation:qIn .28s ease-out;}
   @keyframes qIn{from{opacity:0}to{opacity:1}}
   #quickCard{margin:0 12px 14px;background:#2B2620;border-radius:22px;padding:16px 16px 12px;color:#EFE7D6;
     box-shadow:0 18px 28px -16px rgba(0,0,0,.7);display:flex;flex-direction:column;gap:9px;animation:qUp .32s cubic-bezier(.2,.8,.3,1);}
   @keyframes qUp{from{transform:translateY(40px)}to{transform:translateY(0)}}
-  #qHead{font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif;font-size:24px;color:#F2C14B;line-height:1.15;text-align:center;}
+  #qHead{font-family:'Black Han Sans','Gowun Dodum','Apple SD Gothic Neo',sans-serif;font-size:24px;color:#F2C14B;line-height:1.15;text-align:center;}
   #qHead.near{color:#FF8A4C;animation:qPulse .9s ease-in-out infinite;}
   @keyframes qPulse{50%{transform:scale(1.04)}}
   #qSub{font-size:12.5px;color:#A9A08C;text-align:center;margin-top:-4px;}
@@ -121,7 +121,7 @@
   #qUp .qr b{color:#F2C14B;}
   #qUp .bar{height:7px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden;}
   #qUp .bar i{display:block;height:100%;background:#F2C14B;border-radius:999px;transition:width .5s;}
-  #qTap{font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif;font-size:19px;color:#221E18;background:#F2C14B;
+  #qTap{font-family:'Black Han Sans','Gowun Dodum','Apple SD Gothic Neo',sans-serif;font-size:19px;color:#221E18;background:#F2C14B;
     border-radius:16px;padding:12px;text-align:center;animation:qBlink 1.2s ease-in-out infinite;}
   @keyframes qBlink{50%{filter:brightness(1.12)}}
   #qRow{display:flex;gap:7px;}
@@ -131,7 +131,7 @@
   #upModal{position:absolute;inset:0;z-index:85;display:none;align-items:center;justify-content:center;background:rgba(20,17,13,.6);padding:18px;}
   #upModal.on{display:flex;}
   #upCard{background:#2B2620;border-radius:22px;padding:18px 16px 14px;width:100%;max-width:360px;color:#EFE7D6;
-    display:flex;flex-direction:column;gap:10px;font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;}
+    display:flex;flex-direction:column;gap:10px;font-family:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif;}
   #upCard .uh{display:flex;align-items:center;gap:10px;}
   #upCard .uh img{width:46px;height:46px;object-fit:contain;}
   #upCard .uh .ut{font-family:'Black Han Sans',sans-serif;font-size:20px;color:#F2C14B;}
@@ -154,9 +154,9 @@
   body{background:#221E18;color:#EFE7D6;}
   .screen{background:#221E18;color:#EFE7D6;}
   #select,#ranking,#result,#setup,#dex,#game{background:#221E18;}
-  h1{font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif;color:#F2C14B;letter-spacing:-.01em;font-weight:400;}
+  h1{font-family:'Black Han Sans','Gowun Dodum','Apple SD Gothic Neo',sans-serif;color:#F2C14B;letter-spacing:-.01em;font-weight:400;}
   .sub,.selSub{color:#A9A08C;}
-  #titleLogo,#logo{font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif;color:#F2C14B;
+  #titleLogo,#logo{font-family:'Black Han Sans','Gowun Dodum','Apple SD Gothic Neo',sans-serif;color:#F2C14B;
     text-shadow:0 3px 14px rgba(0,0,0,.6);font-weight:400;}
   #titleSub,#logoSub,#fsHint{color:#E6DCC6;text-shadow:0 2px 8px rgba(0,0,0,.7);}
   #titleBg,#introImg{filter:brightness(.72) saturate(.92);}
@@ -260,7 +260,7 @@
   #onboard { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(10,8,5,.6); z-index:70; }
   #onboard.hidden { display:none; }
   .obCard { background:#2B2620; border-radius:22px; box-shadow:0 16px 40px -18px rgba(0,0,0,.85); padding:18px 20px; width:84%; text-align:left; }
-  .obTitle { font-family:'Black Han Sans','Apple SD Gothic Neo',sans-serif; font-weight:400; font-size:20px; color:#F2C14B; text-align:center; margin-bottom:8px; }
+  .obTitle { font-family:'Black Han Sans','Gowun Dodum','Apple SD Gothic Neo',sans-serif; font-weight:400; font-size:20px; color:#F2C14B; text-align:center; margin-bottom:8px; }
   .obRow { display:flex; align-items:center; gap:12px; font-size:14px; color:#E6DCC6; padding:9px 0; border-bottom:1px solid rgba(255,255,255,.09); }
   .obRow:last-of-type { border-bottom:none; }
   .obRow b { color:#F2C14B; }
@@ -275,8 +275,8 @@
   #titleBg{ position:absolute !important; left:0 !important; top:0 !important; bottom:auto !important; width:100% !important; height:calc(100% - 104px) !important; object-fit:cover; object-position:center bottom; filter:none !important; z-index:0; }
   .titleChar{ display:none !important; }
   #titleTop{ position:relative; z-index:2; margin-top:52px; display:flex; flex-direction:column; align-items:center; gap:10px; }
-  .logoTop{ font-size:14px; font-weight:800; color:#fff7e8; letter-spacing:5px; text-shadow:0 2px 0 rgba(96,58,38,.5); font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; }
-  #titleLogo{ font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif !important; font-size:44px !important; line-height:1.1 !important; font-weight:900 !important; color:#fff7e8 !important; letter-spacing:2px !important; transform:rotate(-2deg); margin:0 !important;
+  .logoTop{ font-size:14px; font-weight:800; color:#fff7e8; letter-spacing:5px; text-shadow:0 2px 0 rgba(96,58,38,.5); font-family:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif; }
+  #titleLogo{ font-family:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif !important; font-size:44px !important; line-height:1.1 !important; font-weight:900 !important; color:#fff7e8 !important; letter-spacing:2px !important; transform:rotate(-2deg); margin:0 !important;
     text-shadow:0 3px 0 #7c4a2d, 0 7px 16px rgba(60,30,20,.4) !important; }
   #titleSub{ margin-top:2px !important; font-size:12px !important; font-weight:700 !important; color:#5a4130 !important; background:rgba(255,247,232,.85); border:1.5px solid rgba(124,74,45,.5); border-radius:20px; padding:5px 14px; text-shadow:none !important; }
   #titleBottom{ position:absolute; left:0; right:0; bottom:0; z-index:2; height:104px; padding:12px 20px 8px; display:flex; flex-direction:column; align-items:center; gap:8px;
@@ -286,11 +286,12 @@
   .titleTag{ font-size:10px; font-weight:700; color:rgba(255,239,216,.55); letter-spacing:1px; }
   #titleBottom #chBanner{ position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); white-space:nowrap; max-width:calc(100% - 24px); overflow:hidden; text-overflow:ellipsis; }   /* 친구 도전 배너: 높이 고정 하단 바 위에 띄움 */
 </style>
+<link rel="stylesheet" href="../ui/somsom-ui.css">   <!-- 솜솜 UI: 여섯 게임 공통 판 밖 모양 -->
 </head>
 <body>
 <div id="app">
   <div id="achToast"><span class="ai">🏅</span><span><span class="at">업적 달성</span><br><span class="an"></span></span></div>
-  <button id="pauseBtn" class="pauseBtn" title="일시정지">❙❙</button>
+  <button id="pauseBtn" class="sui-icon pauseBtn" title="일시정지">❙❙</button>
   <div id="pauseWrap"><div id="pauseCard">
     <div class="pt">잠깐 쉬는 중</div>
     <div class="ps">기록은 그대로 있어요</div>
@@ -307,9 +308,9 @@
       <div id="qUp"></div>
       <div id="qTap">탭하면 바로 다시 ▶</div>
       <div id="qRow">
-        <button id="qUpBtn">🌰 강화</button>
-        <button id="qResBtn">결과·랭킹</button>
-        <button id="qSelBtn">캐릭터 변경</button>
+        <button id="qUpBtn" class="sui-pill">🌰 강화</button>
+        <button id="qResBtn" class="sui-pill">결과·순위</button>
+        <button id="qSelBtn" class="sui-pill">주민 바꾸기</button>
       </div>
     </div>
   </div>
@@ -327,7 +328,7 @@
     </div>
     <div id="titleBottom">
       <div id="chBanner" class="hidden"></div>
-      <button id="startBtn" onclick="ui.toSelect()">은행 피하러 가기</button>
+      <button id="startBtn" class="sui-cta" onclick="ui.toSelect()">은행 피하러 가기</button>
       <span class="titleTag">GAME 01 · 낙엽 피하기</span>
     </div>
   </div>
@@ -349,9 +350,9 @@
       <span class="pill">✨ 황금잎</span>
     </div>
     <div id="walletChip"></div>
-    <div id="dailyRow"><button id="dailyBtn2"></button></div>
+    <div id="dailyRow"><button id="dailyBtn2" class="sui-pill sui-hot"></button></div>
     <div class="grid" id="charGrid"></div>
-    <button onclick="ui.showRanking()">🏆 솜솜 랭킹</button>
+    <button class="sui-pill" onclick="ui.showRanking()">🏆 순위</button>
   </div>
 
   <div id="intro" class="screen hidden" onclick="ui.beginFromIntro()">
@@ -383,12 +384,12 @@
     <div id="resProg"></div>
     <div id="nameRow" style="display:none;gap:8px;align-items:center;">
       <input id="nameInput" maxlength="8" placeholder="이름 (8자)">
-      <button id="submitBtn" onclick="submitScore()">🏆 랭킹 등록</button>
+      <button id="submitBtn" onclick="submitScore()">🏆 순위 등록</button>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;">
-      <button class="btnPrimary" onclick="ui.retry()">🔁 한 판 더</button>
-      <button onclick="ui.toSelect()">캐릭터 변경</button>
-      <button onclick="shareCard()">📸 자랑하기</button>
+      <button class="btnPrimary sui-cta" onclick="ui.retry()">🔁 한 판 더</button>
+      <button class="sui-pill" onclick="ui.toSelect()">주민 바꾸기</button>
+      <button class="sui-pill" onclick="shareCard()">📸 자랑하기</button>
     </div>
   </div>
 </div>
@@ -1449,7 +1450,7 @@ function endGame() {                                             // 결과·랭�
   const rr = lastResult.rr, isChal = lastResult.isChal;        // 정산은 한 판 더 시트(quickOver)에서 한 번만
   $('nameRow').style.display = (score >= 1 ? 'flex' : 'none');                 // 매 판 등록 가능 (랭킹은 이름당 최고점만 표시)
   $('nameInput').value = localStorage.getItem('somsom_name') || '';
-  $('submitBtn').disabled = false; $('submitBtn').textContent = '🏆 랭킹 등록';
+  $('submitBtn').disabled = false; $('submitBtn').textContent = '🏆 순위 등록';
   // 죽음 화면: 항상 "거의"를 보여주고, 실패해도 게이지는 찬다 — "한 판 더"를 결정하는 유일한 순간
   let near;
   if (isChal && score > challenge.score) near = '🏆 ' + challenge.name + '의 ' + challenge.score + '점을 넘었어요!';

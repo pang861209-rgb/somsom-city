@@ -1,0 +1,68 @@
+/* ═══ 솜솜 UI — 여섯 게임이 함께 쓰는 판 밖의 모양 ═══════════════════════════
+   원칙: 놀이판은 게임마다 달라도, 판 밖(위 바·버튼·글꼴·용어)은 여섯 게임이 같다.
+   쓰는 법: 각 게임 <head> 맨 끝에서 이 파일을 불러오고, 버튼에 아래 이름표를 붙인다.
+     .sui-cta   시작 버튼("~하러 가기")·결과의 "한 판 더"     — 주황, 한 화면에 하나
+     .sui-pill  보조 버튼(방법·도감·기록·순위·주민 바꾸기 …)  — 반투명 알약
+     .sui-icon  아이콘 버튼(일시정지 등)                      — 36px 둥근 사각
+     .homeBtn   ← 홈 (이미 모든 게임이 쓰는 이름) · #somsomBgm 노래 버튼(assets/bgm.js)
+   게임마다 id로 모양을 덮어쓴 곳이 많아, 판 밖 모양만은 여기서 !important + 높은 명시도(:not(#_s1):not(#_s2))로 맞춘다.
+   기획: 노션 「솜솜시티 게임 PO 정리 — 포트폴리오 + UI/UX 통일 (2026-11)」 3장 */
+@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&display=swap');
+
+:root{
+  --sui-night:#221E18; --sui-panel:#2B2620; --sui-paper:#FFF8EC;
+  --sui-ink:#EFE7D6; --sui-sub:#A9A08C; --sui-gold:#F2C14B;
+  --sui-cta:#FFB35C; --sui-cta-ink:#4A2416; --sui-cta-line:#5A2F1C;
+  --sui-glass:rgba(34,30,24,.86); --sui-line:rgba(255,255,255,.14);
+  --sui-r-s:12px; --sui-r-m:16px; --sui-r-l:22px;
+  --sui-font:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --sui-title:'Black Han Sans','Gowun Dodum',sans-serif;
+}
+
+/* 주 버튼 — 타이틀 "~하러 가기", 결과 "한 판 더" */
+.sui-cta:not(#_s1):not(#_s2){
+  min-height:52px !important; padding:0 30px !important; border-radius:var(--sui-r-m) !important;
+  background:var(--sui-cta) !important; color:var(--sui-cta-ink) !important;
+  border:2px solid var(--sui-cta-line) !important; box-shadow:0 4px 0 var(--sui-cta-line) !important;
+  font-family:var(--sui-title) !important; font-size:18px !important; font-weight:400 !important;
+  letter-spacing:.01em !important; line-height:1.1 !important; text-shadow:none !important;
+  display:inline-flex !important; align-items:center !important; justify-content:center !important; gap:6px;
+  cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .06s, box-shadow .06s;
+}
+.sui-cta:not(#_s1):not(#_s2):active{ transform:translateY(3px) !important; box-shadow:0 1px 0 var(--sui-cta-line) !important; }
+.sui-cta:not(#_s1):not(#_s2):disabled{ filter:saturate(.4) brightness(.85); }
+
+/* 보조 버튼 — 알약 */
+.sui-pill:not(#_s1):not(#_s2){
+  min-height:40px !important; padding:0 16px !important; border-radius:999px !important;
+  background:rgba(255,255,255,.10) !important; color:var(--sui-ink) !important;
+  border:1px solid var(--sui-line) !important; box-shadow:none !important;
+  font-family:var(--sui-font) !important; font-size:13.5px !important; font-weight:700 !important;
+  line-height:1.1 !important; text-shadow:none !important;
+  display:inline-flex !important; align-items:center !important; justify-content:center !important; gap:5px;
+  cursor:pointer; transition:background .1s;
+}
+.sui-pill:not(#_s1):not(#_s2):active{ background:rgba(255,255,255,.18) !important; transform:none !important; }
+
+/* 아이콘 버튼 — 일시정지 등, 그리고 노래 버튼 */
+.sui-icon:not(#_s1):not(#_s2), #somsomBgm:not(#_s1):not(#_s2){
+  width:36px !important; height:36px !important; min-width:36px; padding:0 !important;
+  border-radius:var(--sui-r-s) !important; background:var(--sui-glass) !important;
+  color:var(--sui-gold) !important; border:1px solid rgba(255,255,255,.12) !important;
+  box-shadow:0 4px 14px -6px rgba(0,0,0,.8) !important;
+  font-family:var(--sui-font) !important; font-size:15px !important; font-weight:800 !important; line-height:1 !important;
+  align-items:center; justify-content:center;
+}
+#somsomBgm.off:not(#_s1):not(#_s2){ color:#8A8271 !important; }
+
+/* ← 홈 */
+.homeBtn:not(#_s1):not(#_s2){
+  height:36px !important; padding:0 14px !important; border-radius:var(--sui-r-s) !important;
+  background:var(--sui-glass) !important; color:var(--sui-ink) !important;
+  border:1px solid rgba(255,255,255,.12) !important; box-shadow:0 4px 14px -6px rgba(0,0,0,.8) !important;
+  font-family:var(--sui-font) !important; font-size:13px !important; font-weight:700 !important;
+  display:inline-flex !important; align-items:center !important; text-decoration:none !important; line-height:1 !important;
+}
+
+/* 강조 알약 — "오늘의 도전"처럼 한 화면에 하나만 눈에 띄어야 하는 보조 버튼 */
+.sui-pill.sui-hot:not(#_s1):not(#_s2){ background:var(--sui-gold) !important; color:var(--sui-night) !important; border-color:var(--sui-gold) !important; }
