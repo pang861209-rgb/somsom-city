@@ -452,7 +452,7 @@ function gameOver(){
   save(KEY, SAVE);
   hubReport();
   Promise.resolve(pushRanking()).then(showRival);
-  $('resTitle').textContent = isBest ? '최고 기록!' : '더 놓을 곳이 없어요';
+  $('resTitle').textContent = isBest ? '🎉 신기록!' : '더 놓을 곳이 없어요';
   $('resBig').textContent = score.toLocaleString() + '점';
   const parts = [];
   parts.push('상자 <b>' + g.placed + '</b>개 · 정리한 줄 <b>' + st.lines + '</b>');
@@ -461,7 +461,7 @@ function gameOver(){
   if(st.clearAll) parts.push('<b>싹 비우기 ' + st.clearAll + '번</b>');
   if(st.cardsUsed) parts.push('친구 카드 <b>' + st.cardsUsed + '장</b>' + (st.saved ? ' · 막힌 판을 <b>' + st.saved + '번</b> 살림' : ''));
   if(isBest) parts.push(prev ? '예전 최고 ' + prev.toLocaleString() + '점을 넘었어요' : '첫 기록이에요');
-  else if(prev - score <= prev*0.2) parts.push('<b>아깝다! 최고 기록까지 ' + (prev - score).toLocaleString() + '점</b>');
+  else if(prev - score <= prev*0.2) parts.push('<b>아깝다! 신기록까지 ' + (prev - score + 1).toLocaleString() + '점</b>');
   else parts.push('최고 기록 ' + prev.toLocaleString() + '점');
   parts.push('<span id="resRival" style="color:#8A7458;"></span>');
   $('resNote').innerHTML = parts.join('<br>');

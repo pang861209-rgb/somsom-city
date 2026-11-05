@@ -270,7 +270,7 @@ h1,.screen h2{color:var(--g1)}
   <div id="hudrow"><span id="lvl">Lv 1</span><span id="time">3:00</span><span id="kills">0</span></div>
 </div>
 <div id="skills" class="hidden"></div>
-<button id="pauseBtn" class="sui-icon hidden" aria-label="잠깐 멈춤">❙❙</button>
+<button id="pauseBtn" class="sui-icon hidden" aria-label="일시정지">❙❙</button>
 <a class="homeBtn" id="homeLink" href="../" title="솜솜시티 홈">← 홈</a>
 <div id="toast"></div>
 
@@ -315,10 +315,10 @@ h1,.screen h2{color:var(--g1)}
 
 <div class="screen hidden" id="sPause">
   <div class="card" style="text-align:center">
-    <h1 style="font-size:34px">잠깐 멈춤</h1>
+    <h1 style="font-size:34px">잠깐 쉬는 중</h1>
     <p class="sub">숨 고르고 다시 가요.</p>
-    <button class="btn" id="resumeBtn">계속하기</button>
-    <div class="row"><button class="btn sm" id="quitBtn">그만하기</button></div>
+    <button class="sui-cta btn" id="resumeBtn">이어하기</button>
+    <div class="row"><button class="sui-pill btn sm" id="quitBtn">그만하기</button></div>
   </div>
 </div>
 
@@ -569,8 +569,8 @@ function finish(){
     $('hud').classList.add('hidden'); $('skills').classList.add('hidden'); $('up').classList.add('hidden');
     $('rBig').textContent = r.win ? (r.boss ? '골목을 지켰다!' : '3분 버텼다!') : quitting ? '원정 중단' : '쓰러졌다…'; quitting = false;
     $('res').classList.toggle('win', !!r.win);
-    $('rScore').innerHTML = r.score.toLocaleString() + (newBest && SAVE.runs > 1 ? '<span class="nb">최고 기록!</span>' : '');
-    $('rNear').innerHTML = newBest ? (prevBest ? '예전 최고 ' + prevBest.toLocaleString() + '점을 넘었어요' : '첫 기록이에요') : (prevBest - r.score <= prevBest*0.2 ? '아깝다! 최고 기록까지 <b>' + (prevBest - r.score).toLocaleString() + '점</b>' : '최고 기록 ' + prevBest.toLocaleString() + '점');
+    $('rScore').innerHTML = r.score.toLocaleString() + (newBest && SAVE.runs > 1 ? '<span class="nb">신기록!</span>' : '');
+    $('rNear').innerHTML = newBest ? (prevBest ? '예전 최고 ' + prevBest.toLocaleString() + '점을 넘었어요' : '첫 기록이에요') : (prevBest - r.score <= prevBest*0.2 ? '아깝다! 신기록까지 <b>' + (prevBest - r.score + 1).toLocaleString() + '점</b>' : '최고 기록 ' + prevBest.toLocaleString() + '점');
     $('rRival').textContent = ''; showRival();
     $('rAch').innerHTML = achGot.map(a => `<div class="ach"><b>업적 달성</b> · ${a}</div>`).join('');
     $('homeLink').classList.remove('hidden');
