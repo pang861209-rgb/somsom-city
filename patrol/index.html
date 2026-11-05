@@ -283,7 +283,7 @@ h1,.screen h2{color:var(--g1)}
       <div class="heroes" id="heroes"></div>
       <div class="pickInfo" id="pickInfo"></div>
       <button id="goBtn" class="sui-cta">원정 떠나기</button>
-      <div class="tLinks"><button id="skBtn" class="sui-pill">기술</button><button id="rankBtn" class="sui-pill">순위</button></div>
+      <div class="tLinks"><button id="skBtn" class="sui-pill">기술 도감</button><button id="rankBtn" class="sui-pill">순위</button></div>
       <div class="row hidden" id="dbgRow"><button class="btn sm" id="dbgUp">레벨 올려 보기(개발)</button><button class="btn sm" id="dbgReset">처음부터</button></div>
       <div class="note">화면을 밀어서 움직여요. 공격은 저절로 해요.</div>
     </div>
@@ -309,7 +309,7 @@ h1,.screen h2{color:var(--g1)}
     <div class="skTop"><img id="skImg" alt=""><div style="flex:1"><h2 id="skName" style="text-align:left"></h2><div style="font-size:13px" id="skLv"></div><div class="bar"><i id="skBar"></i></div></div></div>
     <div style="font-size:12px;opacity:.75;margin-bottom:8px">판을 마칠 때마다 경험치가 쌓여 주민 레벨이 올라요.</div>
     <div class="ul" id="skList"></div>
-    <div class="row"><button class="btn sm" id="skClose">닫기</button></div>
+    <div class="row"><button class="sui-pill btn sm" id="skClose">닫기</button></div>
   </div>
 </div>
 
@@ -325,10 +325,10 @@ h1,.screen h2{color:var(--g1)}
 <div class="screen hidden" id="board">
   <div class="card">
     <h2>원정 순위</h2>
-    <div class="tabs" id="bTabs"><button class="btn sm on" data-r="week">이번 주</button><button class="btn sm" data-r="all">전체</button></div>
+    <div class="tabs" id="bTabs"><button class="btn sm sui-chip on" data-r="week">이번 주</button><button class="btn sm sui-chip" data-r="all">전체</button></div>
     <div id="bNote"></div>
     <div id="bList"></div>
-    <div class="row"><button class="btn sm" id="bClose">닫기</button></div>
+    <div class="row"><button class="sui-pill btn sm" id="bClose">닫기</button></div>
   </div>
 </div>
 

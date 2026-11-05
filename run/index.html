@@ -76,7 +76,7 @@
   #fsHint { font-size:11px; color:#6a5a48; text-shadow:-1px -1px 0 #fdfbf5,1px -1px 0 #fdfbf5,-1px 1px 0 #fdfbf5,1px 1px 0 #fdfbf5; }
   #select, #ranking, #result { background:#fdfbf5; }
   .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; width:100%; max-width:720px; }
-  .card { border:2px solid #2b2620; border-radius:14px; background:#fff; padding:8px 10px; cursor:pointer; display:grid; grid-template-columns:auto 1fr; gap:8px; align-items:center; box-shadow:0 3px 0 #2b2620; position:relative; transition:transform .05s; }
+  .card { border:2px solid #2b2620; border-radius:16px; background:#fff; padding:8px 10px; cursor:pointer; display:grid; grid-template-columns:auto 1fr; gap:8px; align-items:center; box-shadow:0 3px 0 #2b2620; position:relative; transition:transform .05s; }
   .card:active { transform:translateY(3px); box-shadow:0 0 0 #2b2620; }
   .card .por { width:54px; height:50px; display:flex; align-items:flex-end; justify-content:center; }
   .card .por img { max-width:54px; max-height:50px; object-fit:contain; }
@@ -161,7 +161,7 @@
     background:linear-gradient(to bottom,rgba(34,30,24,0) 25%,rgba(34,30,24,.75) 70%);font-family:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif;}
   #quick.on{display:flex;animation:qIn .28s ease-out;}
   @keyframes qIn{from{opacity:0}to{opacity:1}}
-  #quickCard{margin:0 12px 10px;width:min(520px,100%);background:#2B2620;border-radius:20px;padding:12px 14px 10px;color:#EFE7D6;
+  #quickCard{margin:0 12px 10px;width:min(520px,100%);background:#2B2620;border-radius:22px;padding:12px 14px 10px;color:#EFE7D6;
     display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center;animation:qUp .32s cubic-bezier(.2,.8,.3,1);
     box-shadow:0 18px 28px -16px rgba(0,0,0,.7);}
   @keyframes qUp{from{transform:translateY(30px)}to{transform:translateY(0)}}
@@ -303,7 +303,7 @@
     <div id="quickCard">
       <div id="qHead"></div>
       <div id="qSub"></div>
-      <div id="qTap">탭하면 바로 다시 ▶</div>
+      <div id="qTap">탭하면 바로 한 판 더 ▶</div>
       <div id="qRow">
         <button id="qResBtn" class="sui-pill">결과·순위</button>
         <button id="qSelBtn" class="sui-pill">주민 바꾸기</button>
@@ -346,14 +346,14 @@
     <div id="introBox">
       <div class="iname" id="introName"></div>
       <div class="itext" id="introText"></div>
-      <div class="ihint">탭하면 바로 출발 ▶</div>
+      <div class="ihint">탭하면 바로 시작 ▶</div>
     </div>
   </div>
 
   <div id="ranking" class="screen hidden">
     <h1>🏆 마감 질주 순위</h1>
     <div id="rankList" style="width:100%;max-width:520px;max-height:60%;overflow-y:auto;"></div>
-    <button onclick="ui.toTitle()">닫기</button>
+    <button class="sui-pill" onclick="ui.toTitle()">← 뒤로</button>
   </div>
 
   <div id="result" class="screen hidden">
