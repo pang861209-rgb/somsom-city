@@ -48,20 +48,30 @@
   async function thisWeek(){ const all=await weeks(), w=weekKey(); return all[w]||{w,total:0,people:{},games:{},top:[],reached:false,cut:cutFor(w)}; }
 
   // 판이 끝났을 때 뜨는 작은 알림 — 게임마다 따로 만들지 않도록 여기서 그린다
-  let el=null, hideT=null;
+  let el=null, hideT=null, placeT=null;
+  // 알림 한 자리: 게임의 업적·도감 알림(#achToast)이 떠 있으면 그 바로 아래에 선다 — 위쪽에서 겹치지 않게
+  function place(){
+    if(!el) return;
+    const a=document.getElementById('achToast');
+    let top=null;
+    if(a && a.classList.contains('on')){ const r=a.getBoundingClientRect(); if(r.bottom>0) top=Math.round(r.bottom+8); }
+    el.style.top = top!=null ? top+'px' : 'calc(58px + env(safe-area-inset-top))';
+  }
   function toast(a,total){
     if(!el){ el=document.createElement('div');
       el.style.cssText='position:fixed;left:50%;top:calc(58px + env(safe-area-inset-top));transform:translateX(-50%);z-index:9999;'
         +'background:#2B2620;color:#EFE7D6;border-radius:16px;padding:9px 15px;font:700 13px "Apple SD Gothic Neo","Noto Sans KR",sans-serif;'
         +'box-shadow:0 12px 30px -14px rgba(0,0,0,.85);display:flex;align-items:center;gap:9px;white-space:nowrap;pointer-events:none;'
-        +'transition:opacity .3s;opacity:0;';
+        +'transition:opacity .3s, top .25s;opacity:0;';
       document.body.appendChild(el); }
     const pct = total==null ? null : Math.min(100,Math.round(total/TARGET*100));
     el.innerHTML='<span style="font-size:18px">🧺</span><span>마을 창고 <b style="color:#F2C14B">+'+a+'</b>'
       +(total==null?'':' · '+total.toLocaleString()+' / '+TARGET.toLocaleString()
         +'<span style="display:block;height:5px;border-radius:3px;background:rgba(255,255,255,.14);margin-top:5px;overflow:hidden">'
         +'<i style="display:block;height:100%;width:'+pct+'%;background:#F2C14B"></i></span>')+'</span>';
-    el.style.opacity='1'; clearTimeout(hideT); hideT=setTimeout(()=>{ el.style.opacity='0'; },3600);
+    el.style.opacity='1'; place(); clearTimeout(hideT); clearInterval(placeT);
+    placeT=setInterval(place, 200);                                    // 업적 알림이 뜨고 지는 동안 따라 움직인다
+    hideT=setTimeout(()=>{ el.style.opacity='0'; clearInterval(placeT); },3600);
   }
   async function toastTotal(a){ try{ const tw=await thisWeek(); toast(a,tw.total); }catch(e){} }
 

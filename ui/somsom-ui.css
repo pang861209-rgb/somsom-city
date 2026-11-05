@@ -19,6 +19,9 @@
   --sui-title:'Black Han Sans','Gowun Dodum',sans-serif;
 }
 
+/* 보이기·숨기기는 각 게임이 정한다 — display는 명시도 0(:where)으로만 깔아 두어 게임의 .hidden·display:none이 언제나 이긴다 */
+:where(.sui-cta,.sui-pill,.homeBtn){ display:inline-flex; }
+
 /* 주 버튼 — 타이틀 "~하러 가기", 결과 "한 판 더" */
 .sui-cta:not(#_s1):not(#_s2){
   min-height:52px !important; padding:0 30px !important; border-radius:var(--sui-r-m) !important;
@@ -26,7 +29,7 @@
   border:2px solid var(--sui-cta-line) !important; box-shadow:0 4px 0 var(--sui-cta-line) !important;
   font-family:var(--sui-title) !important; font-size:18px !important; font-weight:400 !important;
   letter-spacing:.01em !important; line-height:1.1 !important; text-shadow:none !important;
-  display:inline-flex !important; align-items:center !important; justify-content:center !important; gap:6px;
+  align-items:center !important; justify-content:center !important; gap:6px;
   cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .06s, box-shadow .06s;
 }
 .sui-cta:not(#_s1):not(#_s2):active{ transform:translateY(3px) !important; box-shadow:0 1px 0 var(--sui-cta-line) !important; }
@@ -39,7 +42,7 @@
   border:1px solid var(--sui-line) !important; box-shadow:none !important;
   font-family:var(--sui-font) !important; font-size:13.5px !important; font-weight:700 !important;
   line-height:1.1 !important; text-shadow:none !important;
-  display:inline-flex !important; align-items:center !important; justify-content:center !important; gap:5px; white-space:nowrap !important;
+  align-items:center !important; justify-content:center !important; gap:5px; white-space:nowrap !important;
   cursor:pointer; transition:background .1s;
 }
 .sui-pill:not(#_s1):not(#_s2):active{ background:rgba(255,255,255,.18) !important; transform:none !important; }
@@ -61,7 +64,7 @@
   background:var(--sui-glass) !important; color:var(--sui-ink) !important;
   border:1px solid rgba(255,255,255,.12) !important; box-shadow:0 4px 14px -6px rgba(0,0,0,.8) !important;
   font-family:var(--sui-font) !important; font-size:13px !important; font-weight:700 !important;
-  display:inline-flex !important; align-items:center !important; text-decoration:none !important; line-height:1 !important;
+  align-items:center !important; text-decoration:none !important; line-height:1 !important;
 }
 
 /* 강조 알약 — "오늘의 도전"처럼 한 화면에 하나만 눈에 띄어야 하는 보조 버튼 */
@@ -69,3 +72,7 @@
 
 /* 좁은 줄용 작은 알약 — 버튼이 여럿 나란히 있을 때 */
 .sui-pill.sui-sm:not(#_s1):not(#_s2){ min-height:34px !important; padding:0 11px !important; font-size:12px !important; }
+
+/* 밝은 종이 위 알약 — 창고 정리처럼 카드가 밝은 화면에서 */
+.sui-pill.sui-paper:not(#_s1):not(#_s2){ background:rgba(59,42,28,.07) !important; color:#3B2A1C !important; border-color:rgba(59,42,28,.22) !important; }
+.sui-pill.sui-paper:not(#_s1):not(#_s2):active{ background:rgba(59,42,28,.14) !important; }

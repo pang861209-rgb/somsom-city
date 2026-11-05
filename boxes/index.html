@@ -15,6 +15,8 @@
   body{font-family:'Gowun Dodum','Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#2B2118;word-break:keep-all;
     -webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none;}
   #cv{position:fixed;inset:0;width:100vw;height:100dvh;display:block;}
+  #pauseBtn{position:fixed;top:calc(14px + env(safe-area-inset-top));right:12px;z-index:15;display:flex;}
+  #pauseBtn.hidden{display:none;}
   .screen{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;overflow-y:auto;}
   .screen.hidden,.hidden{display:none !important;}
   button{font-family:inherit;cursor:pointer;border:none;}
@@ -92,6 +94,7 @@
 </head>
 <body>
 <canvas id="cv"></canvas>
+<button id="pauseBtn" class="sui-icon hidden" aria-label="일시정지">❙❙</button>
 
 <div id="sTitle" class="screen">
   <img id="titleBg" src="../assets/boxes/title.jpg" alt="창고에서 짐 상자를 정리하는 당근빌라 친구들">
@@ -121,8 +124,8 @@
     <p id="resNote"></p>
     <div class="row">
       <button class="sui-cta big" id="btnRetry">한 판 더</button>
-      <button class="sui-pill ghost" id="btnBoard2">순위</button>
-      <button class="sui-pill ghost" id="btnHome">처음으로</button>
+      <button class="sui-pill sui-paper ghost" id="btnBoard2">순위</button>
+      <button class="sui-pill sui-paper ghost" id="btnHome">처음으로</button>
     </div>
   </div>
 </div>
@@ -149,9 +152,9 @@
 
 <div id="pauseSheet" class="sheetWrap"><div class="sheet">
   <div class="hd"><span class="t">잠깐 쉬는 중</span><span class="c">놓은 자리는 그대로 저장돼요</span></div>
-  <button class="big" id="btnResume">이어하기</button>
-  <button class="ghost" id="btnQuit">타이틀로 (나중에 이어하기)</button>
-  <button class="ghost" id="btnGiveUp">여기서 끝내기</button>
+  <button class="sui-cta big" id="btnResume">이어하기</button>
+  <button class="sui-pill sui-paper ghost" id="btnQuit">처음으로 · 나중에 이어하기</button>
+  <button class="sui-pill sui-paper ghost" id="btnGiveUp">여기서 끝내기</button>
 </div></div>
 
 <script src="core.js"></script>
@@ -282,7 +285,6 @@ function pos(e){ const t = e.touches ? e.touches[0] || e.changedTouches[0] : e; 
 cv.addEventListener('pointerdown', e=>{
   if(mode !== 'PLAY' || overT > 0) return;
   const {x, y} = pos(e);
-  if(x > W-52 && y < HUD){ pauseGame(); return; }
   // 친구 카드
   const ci = cardHit(x, y);
   if(ci){ if(ci === 'giveup'){ g.giveUp(); finishStuck(); return; } tapCard(ci); return; }
@@ -450,7 +452,7 @@ function gameOver(){
   save(KEY, SAVE);
   hubReport();
   Promise.resolve(pushRanking()).then(showRival);
-  $('resTitle').textContent = isBest ? '최고 기록!' : '더 놓을 곳이 없어요';
+  $('resTitle').textContent = isBest ? '🎉 신기록!' : '더 놓을 곳이 없어요';
   $('resBig').textContent = score.toLocaleString() + '점';
   const parts = [];
   parts.push('상자 <b>' + g.placed + '</b>개 · 정리한 줄 <b>' + st.lines + '</b>');
@@ -459,8 +461,8 @@ function gameOver(){
   if(st.clearAll) parts.push('<b>싹 비우기 ' + st.clearAll + '번</b>');
   if(st.cardsUsed) parts.push('친구 카드 <b>' + st.cardsUsed + '장</b>' + (st.saved ? ' · 막힌 판을 <b>' + st.saved + '번</b> 살림' : ''));
   if(isBest) parts.push(prev ? '예전 최고 ' + prev.toLocaleString() + '점을 넘었어요' : '첫 기록이에요');
-  else if(prev - score <= prev*0.2) parts.push('<b>최고까지 ' + (prev - score).toLocaleString() + '점</b> 모자랐어요');
-  else parts.push('최고 ' + prev.toLocaleString() + '점');
+  else if(prev - score <= prev*0.2) parts.push('<b>아깝다! 신기록까지 ' + (prev - score + 1).toLocaleString() + '점</b>');
+  else parts.push('최고 기록 ' + prev.toLocaleString() + '점');
   parts.push('<span id="resRival" style="color:#8A7458;"></span>');
   $('resNote').innerHTML = parts.join('<br>');
   setTimeout(()=> show('sResult'), 250);
@@ -597,9 +599,6 @@ function drawHud(){
   ctx.fillText(dayLabel(), W/2 + 10, HUD/2 - 8);
   ctx.fillStyle = '#5B4A38'; ctx.font = '800 12px sans-serif';
   ctx.fillText('상자 ' + k + '개', W/2 + 10, HUD/2 + 10);
-  // 일시정지
-  ctx.strokeStyle = '#3B2A1C'; ctx.lineWidth = 2; rr(W-44, HUD/2-15, 30, 30, 8); ctx.stroke();
-  ctx.fillStyle = '#3B2A1C'; ctx.fillRect(W-34, HUD/2-7, 4, 14); ctx.fillRect(W-26, HUD/2-7, 4, 14);
 }
 function drawCombo(){
   // 연속 — 배수와 남은 기회(점 세 개)
@@ -797,10 +796,13 @@ function frame(now){
   drawFx();
   ctx.restore();
   if(g) drawHud();
+  const pOn = mode === 'PLAY' && !!g; if(pOn !== pauseShown){ pauseShown = pOn; $('pauseBtn').classList.toggle('hidden', !pOn); }
 }
+let pauseShown = false;
 requestAnimationFrame(t => { last = t; frame(t); });
 
 // ── 일시정지 ────────────────────────────────────────────────
+$('pauseBtn').onclick = ()=>pauseGame();
 function pauseGame(){ if(mode !== 'PLAY') return; mode = 'PAUSE'; $('pauseSheet').classList.add('on'); }
 $('btnResume').onclick = ()=>{ $('pauseSheet').classList.remove('on'); mode = 'PLAY'; };
 $('btnQuit').onclick   = ()=>{ $('pauseSheet').classList.remove('on'); mode = 'TITLE'; g = null; refreshTitle(); show('sTitle'); };
