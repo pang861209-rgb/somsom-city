@@ -115,11 +115,13 @@
   @keyframes rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
   .gc:active{transform:scale(.965);}
   @media (hover:hover){ .gc:hover{transform:translateY(-3px);box-shadow:0 16px 30px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.14);}
-    .gc:hover .art{transform:scale(1.05);} }
+    .gc:hover .art{transform:scale(calc(var(--z,1) * 1.05));} }
+  /* --p: 그림에서 보여 줄 자리(인물 쪽), --z: 확대 — 인물이 카드 위쪽 절반에 오도록 카드마다 맞춘다 */
   .gc .art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:var(--p,center);
+    transform:scale(var(--z,1));transform-origin:var(--o,var(--p,center));
     z-index:-2;transition:transform .5s cubic-bezier(.2,.8,.3,1);}
   .gc::after{content:"";position:absolute;inset:0;z-index:-1;
-    background:linear-gradient(180deg,rgba(0,0,0,0) 44%,color-mix(in srgb,var(--c) 78%,transparent) 68%,var(--c) 90%);}
+    background:linear-gradient(180deg,rgba(0,0,0,0) 52%,color-mix(in srgb,var(--c) 72%,transparent) 72%,var(--c) 92%);}
   .gc .no{position:absolute;left:10px;top:10px;font-size:9.5px;font-weight:800;letter-spacing:.16em;
     background:rgba(20,16,12,.5);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
     border-radius:999px;padding:4px 8px;color:#FFF7E6;}
@@ -271,37 +273,37 @@
 
   <div class="secHead"><h2>놀이터 고르기</h2><span>6곳</span></div>
   <nav class="picker">
-    <a class="gc" href="leaf/" style="--c:#C98A1E;--i:0;--p:center 30%">
+    <a class="gc" href="leaf/" style="--c:#C98A1E;--i:0;--p:center 100%;--z:1.12;--o:38% 100%">
       <img class="art" src="assets/hub/card_leaf.webp" alt="" loading="lazy">
       <span class="no">GAME 01</span>
       <span class="tx"><span class="nm">낙엽피하기</span><span class="ds">떨어지는 은행을 요리조리</span></span>
       <span class="go"><svg viewBox="0 0 12 12" fill="currentColor"><path d="M2 1.2v9.6c0 .6.6.9 1.1.6l7.6-4.8c.5-.3.5-.9 0-1.2L3.1.6C2.6.3 2 .6 2 1.2z"/></svg></span>
     </a>
-    <a class="gc" href="run/" style="--c:#C2562A;--i:1;--p:44% center">
+    <a class="gc" href="run/" style="--c:#C2562A;--i:1;--p:90% center">
       <img class="art" src="assets/hub/card_run.webp" alt="" loading="lazy">
       <span class="no">GAME 02</span>
       <span class="tx"><span class="nm">달리기</span><span class="ds">은행잎 골목 마감 질주</span></span>
       <span class="go"><svg viewBox="0 0 12 12" fill="currentColor"><path d="M2 1.2v9.6c0 .6.6.9 1.1.6l7.6-4.8c.5-.3.5-.9 0-1.2L3.1.6C2.6.3 2 .6 2 1.2z"/></svg></span>
     </a>
-    <a class="gc" href="patrol/" style="--c:#B5762A;--i:2;--p:center 70%">
+    <a class="gc" href="patrol/" style="--c:#B5762A;--i:2;--p:center 75%;--z:1.06;--o:center 45%">
       <img class="art" src="assets/hub/card_patrol.webp" alt="" loading="lazy">
       <span class="no">GAME 03</span><span class="new">NEW</span>
       <span class="tx"><span class="nm">주민 원정</span><span class="ds">기술 모아 3분 버티기</span></span>
       <span class="go"><svg viewBox="0 0 12 12" fill="currentColor"><path d="M2 1.2v9.6c0 .6.6.9 1.1.6l7.6-4.8c.5-.3.5-.9 0-1.2L3.1.6C2.6.3 2 .6 2 1.2z"/></svg></span>
     </a>
-    <a class="gc" href="https://pang861209-rgb.github.io/somsom-city-game/defense/" style="--c:#5E4E86;--i:3;--p:center 40%">
+    <a class="gc" href="https://pang861209-rgb.github.io/somsom-city-game/defense/" style="--c:#5E4E86;--i:3;--p:42% 25%;--z:1.1">
       <img class="art" src="assets/hub/card_defense.webp" alt="" loading="lazy">
       <span class="no">GAME 04</span>
       <span class="tx"><span class="nm">방범대</span><span class="ds">꼬릿 구름에서 당근빌라를!</span></span>
       <span class="go"><svg viewBox="0 0 12 12" fill="currentColor"><path d="M2 1.2v9.6c0 .6.6.9 1.1.6l7.6-4.8c.5-.3.5-.9 0-1.2L3.1.6C2.6.3 2 .6 2 1.2z"/></svg></span>
     </a>
-    <a class="gc" href="boxes/" style="--c:#9C6A34;--i:4;--p:center 45%">
+    <a class="gc" href="boxes/" style="--c:#9C6A34;--i:4;--p:center 62%;--z:1.25;--o:50% 48%">
       <img class="art" src="assets/hub/card_boxes.webp" alt="" loading="lazy">
       <span class="no">GAME 05</span><span class="new">NEW</span>
       <span class="tx"><span class="nm">창고 정리</span><span class="ds">상자를 끼워 한 줄을 채우면 정리!</span></span>
       <span class="go"><svg viewBox="0 0 12 12" fill="currentColor"><path d="M2 1.2v9.6c0 .6.6.9 1.1.6l7.6-4.8c.5-.3.5-.9 0-1.2L3.1.6C2.6.3 2 .6 2 1.2z"/></svg></span>
     </a>
-    <a class="gc" href="basket/" style="--c:#A9572A;--i:5;--p:center 48%">
+    <a class="gc" href="basket/" style="--c:#A9572A;--i:5;--p:center 38%">
       <img class="art" src="assets/hub/card_basket.webp" alt="" loading="lazy">
       <span class="no">GAME 06</span><span class="new">NEW</span>
       <span class="tx"><span class="nm">가을 바구니</span><span class="ds">은행 한 알에서 당근 케이크까지</span></span>
